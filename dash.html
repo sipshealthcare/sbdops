@@ -78,6 +78,15 @@
 #sbd-root .ok-i{background:#3fb984 !important;color:#000000 !important;}
 #sbd-root .clamp:not(.open)::after{background:linear-gradient(to bottom,rgba(14,19,40,0) 0%,#0e1328 92%) !important;}
 #sbd-root .morebar .rule{background:#1c2646 !important;}
+#sbd-root .bh1,#sbd-root .bh3{color:#ffffff !important;}
+#sbd-root .bh2{color:#D49A00 !important;border-color:#1c2646 !important;}
+#sbd-root .bp,#sbd-root .bl li,#sbd-root .btbl td{color:#cbd5e5 !important;}
+#sbd-root .meta{background:#131b3a !important;}
+#sbd-root .meta dt{color:#64748b !important;} #sbd-root .meta dd{color:#e6ebf5 !important;}
+#sbd-root .btbl th{color:#94a3b8 !important;background:#131b3a !important;}
+#sbd-root .bp b,#sbd-root .bl b,#sbd-root .btbl b{color:#ffffff !important;}
+#sbd-root .mono{color:#D49A00 !important;}
+#sbd-root .bl li:before{background:#D49A00 !important;}
 /* ── END LOCK ──────────────────────────────────────────────────── */
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -180,6 +189,32 @@ body{background:#070d1f}
   background:linear-gradient(to bottom,rgba(14,19,40,0) 0%,#0e1328 92%);pointer-events:none}
 .morebar{display:flex;align-items:center;gap:10px;margin-top:12px}
 .morebar .rule{flex:1;height:1px;background:var(--line)}
+
+/* daily brief typography */
+.bh1{font-size:17px;font-weight:600;color:#fff;margin:22px 0 8px;letter-spacing:-.01em}
+.bh2{font-size:13px;font-weight:600;color:var(--gold);margin:26px 0 10px;
+  letter-spacing:.08em;text-transform:uppercase;padding-bottom:7px;border-bottom:1px solid var(--line)}
+.bh3{font-size:14.5px;font-weight:600;color:#fff;margin:19px 0 7px}
+.bh2:first-child,.bh1:first-child,.bh3:first-child{margin-top:0}
+.bp{font-size:13.5px;line-height:1.68;color:#cbd5e5;margin:0 0 12px;max-width:68ch}
+.bl{margin:0 0 13px;padding-left:2px;list-style:none;display:flex;flex-direction:column;gap:7px}
+.bl li{font-size:13.5px;line-height:1.6;color:#cbd5e5;padding-left:17px;position:relative;max-width:66ch}
+.bl li:before{content:'';position:absolute;left:2px;top:9px;width:5px;height:5px;
+  border-radius:50%;background:var(--gold);opacity:.75}
+.meta{display:grid;grid-template-columns:auto 1fr;gap:7px 18px;margin:0 0 18px;
+  padding:14px 16px;background:var(--lift);border-radius:10px;border-left:3px solid var(--gold)}
+.meta dt{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);
+  font-weight:600;padding-top:2px;white-space:nowrap}
+.meta dd{font-size:13px;color:#e6ebf5;margin:0}
+.tblwrap{overflow-x:auto;margin:0 0 16px}
+.btbl{width:100%;border-collapse:collapse;font-size:12.5px;min-width:420px}
+.btbl th{text-align:left;font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  font-weight:600;color:var(--dim);background:var(--lift);padding:9px 12px;white-space:nowrap}
+.btbl th:first-child{border-radius:8px 0 0 0} .btbl th:last-child{border-radius:0 8px 0 0}
+.btbl td{padding:10px 12px;border-top:1px solid var(--line);color:#cbd5e5;vertical-align:top;line-height:1.5}
+.btbl tbody tr:hover td{background:rgba(212,154,0,.045)}
+.bp b,.bl b,.btbl b{color:#fff;font-weight:600}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:var(--gold)}
 </style>
 </head>
 <body>
@@ -240,20 +275,47 @@ async function q(path){
   return d||[];
 }
 
-/* Tiny markdown: headings, bold, lists, paragraphs. Escapes first. */
+/* Renders the brief the way the document reads: section headings, sub-headings,
+   bullets, tables, and bold. Escapes first, so document text can never inject. */
 function md(src){
   if(!src) return '';
-  const lines=String(src).split(/\r?\n/); let out='',list=false;
-  const inline=s=>esc(s).replace(/\*\*([^*]+)\*\*/g,'<span class="lead">$1</span>');
-  for(const ln of lines){
-    const l=ln.trim();
-    if(/^[-*] /.test(l)){ if(!list){out+='<div class="p">';list=true;} out+=`&bull; ${inline(l.slice(2))}<br>`; continue; }
-    if(list){out+='</div>';list=false;}
+  const lines=String(src).split(/\r?\n/);
+  const inline=s=>esc(s)
+    .replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>')
+    .replace(/\b(https?:\/\/[^\s<]+)/g,'<span class="mono">$1</span>');
+  let out='',list=[],tbl=[];
+  const flushList=()=>{ if(list.length){ out+='<ul class="bl">'+list.map(x=>`<li>${x}</li>`).join('')+'</ul>'; list=[]; } };
+  const flushTbl=()=>{
+    if(!tbl.length) return;
+    const cells=r=>r.replace(/^\||\|$/g,'').split('|').map(c=>c.trim());
+    const rows=tbl.filter(r=>!/^\|(?:\s*:?-+:?\s*\|)+$/.test(r));
+    const head=cells(rows[0]), body=rows.slice(1).map(cells);
+    // a two-column table with a blank header is a From/To/Platform block, not a grid
+    const defn = head.length===2 && head.every(h=>!h);
+    if(defn){
+      out+='<dl class="meta">'+body.map(([k,v])=>
+        `<dt>${inline(k)}</dt><dd>${inline(v||'')}</dd>`).join('')+'</dl>';
+    }else{
+      out+='<div class="tblwrap"><table class="btbl"><thead><tr>'+
+        head.map(h=>`<th>${inline(h)}</th>`).join('')+'</tr></thead><tbody>'+
+        body.map(r=>'<tr>'+r.map(c=>`<td>${inline(c)}</td>`).join('')+'</tr>').join('')+
+        '</tbody></table></div>';
+    }
+    tbl=[];
+  };
+  for(const raw of lines){
+    const l=raw.trim();
+    if(/^\|.*\|$/.test(l)){ flushList(); tbl.push(l); continue; }
+    flushTbl();
+    if(/^[-*]\s+/.test(l)){ list.push(inline(l.replace(/^[-*]\s+/,''))); continue; }
+    flushList();
     if(!l) continue;
-    if(/^#{1,3} /.test(l)) out+=`<div class="sec">${inline(l.replace(/^#+ /,''))}</div>`;
-    else out+=`<div class="p">${inline(l)}</div>`;
+    if(/^###\s+/.test(l))      out+=`<div class="bh3">${inline(l.replace(/^###\s+/,''))}</div>`;
+    else if(/^##\s+/.test(l))  out+=`<div class="bh2">${inline(l.replace(/^##\s+/,''))}</div>`;
+    else if(/^#\s+/.test(l))   out+=`<div class="bh1">${inline(l.replace(/^#\s+/,''))}</div>`;
+    else out+=`<p class="bp">${inline(l)}</p>`;
   }
-  if(list) out+='</div>';
+  flushList(); flushTbl();
   return out;
 }
 
