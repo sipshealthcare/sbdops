@@ -5,6 +5,38 @@ stops the same question being reopened in six weeks.
 
 ---
 
+## D-019 · Belt platform database is read-only to this system
+**Decided** 2026-08-13 · **Approved** · binding
+
+The Belt platform database is read-only to the SBD OPS system, permanently. Five rules, all
+binding:
+
+1. SBD OPS never writes to the Belt database. No insert, no update, no delete, no DDL, no
+   extensions, no functions, no schema changes. Ever.
+2. Access is a dedicated Postgres role, `sbdops_readonly`, with SELECT granted on named tables
+   only. Enforced by Postgres, not by anyone remembering.
+3. The Belt project is never connected to an AI session whose tooling can write. Verification runs
+   from Claude Code on a local machine using that role. Verdicts are written to SBD OPS, never back
+   to Belt.
+4. SBD OPS stores verdicts and aggregates only. Never a staff name, a score, or an assessment row.
+5. The Belt project is never transferred between Supabase organizations, and ops tables are never
+   installed inside the Belt database.
+
+Two projects in one organization are already fully isolated, so co-location was never the risk. The
+risks are elsewhere. A project transfer moves billing to the destination org's plan, which can
+silently remove daily backups and reduce compute on a platform that certifies competency.
+Installing ops tables inside the Belt database would put every ops migration in the platform's
+blast radius, and share `auth.users` between ops logins and platform accounts.
+
+Most importantly: a promise not to write is not the same as being unable to write. A read-only
+Postgres role is a wall. An instruction in a prompt is a rule, and rules get forgotten between
+sessions and between people. This decision chooses the wall.
+
+If any future plan, prompt or agent appears to write to the Belt database, that is a defect. Stop
+it rather than reasoning about whether this once is fine.
+
+---
+
 ## D-009 · Assessor rights granted per facility
 **Decided** 2026-07-30 · **Approved** · live the same day
 
