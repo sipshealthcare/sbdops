@@ -57,6 +57,8 @@
 #sbd-root .hint{color:#64748b !important;}
 #sbd-root .ta{background:#070d1f !important;color:#e6ebf5 !important;border-color:#1c2646 !important;}
 #sbd-root .ta::placeholder{color:#64748b !important;}
+#sbd-root .inp{background:#070d1f !important;color:#e6ebf5 !important;border-color:#1c2646 !important;}
+#sbd-root .inp::placeholder{color:#64748b !important;}
 #sbd-root .st{background:#131b3a !important;color:#94a3b8 !important;border-color:#1c2646 !important;}
 #sbd-root .st.on{background:#3fb984 !important;color:#000000 !important;border-color:#3fb984 !important;}
 #sbd-root .toast{background:#D49A00 !important;color:#000000 !important;}
@@ -113,7 +115,8 @@ body{background:#070d1f}
 .lbl{display:block;font-size:13.5px;font-weight:600;margin-bottom:3px}
 .hint{display:block;font-size:12px;margin-bottom:9px}
 .ta{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px 13px;font-size:14px;font-family:inherit;line-height:1.5;min-height:90px;resize:vertical}
-.ta:focus{outline:2px solid var(--gold);outline-offset:-1px}
+.inp{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px 13px;font-size:14px;font-family:inherit;line-height:1.5}
+.ta:focus,.inp:focus{outline:2px solid var(--gold);outline-offset:-1px}
 .st{border:1px solid var(--line);border-radius:8px;padding:7px 13px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:600}
 .f{margin-bottom:18px}
 .toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,80px);padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:60;opacity:0;transition:.25s;pointer-events:none}
@@ -141,6 +144,7 @@ body{background:#070d1f}
     <div class="top">
       <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
       <div><div class="top-t" id="ttl">Today</div><div class="top-s" id="sub">Thursday, August 13, 2026</div></div>
+      <button class="btn" id="refresh" style="margin-left:auto" hidden>Refresh</button>
     </div>
     <div id="views"></div>
   </main>
@@ -149,134 +153,262 @@ body{background:#070d1f}
 </div>
 
 <script>
-const P=(c,t)=>`<span class="pill ${c}">${t}</span>`;
-let DUES=[
- {id:'d1',t:'Tracker caught up and republished',d:'Fri Aug 14',ok:false},
- {id:'d2',t:'Rotate the shared API key',d:'Fri Aug 14',ok:false},
- {id:'d3',t:'Scripts standalone module live',d:'Fri Aug 21',ok:false},
- {id:'d4',t:'Endoscopy modules live',d:'Fri Aug 28',ok:false}
-];
-const dueHTML=()=>DUES.map(x=>`<div class="due"><div>${x.t}<div class="due-d">${x.d}</div></div>
-<div class="row"><button class="st${x.ok?' on':''}" data-d="${x.id}">${x.ok?'Confirmed':'Confirm'}</button>
-<button class="btn btn-o" data-adj="${x.id}">Needs a different date</button></div></div>`).join('');
+/* Backend: Supabase project SBD OPS. Same hand-rolled rpc() pattern as
+   index.html: fetch only, no SDK, no build step. Every call here requires a
+   signed-in user whose app_users row says dev; the database enforces it, not
+   this page. A dev never receives untriaged intake — that filter is a row
+   level security policy, not a page filter. */
+const SB_URL='https://uwgpjjbbfwqiumzfkwuy.supabase.co';
+const SB_KEY='sb_publishable_USi4uTOHHwrNjKXB3-bbDQ_Gzk7PN2q';
+const TOK_KEY='sbd_build_tok';
 
-const V={
-today:{n:'Today',s:'Thursday, August 13, 2026',h:()=>`
+const esc=t=>String(t??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+const P=(c,t)=>`<span class="pill ${c}">${t}</span>`;
+const fmtD=d=>d?new Date(d+(String(d).length===10?'T12:00:00':'')).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
+const ageDays=d=>Math.max(0,Math.floor((Date.now()-new Date(d).getTime())/86400000));
+const agePill=n=>P(n>=30?'p-red':n>=10?'p-amb':'p-gry',`${n} day${n===1?'':'s'}`);
+const stPill=s=>({'shipped':P('p-grn','Shipped'),'in-progress':P('p-amb','In progress'),'blocked':P('p-red','Blocked'),'backlog':P('p-gry','Backlog'),'open':P('p-gry','Open')}[s]||P('p-gry',esc(s)));
+const today=()=>new Date().toISOString().slice(0,10);
+
+let TOK=sessionStorage.getItem(TOK_KEY)||'';
+const hdrs=()=>({'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${TOK||SB_KEY}`});
+class AuthGone extends Error{}
+async function rpc(fn,args){
+  const r=await fetch(`${SB_URL}/rest/v1/rpc/${fn}`,{method:'POST',headers:hdrs(),body:JSON.stringify(args||{})});
+  if(r.status===401) throw new AuthGone();
+  let d=null; try{ d=await r.json(); }catch(_){}
+  if(!r.ok) throw new Error((d&&(d.message||d.hint))||'Something went wrong on our side.');
+  return d;
+}
+async function q(path){
+  const r=await fetch(`${SB_URL}/rest/v1/${path}`,{headers:hdrs()});
+  if(r.status===401) throw new AuthGone();
+  let d=null; try{ d=await r.json(); }catch(_){}
+  if(!r.ok) throw new Error((d&&(d.message||d.hint))||'Could not load data.');
+  return d||[];
+}
+function md(src){
+  if(!src) return '';
+  const lines=String(src).split(/\r?\n/); let out='',list=false;
+  const inline=s=>esc(s).replace(/\*\*([^*]+)\*\*/g,'<span class="lead">$1</span>');
+  for(const ln of lines){
+    const l=ln.trim();
+    if(/^[-*] /.test(l)){ if(!list){out+='<div class="p">';list=true;} out+=`&bull; ${inline(l.slice(2))}<br>`; continue; }
+    if(list){out+='</div>';list=false;}
+    if(!l) continue;
+    if(/^#{1,3} /.test(l)) out+=`<div class="sec">${inline(l.replace(/^#+ /,''))}</div>`;
+    else out+=`<div class="p">${inline(l)}</div>`;
+  }
+  if(list) out+='</div>';
+  return out;
+}
+
+/* ---------- state ---------- */
+const D={board:[],intake:[],decisions:[],releases:[],refdocs:[],briefs:[],eods:[],addenda:[]};
+const WHO_KEY='sbd_dev_who';
+const sprintNow=()=>{const c=[...D.board].filter(t=>t.sprint&&t.status!=='shipped').sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));return c.length?c[0].sprint:null;};
+
+async function loadAll(){
+  rpc('snapshot_tracker').catch(e=>{if(e instanceof AuthGone)throw e;});
+  const [board,intake,decisions,releases,refdocs,briefs,eods,addenda]=await Promise.all([
+    q('tracker_items?select=number,title,status,priority,sprint,source,intake_ref,shipped_on,review_on,rank,created_at,updated_at&order=number.asc'),
+    q('intake?select=ref,who,area,impact,what,status,verdict,analysis,decided_at&order=decided_at.desc'),
+    q('decisions?select=ref,question,blocks,raised_on,status,answer,reasoning,answered_on,review_on&order=raised_on.asc'),
+    q('releases?select=released_on,outcome,summary,detail,verification,item_numbers&order=released_on.desc&limit=20'),
+    q('reference_docs?select=slug,title,body'),
+    q('briefs?select=brief_date,author,body&order=brief_date.desc&limit=1'),
+    q('eod_reports?select=report_date,author,completed,qa,still_working,needs_ignacio&order=report_date.desc&limit=14'),
+    q('eod_addenda?select=addendum_date,author,author_role,body,created_at&order=created_at.desc&limit=30')
+  ]);
+  Object.assign(D,{board,intake,decisions,releases,refdocs,briefs,eods,addenda});
+}
+
+/* ---------- views ---------- */
+function todayHTML(){
+  const brief=D.briefs[0];
+  const ranked=D.board.filter(t=>t.rank!=null&&t.status!=='shipped').sort((a,b)=>a.rank-b.rank||a.number-b.number);
+  const open=D.decisions.filter(d=>d.status==='open').sort((a,b)=>new Date(a.raised_on)-new Date(b.raised_on));
+  return `
 <div class="card max">
-  <div class="card-h"><div class="card-t">This morning's brief</div><div class="card-s">From Ignacio &middot; received 08:10</div></div>
-  <div class="note">No hospital is waiting on anything in here and none of this is a client escalation. It matters so leadership, sales and client success can describe what the platform does today.</div>
-  <div class="sec">Priorities, in order</div>
-  <div class="p"><span class="lead">1. Report comparison run.</span> Already in flight, so it stays first. Fourteen people waiting, nine of whom hold no belt, which makes this their determination rather than an adjustment.</div>
-  <div class="p"><span class="lead">2. Scripts as a standalone module.</span> 70 scripts already in the platform with no way to assign them. Should ride the existing Foundations pattern. If it cannot, say so before you start.</div>
-  <div class="p"><span class="lead">3. Endoscopy, specifically assignable.</span> Not a belt requirement and not a facility-wide rollout. Lands only on people a leader assigns.</div>
-  <div class="row" style="margin-top:14px"><button class="btn btn-o">Read the full brief</button></div>
+  <div class="card-h"><div class="card-t">This morning's brief</div>
+  <div class="card-s">${brief?`From ${esc(brief.author)} &middot; ${fmtD(brief.brief_date)}`:'Nothing received yet'}</div></div>
+  ${brief?md(brief.body):'<div class="p muted">No brief has been sent yet. When Ignacio posts one it appears here on refresh, dated, with priorities in order.</div>'}
 </div>
 
 <div class="card max">
-  <div class="card-h"><div class="card-t">Dates proposed to you</div>
-  <div class="card-s">Confirm what works. Send back a different date with the reason for anything that does not.</div></div>
-  <div id="dues">${dueHTML()}</div>
+  <div class="card-h"><div class="card-t">Priority order</div>
+  <div class="card-s">Set on the master board. Rank 1 means do this first. Hit Refresh to pick up changes.</div></div>
+  ${ranked.length?ranked.map(t=>`
+  <div class="due"><div>${t.rank}. &nbsp;#${t.number} &middot; ${esc(t.title)}<div class="due-d">${[t.sprint?esc(t.sprint):'',esc(t.priority)].filter(Boolean).join(' &middot; ')}</div></div>
+  <div class="row">${stPill(t.status)}</div></div>`).join('')
+  :'<div class="p muted">Nothing is ranked right now. When Ignacio sets an order it shows here, numbered.</div>'}
 </div>
 
 <div class="card max">
   <div class="card-h"><div class="card-t">Waiting on Ignacio</div><div class="card-s">Your questions, and how long they have been open</div></div>
-  <div class="item"><div class="item-h"><div class="item-t">Endoscopy module count and gate rule</div>${P('p-red','18 days')}</div><div class="item-m">Raised Jul 26 &middot; blocks the endoscopy build</div></div>
-  <div class="item"><div class="item-h"><div class="item-t">Black Belt observation checklist content</div>${P('p-red','62 days')}</div><div class="item-m">Raised Jun 12 &middot; blocks the Black Belt gate</div></div>
-  <div class="item"><div class="item-h"><div class="item-t">DAVID chat protection: alert only or auto limit</div>${P('p-amb','21 days')}</div><div class="item-m">Raised Jul 23 &middot; recommendation sent, not blocking</div></div>
+  ${open.length?open.map(d=>`
+  <div class="item"><div class="item-h"><div class="item-t">${esc(d.question)}</div>${agePill(ageDays(d.raised_on))}</div>
+  <div class="item-m">Raised ${fmtD(d.raised_on)}${d.blocks?' &middot; blocks: '+esc(d.blocks):''}</div></div>`).join('')
+  :'<div class="p muted">Nothing waiting. Questions you raise under Ask land here with their age.</div>'}
   <div class="row" style="margin-top:4px"><button class="btn btn-g" data-go="ask">Ask something new</button></div>
-</div>`},
+</div>`;
+}
 
-sprint:{n:'Sprint',s:'S8 &middot; Fri Aug 14 to Fri Aug 21',b:()=>8,h:()=>`
+function sprintHTML(){
+  const sp=sprintNow();
+  const spRows=D.board.filter(t=>sp&&t.sprint===sp).sort((a,b)=>(a.rank??999)-(b.rank??999)||a.number-b.number);
+  const rest=D.board.filter(t=>!sp||t.sprint!==sp).sort((a,b)=>a.number-b.number);
+  const appr=D.intake.filter(i=>i.status==='approved'||i.status==='shipped');
+  const trackerOf=r=>D.board.find(t=>t.intake_ref===r);
+  const stOpts=s=>['open','in-progress','shipped','blocked','backlog'].map(x=>`<option${x===s?' selected':''}>${x}</option>`).join('');
+  const row=t=>`<tr><td>${t.number}</td>
+  <td>${t.rank!=null?`<span class="due-d">${t.rank}.</span> `:''}${esc(t.title)}<div class="age">${[t.sprint?esc(t.sprint):'',t.intake_ref?'from '+esc(t.intake_ref):'',t.shipped_on?'shipped '+fmtD(t.shipped_on):'',t.review_on?'review '+fmtD(t.review_on):''].filter(Boolean).join(' &middot; ')||'&nbsp;'}</div></td>
+  <td><div class="row" style="gap:5px">
+    <select class="ta" id="st-${t.number}" style="min-height:0;width:118px;padding:8px 9px;font-size:12px">${stOpts(t.status)}</select>
+    <input class="inp" id="dt-${t.number}" type="date" style="width:132px;padding:8px 9px;font-size:12px">
+    <button class="btn" data-upd="${t.number}">Apply</button>
+  </div></td></tr>`;
+  return `
 <div class="card max">
-  <div class="card-h"><div class="card-t">Committed this sprint</div><div class="card-s">8 items. Last sprint landed 7 of 10.</div></div>
-  <table class="tbl"><thead><tr><th>#</th><th>Item</th><th>Due</th></tr></thead><tbody>
-  <tr><td>107</td><td>Scripts standalone module</td><td>Aug 21</td></tr>
-  <tr><td>87</td><td>Rotate the shared API key</td><td>Aug 14</td></tr>
-  <tr><td>104</td><td>Tracker reconciled and republished</td><td>Aug 14</td></tr>
-  <tr><td>112</td><td>Assessment pending state on manual add</td><td>Aug 26</td></tr>
-  <tr><td>114</td><td>Assessment queue reachable by staff admin</td><td>Aug 21</td></tr>
-  <tr><td>105</td><td>Load test at 200 concurrent</td><td>Aug 28</td></tr>
-  </tbody></table>
+  <div class="card-h"><div class="card-t">${sp?`Committed &middot; ${esc(sp)}`:'Committed'}</div>
+  <div class="card-s">${spRows.length?`${spRows.length} items. Status changes write straight to the record.`:'No items carry a sprint tag right now.'}</div></div>
+  ${spRows.length?`<table class="tbl"><thead><tr><th>#</th><th>Item</th><th>Change</th></tr></thead><tbody>${spRows.map(row).join('')}</tbody></table>`:''}
+  <div class="p muted" style="margin-top:10px">Shipped needs a ship date, backlog a review date; use the date box. Titles and priorities are read only from this side.</div>
 </div>
+${rest.length?`
 <div class="card max">
-  <div class="card-h"><div class="card-t">Approved from intake</div><div class="card-s">Came from the SIPS admin team, triaged and approved</div></div>
-  <div class="item"><div class="item-h"><div class="item-t">Assessment queue is empty for staff admin</div>${P('p-amb','Blocked work')}</div>
-  <div class="item-b">The queue exists and the requests are in the database. It renders only in the admin view, so the account has the right and no door.</div>
-  <div class="item-m">SBD-114 &rarr; tracker #114 &middot; approved Aug 13</div></div>
-  <div class="item"><div class="item-h"><div class="item-t">Manual add only offers White Belt</div>${P('p-red','Record integrity')}</div>
-  <div class="item-b">56 of 92 staff sit at White and 28 still need placement. Needs an assessment pending state. Blast radius write-up requested first.</div>
-  <div class="item-m">SBD-112 &rarr; tracker #112 &middot; approved Aug 13</div></div>
-</div>`},
+  <div class="card-h"><div class="card-t">Everything else on the ledger</div></div>
+  <table class="tbl"><thead><tr><th>#</th><th>Item</th><th>Change</th></tr></thead><tbody>${rest.map(row).join('')}</tbody></table>
+</div>`:''}
+<div class="card max">
+  <div class="card-h"><div class="card-t">Approved from intake</div><div class="card-s">Came from the SIPS admin team, triaged and approved. Untriaged intake never reaches this page.</div></div>
+  ${appr.length?appr.map(i=>{const t=trackerOf(i.ref);return `
+  <div class="item"><div class="item-h"><div class="item-t">${esc(i.what).slice(0,120)}</div>${i.impact?P(i.impact==='Blocking me now'?'p-red':i.impact==='Slowing me down'?'p-amb':'p-gry',esc(i.impact)):''}</div>
+  ${i.verdict?`<div class="item-b">${esc(i.verdict)}${i.analysis?' &mdash; '+esc(i.analysis):''}</div>`:''}
+  <div class="item-m">${esc(i.ref)}${t?` &rarr; tracker #${t.number}`:''}${i.decided_at?' &middot; approved '+fmtD(i.decided_at):''}</div></div>`;}).join('')
+  :'<div class="p muted">Nothing approved yet. When intake is triaged and approved on the master board it appears here.</div>'}
+</div>`;
+}
 
-eod:{n:'Post EOD',s:'End of day report',h:()=>`
+function eodHTML(){
+  const who=localStorage.getItem(WHO_KEY)||'';
+  return `
 <div class="card max">
-  <div class="card-h"><div class="card-t">End of day, Thursday August 13</div>
+  <div class="card-h"><div class="card-t">End of day, ${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div>
   <div class="card-s">Same four sections as always. One ask: name the tracker number on anything you mark shipped.</div></div>
+  <div class="f"><label class="lbl">Your name</label>
+    <input class="inp" id="eodWho" value="${esc(who)}" placeholder="Who is posting this"></div>
   <div class="f"><label class="lbl">Completed today</label>
     <span class="hint">What shipped, with the tracker number and how to check it.</span>
-    <textarea class="ta" placeholder="#104 Tracker reconciled and republished. To check: open the board, rows 26 and 27 now read Shipped."></textarea></div>
+    <textarea class="ta" id="eodDone" placeholder="#104 Tracker reconciled and republished. To check: open the board, rows 26 and 27 now read Shipped."></textarea></div>
   <div class="f"><label class="lbl">QA and verification run today</label>
     <span class="hint">What you checked against the live system rather than against the report of it.</span>
-    <textarea class="ta"></textarea></div>
+    <textarea class="ta" id="eodQa"></textarea></div>
   <div class="f"><label class="lbl">Still working</label>
-    <span class="hint">With an expected date on each.</span>
-    <textarea class="ta"></textarea></div>
+    <span class="hint">One per line, with an expected date on each.</span>
+    <textarea class="ta" id="eodStill"></textarea></div>
   <div class="f"><label class="lbl">Needs Ignacio</label>
     <span class="hint">Anything blocked on a decision. These become tracked questions with a date on them.</span>
-    <textarea class="ta"></textarea></div>
-  <button class="btn btn-g" data-post="1">Post EOD</button>
-</div>`},
+    <textarea class="ta" id="eodNeeds"></textarea></div>
+  <button class="btn btn-g" data-act="postEod">Post EOD</button>
+</div>
 
-ask:{n:'Ask',s:'Questions to Ignacio',h:()=>`
+<div class="card max">
+  <div class="card-h"><div class="card-t">Forgot to mention</div>
+  <div class="card-s">Left something out of an EOD? Push it through here. It lands dated on both boards.</div></div>
+  <div class="f"><textarea class="ta" id="addBody" style="min-height:64px" placeholder="One thing, in plain words."></textarea></div>
+  <div class="row" style="margin-bottom:14px"><button class="btn btn-g" data-act="addendum">Push it through</button></div>
+  ${D.addenda.length?D.addenda.slice(0,8).map(a=>`
+  <div class="item"><div class="item-b" style="margin-top:0">${esc(a.body)}</div>
+  <div class="item-m">${fmtD(a.addendum_date)} &middot; ${esc(a.author)} &middot; ${a.author_role==='master_admin'?'master admin':'dev team'}</div></div>`).join(''):''}
+</div>
+
+<div class="card max">
+  <div class="card-h"><div class="card-t">Recent reports</div></div>
+  ${D.eods.length?D.eods.map(r=>`
+  <div class="item"><div class="item-h"><div class="item-t">${fmtD(r.report_date)}${r.author?' &middot; '+esc(r.author):''}</div></div>
+  ${r.completed?`<div class="item-b">${esc(r.completed).slice(0,240)}</div>`:''}
+  ${r.needs_ignacio?`<div class="item-m">Needs Ignacio: ${esc(r.needs_ignacio).slice(0,140)}</div>`:''}</div>`).join('')
+  :'<div class="p muted">No EOD reports in the record yet. The first one posted above starts the history.</div>'}
+</div>`;
+}
+
+function askHTML(){
+  const open=D.decisions.filter(d=>d.status==='open').sort((a,b)=>new Date(a.raised_on)-new Date(b.raised_on));
+  return `
 <div class="card max">
   <div class="card-h"><div class="card-t">Ask a question</div>
   <div class="card-s">This becomes a tracked item with a date on it, rather than a paragraph in tonight's EOD that ages quietly.</div></div>
   <div class="f"><label class="lbl">What do you need decided</label>
-    <textarea class="ta" placeholder="For endoscopy, how many modules and do the gates follow the Foundations three-pass rule?"></textarea></div>
+    <textarea class="ta" id="askQ" placeholder="For endoscopy, how many modules and do the gates follow the Foundations three-pass rule?"></textarea></div>
   <div class="f"><label class="lbl">What it blocks</label>
     <span class="hint">So it can be prioritised honestly against everything else.</span>
-    <textarea class="ta" style="min-height:60px" placeholder="The endoscopy build cannot start without it."></textarea></div>
-  <button class="btn btn-g" data-post="1">Send</button>
-</div>`},
-
-releases:{n:'Releases',s:'What is live',h:()=>`
+    <textarea class="ta" id="askB" style="min-height:60px" placeholder="The endoscopy build cannot start without it."></textarea></div>
+  <button class="btn btn-g" data-act="ask">Send</button>
+</div>
 <div class="card max">
-  <div class="card-h"><div class="card-t">Post a release</div></div>
+  <div class="card-h"><div class="card-t">Open</div><div class="card-s">Everything this team is waiting on</div></div>
+  ${open.length?open.map(d=>`
+  <div class="item"><div class="item-h"><div class="item-t">${esc(d.question)}</div>${agePill(ageDays(d.raised_on))}</div>
+  <div class="item-m">${esc(d.ref)} &middot; raised ${fmtD(d.raised_on)}${d.blocks?' &middot; blocks: '+esc(d.blocks):''}</div></div>`).join('')
+  :'<div class="p muted">Nothing open.</div>'}
+</div>`;
+}
+
+function releasesHTML(){
+  const byNum=Object.fromEntries(D.board.map(b=>[b.number,b.title]));
+  return `
+<div class="card max">
+  <div class="card-h"><div class="card-t">Post a release</div>
+  <div class="card-s">Merged, deployed and confirmed are three separate facts. Verification records the third.</div></div>
   <div class="f"><label class="lbl">What went out</label>
-    <span class="hint">Tracker numbers, and what to check.</span>
-    <textarea class="ta" style="min-height:70px"></textarea></div>
-  <button class="btn btn-g" data-post="1">Log it</button>
+    <input class="inp" id="relSum" placeholder="One line. What changed."></div>
+  <div class="f"><label class="lbl">Tracker numbers</label>
+    <span class="hint">Comma separated. Numbers with no tracker row are kept and flagged, not dropped.</span>
+    <input class="inp" id="relNums" placeholder="104, 87"></div>
+  <div class="f"><label class="lbl">Detail</label>
+    <textarea class="ta" id="relDet" style="min-height:60px"></textarea></div>
+  <div class="f"><label class="lbl">How it was verified</label>
+    <span class="hint">Against the live system, not against the report of it.</span>
+    <input class="inp" id="relVer" placeholder="Checked the board: rows 26 and 27 read Shipped."></div>
+  <div class="row">
+    <select class="ta" id="relOut" style="min-height:0;width:150px;padding:9px 10px"><option value="live">live</option><option value="rolled-back">rolled-back</option></select>
+    <button class="btn btn-g" data-act="postRelease">Log it</button>
+  </div>
 </div>
 <div class="card max">
   <div class="card-h"><div class="card-t">Recent</div></div>
-  <div class="item"><div class="item-h"><div class="item-t">Aug 12 &middot; No Belt approval, SIPS admin role</div>${P('p-grn','Live')}</div><div class="item-m">Verified against the database &middot; #79</div></div>
-  <div class="item"><div class="item-h"><div class="item-t">Aug 11 &middot; Scoring Specification v1 conformance</div>${P('p-grn','Live')}</div><div class="item-m">Re-verified against all 49 stored placements &middot; #96</div></div>
-  <div class="item"><div class="item-h"><div class="item-t">Jul 30 &middot; Observer PIN hardening</div>${P('p-red','Rolled back')}</div><div class="item-m">Narrower rule shipped Aug 4 &middot; #37</div></div>
-</div>`},
+  ${D.releases.length?D.releases.map(r=>`
+  <div class="item"><div class="item-h"><div class="item-t">${fmtD(r.released_on)} &middot; ${esc(r.summary)}</div>${r.outcome==='live'?P('p-grn','Live'):P('p-red','Rolled back')}</div>
+  ${r.detail?`<div class="item-b">${esc(r.detail)}</div>`:''}
+  <div class="item-m">${[r.verification?'Verified: '+esc(r.verification):'',(r.item_numbers||[]).length?(r.item_numbers||[]).map(n=>byNum[n]?`#${n}`:`#${n} (no row)`).join(', '):''].filter(Boolean).join(' &middot; ')||'No verification recorded'}</div></div>`).join('')
+  :'<div class="p muted">No releases in the record yet. The first one logged above starts the history.</div>'}
+</div>`;
+}
 
-checks:{n:'Standards',s:'Check before you ship',h:()=>`
-<div class="card max">
-  <div class="card-h"><div class="card-t">Two standing checks</div>
-  <div class="card-s">Both came out of work this team found and fixed itself. Written down so they are caught by process rather than by memory.</div></div>
-  <div class="sec">A save is not done until it comes back</div>
-  <div class="p">No write path is done until somebody has saved, reloaded, and watched the value return, and until a rejected write surfaces an error to the person doing it.</div>
-  <div class="p muted">Why: five separate cases where the interface reported success while the write was rejected and discarded. The schedule one ran two months before anyone noticed.</div>
-  <div class="sec">Never print a default where a decision belongs</div>
-  <div class="p">Where a determination belongs, absence is shown as absence rather than filled with a fallback.</div>
-  <div class="p muted">Why: White substituted as a placeholder belt and printed as a result, "not gated" printing as a blank that read as missing data, and a report re-deriving a belt over an assessor's override.</div>
-</div>
-<div class="card max">
-  <div class="card-h"><div class="card-t">Runbooks</div></div>
-  <div class="item"><div class="item-t">Reconcile the tracker against the merge history</div></div>
-  <div class="item"><div class="item-t">Run the re-score tool, read only</div></div>
-  <div class="item"><div class="item-t">The 74 access control checks before a database move</div></div>
-</div>`}
+function checksHTML(){
+  const order=['standards','severity','capability','limitations','glossary','surfaces'];
+  const want=D.refdocs.filter(r=>['standards','severity'].includes(r.slug));
+  const docs=(want.length?want:D.refdocs).sort((a,b)=>order.indexOf(a.slug)-order.indexOf(b.slug));
+  if(!docs.length) return '<div class="card max"><div class="card-h"><div class="card-t">Standards</div></div><div class="p muted">No reference documents in the database yet. Standards and severity render here once loaded.</div></div>';
+  return docs.map(r=>`<div class="card max"><div class="card-h"><div class="card-t">${esc(r.title)}</div></div>${md(r.body)||'<div class="p muted">Empty.</div>'}</div>`).join('');
+}
+
+/* ---------- registry, nav, draw ---------- */
+const V={
+  today:{n:'Today',s:new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}),h:todayHTML},
+  sprint:{n:'Sprint',s:'Committed work and where it stands',b:()=>{const sp=sprintNow();return D.board.filter(t=>sp&&t.sprint===sp&&t.status!=='shipped').length;},h:sprintHTML},
+  eod:{n:'Post EOD',s:'End of day report',h:eodHTML},
+  ask:{n:'Ask',s:'Questions to Ignacio',b:()=>D.decisions.filter(d=>d.status==='open').length,h:askHTML},
+  releases:{n:'Releases',s:'What is live',h:releasesHTML},
+  checks:{n:'Standards',s:'Check before you ship',h:checksHTML}
 };
-
 const KEYS=['today','sprint','eod','ask','releases','checks'];
 const nav=document.getElementById('nav'),views=document.getElementById('views');
 const side=document.getElementById('side'),scrim=document.getElementById('scrim'),toast=document.getElementById('toast');
+const refreshBtn=document.getElementById('refresh');
 let cur='today';
+
 function draw(){
   nav.innerHTML='<div class="nav-l">Build</div>'+KEYS.map(k=>{
     const b=V[k].b?V[k].b():0;
@@ -288,22 +420,107 @@ function draw(){
 }
 function go(k){cur=k;draw();shut();}
 function shut(){side.classList.remove('open');scrim.classList.remove('on');}
-function say(m){toast.textContent=m;toast.classList.add('on');setTimeout(()=>toast.classList.remove('on'),2200);}
+function say(m){toast.textContent=m;toast.classList.add('on');setTimeout(()=>toast.classList.remove('on'),2600);}
+
+/* ---------- auth ---------- */
+function loginView(msg){
+  refreshBtn.hidden=true; nav.innerHTML='';
+  document.getElementById('ttl').textContent='Sign in';
+  document.getElementById('sub').textContent='Dev team surface';
+  views.innerHTML=`<div class="view on"><div class="card" style="max-width:420px">
+    <div class="card-h"><div class="card-t">Sign in</div>
+    <div class="card-s">Accounts are made in the database, not here.</div></div>
+    ${msg?`<div class="note" style="border-left-color:#f0616d">${esc(msg)}</div>`:''}
+    <div class="f"><label class="lbl">Email</label><input class="inp" id="lgE" type="email" autocomplete="username"></div>
+    <div class="f"><label class="lbl">Password</label><input class="inp" id="lgP" type="password" autocomplete="current-password"></div>
+    <button class="btn btn-g" id="lgGo">Sign in</button>
+  </div></div>`;
+  const goIn=async()=>{
+    const b=document.getElementById('lgGo'); b.disabled=true; b.textContent='Signing in...';
+    try{
+      const r=await fetch(`${SB_URL}/auth/v1/token?grant_type=password`,{method:'POST',
+        headers:{'Content-Type':'application/json','apikey':SB_KEY},
+        body:JSON.stringify({email:document.getElementById('lgE').value.trim(),password:document.getElementById('lgP').value})});
+      const d=await r.json().catch(()=>null);
+      if(!r.ok||!d||!d.access_token) throw new Error((d&&(d.error_description||d.msg))||'Sign in failed.');
+      TOK=d.access_token; sessionStorage.setItem(TOK_KEY,TOK);
+      await boot();
+    }catch(e){ loginView(e instanceof AuthGone?'Signed out. Sign in again.':e.message); }
+  };
+  document.getElementById('lgGo').onclick=goIn;
+  document.getElementById('lgP').onkeydown=e=>{ if(e.key==='Enter') goIn(); };
+}
+function logout(msg){ TOK=''; sessionStorage.removeItem(TOK_KEY); loginView(msg); }
+
+async function boot(){
+  if(!TOK) return loginView();
+  try{
+    const role=await rpc('my_role');
+    if(role!=='dev'){
+      refreshBtn.hidden=true; nav.innerHTML='';
+      views.innerHTML=`<div class="view on"><div class="card" style="max-width:420px">
+        <div class="card-t">Not entitled</div>
+        <div class="card-s" style="margin-top:6px">This account ${role?`is set up as ${esc(role)}`:'has no role assigned'}. The dev surface needs a dev row in app_users.</div>
+        <div class="row" style="margin-top:14px"><button class="btn" id="lgOut">Sign out</button></div></div></div>`;
+      document.getElementById('lgOut').onclick=()=>logout();
+      return;
+    }
+    views.innerHTML='<div class="view on"><div class="p muted">Loading the record...</div></div>';
+    await loadAll();
+    refreshBtn.hidden=false;
+    draw();
+  }catch(e){
+    if(e instanceof AuthGone) return logout('Session expired. Sign in again.');
+    views.innerHTML=`<div class="view on"><div class="card max"><div class="card-t">Could not load</div><div class="p" style="margin-top:8px">${esc(e.message)}</div><div class="row" style="margin-top:12px"><button class="btn" onclick="location.reload()">Try again</button></div></div></div>`;
+  }
+}
+async function refresh(quiet){
+  try{ await loadAll(); draw(); if(!quiet) say('Refreshed. This is the record as of right now.'); }
+  catch(e){ if(e instanceof AuthGone) return logout('Session expired. Sign in again.'); say(e.message); }
+}
+async function act(fn){
+  try{ await fn(); await refresh(true); }
+  catch(e){ if(e instanceof AuthGone) return logout('Session expired. Sign in again.'); say(e.message); }
+}
+const val=id=>{const n=document.getElementById(id);return n?n.value.trim():'';};
+
 document.addEventListener('click',e=>{
   const n=e.target.closest('[data-k]'); if(n) return go(n.dataset.k);
   const g=e.target.closest('[data-go]'); if(g) return go(g.dataset.go);
-  const d=e.target.closest('[data-d]');
-  if(d){const x=DUES.find(y=>y.id===d.dataset.d);x.ok=!x.ok;
-        document.getElementById('dues').innerHTML=dueHTML();
-        return say(x.ok?'Date confirmed. Ignacio sees it on his board.':'Confirmation removed.');}
-  const a=e.target.closest('[data-adj]');
-  if(a) return say('Send the date you can hit and the reason. It gets taken as given.');
-  const p=e.target.closest('[data-post]');
-  if(p) return say("Posted. It is in the record and on Ignacio's board.");
+  if(e.target===refreshBtn) return refresh();
+
+  const up=e.target.closest('[data-upd]');
+  if(up){ const num=Number(up.dataset.upd);
+    return act(async()=>{ const st=val('st-'+num), dt=val('dt-'+num)||null;
+      await rpc('update_tracker',{p_number:num,p_status:st,
+        p_shipped_on:st==='shipped'?(dt||today()):null,
+        p_review_on:st==='backlog'?dt:null});
+      say(`#${num} is now ${st}. Ignacio sees it on his board.`); }); }
+
+  const a=e.target.closest('[data-act]');
+  if(!a) return;
+  if(a.dataset.act==='postEod') return act(async()=>{
+    const who=val('eodWho'); if(who) localStorage.setItem(WHO_KEY,who);
+    const still=val('eodStill')?val('eodStill').split(/\n+/).map(s=>s.trim()).filter(Boolean):[];
+    await rpc('post_eod',{p_date:today(),p_author:who||'Dev team',p_completed:val('eodDone')||null,
+      p_qa:val('eodQa')||null,p_still_working:still,p_needs_ignacio:val('eodNeeds')||null});
+    say("Posted. It is in the record and on Ignacio's board."); });
+  if(a.dataset.act==='addendum') return act(async()=>{
+    await rpc('post_addendum',{p_body:val('addBody'),p_author:localStorage.getItem(WHO_KEY)||'Dev team'});
+    say('Pushed through, with a date on it.'); });
+  if(a.dataset.act==='ask') return act(async()=>{
+    const ref=await rpc('raise_question',{p_question:val('askQ'),p_blocks:val('askB')||null});
+    say(`Sent as ${ref}. It now has a date on it.`); });
+  if(a.dataset.act==='postRelease') return act(async()=>{
+    const nums=val('relNums')?val('relNums').split(/[,\s]+/).map(Number).filter(n=>Number.isInteger(n)&&n>0):[];
+    const res=await rpc('post_release',{p_date:today(),p_outcome:val('relOut')||'live',p_summary:val('relSum'),
+      p_detail:val('relDet')||null,p_verification:val('relVer')||null,p_item_numbers:nums});
+    const un=(res&&res.unlinked)||[];
+    say(un.length?`Logged. Note: no tracker row for ${un.map(n=>'#'+n).join(', ')} — kept anyway.`:'Logged. Every number matched a tracker row.'); });
 });
 document.getElementById('burger').onclick=()=>{side.classList.add('open');scrim.classList.add('on');};
 scrim.onclick=shut;
-draw();
+boot();
 </script>
 </body>
 </html>
