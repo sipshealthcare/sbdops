@@ -62,6 +62,8 @@
 #sbd-root .st{background:#131b3a !important;color:#94a3b8 !important;border-color:#1c2646 !important;}
 #sbd-root .st.on{background:#3fb984 !important;color:#000000 !important;border-color:#3fb984 !important;}
 #sbd-root .toast{background:#D49A00 !important;color:#000000 !important;}
+#sbd-root .clamp:not(.open)::after{background:linear-gradient(to bottom,rgba(14,19,40,0) 0%,#0e1328 92%) !important;}
+#sbd-root .morebar .rule{background:#1c2646 !important;}
 /* ── END LOCK ──────────────────────────────────────────────────── */
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -129,6 +131,12 @@ body{background:#070d1f}
   .main{padding:22px 30px 60px}
   .top-t{font-size:23px}
 }
+.clamp{position:relative;overflow:hidden;max-height:280px}
+.clamp.open{max-height:none}
+.clamp:not(.open)::after{content:'';position:absolute;left:0;right:0;bottom:0;height:76px;
+  background:linear-gradient(to bottom,rgba(14,19,40,0) 0%,#0e1328 92%);pointer-events:none}
+.morebar{display:flex;align-items:center;gap:10px;margin-top:12px}
+.morebar .rule{flex:1;height:1px;background:var(--line)}
 </style>
 </head>
 <body>
@@ -227,7 +235,7 @@ function todayHTML(){
 <div class="card max">
   <div class="card-h"><div class="card-t">This morning's brief</div>
   <div class="card-s">${brief?`From ${esc(brief.author)} &middot; ${fmtD(brief.brief_date)}`:'Nothing received yet'}</div></div>
-  ${brief?md(brief.body):'<div class="p muted">No brief has been sent yet. When Ignacio posts one it appears here on refresh, dated, with priorities in order.</div>'}
+  ${brief?briefBlock(brief.body):'<div class="p muted">No brief has been sent yet. When Ignacio posts one it appears here on refresh, dated, with priorities in order.</div>'}
 </div>
 
 <div class="card max">
@@ -389,6 +397,19 @@ function checksHTML(){
   return docs.map(r=>`<div class="card max"><div class="card-h"><div class="card-t">${esc(r.title)}</div></div>${md(r.body)||'<div class="p muted">Empty.</div>'}</div>`).join('');
 }
 
+
+/* The brief runs to thousands of words. Show the opening, let it be opened. */
+let briefOpen=false;
+function briefBlock(body){
+  if(!body) return '';
+  const short = body.length < 700;
+  if(short) return md(body);
+  return `<div class="clamp${briefOpen?' open':''}">${md(body)}</div>
+  <div class="morebar"><div class="rule"></div>
+    <button class="btn" data-brief="1">${briefOpen?'See less':'See more'}</button>
+    <div class="rule"></div></div>`;
+}
+
 /* ---------- registry, nav, draw ---------- */
 const V={
   today:{n:'Today',s:new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}),h:todayHTML},
@@ -445,6 +466,7 @@ document.addEventListener('click',e=>{
   const n=e.target.closest('[data-k]'); if(n) return go(n.dataset.k);
   const g=e.target.closest('[data-go]'); if(g) return go(g.dataset.go);
   if(e.target===refreshBtn) return refresh();
+  if(e.target.closest('[data-brief]')){ briefOpen=!briefOpen; return draw(); }
 
   const up=e.target.closest('[data-upd]');
   if(up){ const num=Number(up.dataset.upd);

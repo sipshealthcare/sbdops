@@ -76,6 +76,8 @@
 #sbd-root .ok-m{color:#ffffff !important;}
 #sbd-root .ok-s{color:#94a3b8 !important;}
 #sbd-root .ok-i{background:#3fb984 !important;color:#000000 !important;}
+#sbd-root .clamp:not(.open)::after{background:linear-gradient(to bottom,rgba(14,19,40,0) 0%,#0e1328 92%) !important;}
+#sbd-root .morebar .rule{background:#1c2646 !important;}
 /* ── END LOCK ──────────────────────────────────────────────────── */
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -172,6 +174,12 @@ body{background:#070d1f}
   .grid{grid-template-columns:repeat(4,1fr)}
   .top-t{font-size:23px}
 }
+.clamp{position:relative;overflow:hidden;max-height:280px}
+.clamp.open{max-height:none}
+.clamp:not(.open)::after{content:'';position:absolute;left:0;right:0;bottom:0;height:76px;
+  background:linear-gradient(to bottom,rgba(14,19,40,0) 0%,#0e1328 92%);pointer-events:none}
+.morebar{display:flex;align-items:center;gap:10px;margin-top:12px}
+.morebar .rule{flex:1;height:1px;background:var(--line)}
 </style>
 </head>
 <body>
@@ -301,7 +309,7 @@ function todayHTML(){
 
 <div class="card max">
   <div class="card-h"><div class="card-t">Daily brief</div><div class="card-s">${brief?`Latest sent ${fmtD(brief.brief_date)}`:'Nothing sent yet'}</div></div>
-  ${brief?md(brief.body):'<div class="p muted">No brief has been posted yet. The first one you send from here appears on the dev team’s board the moment they refresh.</div>'}
+  ${brief?briefBlock(brief.body):'<div class="p muted">No brief has been posted yet. The first one you send from here appears on the dev team’s board the moment they refresh.</div>'}
   <div class="sec">Send ${brief?'a new one':'the first one'}</div>
   <div class="f"><textarea class="ta" id="briefBody" placeholder="Priorities, in order. 1. ..."></textarea></div>
   <div class="row"><button class="btn btn-g" data-act="sendBrief">Send brief for today</button></div>
@@ -524,6 +532,19 @@ function releasesHTML(){
 </div>`;
 }
 
+
+/* The brief runs to thousands of words. Show the opening, let it be opened. */
+let briefOpen=false;
+function briefBlock(body){
+  if(!body) return '';
+  const short = body.length < 700;
+  if(short) return md(body);
+  return `<div class="clamp${briefOpen?' open':''}">${md(body)}</div>
+  <div class="morebar"><div class="rule"></div>
+    <button class="btn" data-brief="1">${briefOpen?'See less':'See more'}</button>
+    <div class="rule"></div></div>`;
+}
+
 /* ---------- registry, nav, draw ---------- */
 const V={
   today:{n:'Today',s:new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}),h:todayHTML},
@@ -586,6 +607,7 @@ document.addEventListener('click',e=>{
   const n=e.target.closest('.nav-i'); if(n) return go(n.dataset.k);
   const s=e.target.closest('.stat[data-go]'); if(s) return go(s.dataset.go);
   if(e.target===refreshBtn) return refresh();
+  if(e.target.closest('[data-brief]')){ briefOpen=!briefOpen; return draw(); }
 
   const tr=e.target.closest('[data-triage]');
   if(tr){ const ref=tr.dataset.ref, st=tr.dataset.triage;
