@@ -219,6 +219,8 @@ const impPill=i=>P(i==='Blocking me now'?'p-red':i==='Slowing me down'?'p-amb':'
 const today=()=>new Date().toISOString().slice(0,10);
 
 let TOK=sessionStorage.getItem(TOK_KEY)||'';
+let ROLE=null;
+const canWrite=()=>ROLE==='master_admin';
 const hdrs=()=>({'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${TOK||SB_KEY}`});
 
 class AuthGone extends Error{}
@@ -552,7 +554,7 @@ function drawNav(){
   }).join('');
 }
 function draw(){
-  views.innerHTML=`<div class="view on">${V[cur].h()}</div>`;
+  views.innerHTML=`<div class="view on">${banner()}${V[cur].h()}</div>`;
   document.getElementById('ttl').textContent=V[cur].n;
   document.getElementById('sub').textContent=V[cur].s;
   drawNav(); window.scrollTo(0,0);
@@ -562,17 +564,26 @@ function shut(){ side.classList.remove('open'); scrim.classList.remove('on'); }
 function say(m){ toast.textContent=m; toast.classList.add('on'); setTimeout(()=>toast.classList.remove('on'),2600); }
 
 /* ---------- auth ---------- */
-function loginView(msg){
-  refreshBtn.hidden=true; nav.innerHTML='';
-  document.getElementById('ttl').textContent='Sign in';
-  document.getElementById('sub').textContent='Master admin surface';
+function logout(msg){ TOK=''; ROLE=null; sessionStorage.removeItem(TOK_KEY); if(msg) say(msg); draw(); }
+
+
+function banner(){
+  if(canWrite()) return `<div class="note" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <span>Signed in as <span class="lead">Master admin</span>. Changes you make here write to the record.</span>
+    <button class="btn" data-auth="out" style="margin-left:auto">Sign out</button></div>`;
+  return `<div class="note" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <span><span class="lead">View only.</span> This is the live record, read straight from the database. Sign in to triage, post or change anything.</span>
+    <button class="btn btn-g" data-auth="in" style="margin-left:auto">Sign in</button></div>`;
+}
+function signinCard(msg){
   views.innerHTML=`<div class="view on"><div class="card" style="max-width:420px">
     <div class="card-h"><div class="card-t">Sign in</div>
-    <div class="card-s">This surface holds the full record. Accounts are made in the database, not here.</div></div>
-    ${msg?`<div class="note" style="border-left-color:var(--red)">${esc(msg)}</div>`:''}
+    <div class="card-s">Only needed to make changes. Accounts are created in the database.</div></div>
+    ${msg?`<div class="note" style="border-left-color:#f0616d">${esc(msg)}</div>`:''}
     <div class="f"><label class="lbl">Email</label><input class="inp" id="lgE" type="email" autocomplete="username"></div>
     <div class="f"><label class="lbl">Password</label><input class="inp" id="lgP" type="password" autocomplete="current-password"></div>
-    <button class="btn btn-g" id="lgGo">Sign in</button>
+    <div class="row"><button class="btn btn-g" id="lgGo">Sign in</button>
+    <button class="btn" id="lgCancel">Back to the record</button></div>
   </div></div>`;
   const goIn=async()=>{
     const b=document.getElementById('lgGo'); b.disabled=true; b.textContent='Signing in...';
@@ -583,33 +594,26 @@ function loginView(msg){
       const d=await r.json().catch(()=>null);
       if(!r.ok||!d||!d.access_token) throw new Error((d&&(d.error_description||d.msg))||'Sign in failed.');
       TOK=d.access_token; sessionStorage.setItem(TOK_KEY,TOK);
-      await boot();
-    }catch(e){ loginView(e instanceof AuthGone?'Signed out. Sign in again.':e.message); }
+      ROLE=await rpc('my_role').catch(()=>null);
+      if(ROLE!=='master_admin'){ say(ROLE?`This account is ${ROLE}, not master_admin.`:'This account has no role assigned yet.'); }
+      await refresh(true); say(canWrite()?'Signed in. You can make changes now.':'Signed in, but still view only.');
+    }catch(e){ signinCard(e.message); }
   };
   document.getElementById('lgGo').onclick=goIn;
+  document.getElementById('lgCancel').onclick=()=>draw();
   document.getElementById('lgP').onkeydown=e=>{ if(e.key==='Enter') goIn(); };
 }
-function logout(msg){ TOK=''; sessionStorage.removeItem(TOK_KEY); loginView(msg); }
 
 async function boot(){
-  if(!TOK) return loginView();
   try{
-    const role=await rpc('my_role');
-    if(role!=='master_admin'){
-      refreshBtn.hidden=true; nav.innerHTML='';
-      views.innerHTML=`<div class="view on"><div class="card" style="max-width:420px">
-        <div class="card-t">Not entitled</div>
-        <div class="card-s" style="margin-top:6px">This account ${role?`is set up as ${esc(role)}`:'has no role assigned'}. The master admin surface needs a master_admin row in app_users.</div>
-        <div class="row" style="margin-top:14px"><button class="btn" id="lgOut">Sign out</button></div></div></div>`;
-      document.getElementById('lgOut').onclick=()=>logout();
-      return;
-    }
+    ROLE = TOK ? await rpc('my_role').catch(()=>null) : null;
+  }catch(e){ if(e instanceof AuthGone){ TOK=''; sessionStorage.removeItem(TOK_KEY); ROLE=null; } }
+  try{
     views.innerHTML='<div class="view on"><div class="p muted">Loading the record...</div></div>';
     await loadAll();
     refreshBtn.hidden=false;
     draw();
   }catch(e){
-    if(e instanceof AuthGone) return logout('Session expired. Sign in again.');
     views.innerHTML=`<div class="view on"><div class="card max"><div class="card-t">Could not load</div><div class="p" style="margin-top:8px">${esc(e.message)}</div><div class="row" style="margin-top:12px"><button class="btn" onclick="location.reload()">Try again</button></div></div></div>`;
   }
 }
@@ -621,6 +625,7 @@ async function refresh(quiet){
 
 /* ---------- actions ---------- */
 async function act(fn){
+  if(!canWrite()) return say('View only. Sign in as master_admin to make changes.');
   try{ await fn(); await refresh(true); }
   catch(e){ if(e instanceof AuthGone) return logout('Session expired. Sign in again.'); say(e.message); }
 }
@@ -630,6 +635,8 @@ document.addEventListener('click',e=>{
   const n=e.target.closest('.nav-i'); if(n) return go(n.dataset.k);
   const s=e.target.closest('.stat[data-go]'); if(s) return go(s.dataset.go);
   if(e.target===refreshBtn) return refresh();
+  const au=e.target.closest('[data-auth]');
+  if(au) return au.dataset.auth==='in'?signinCard():logout('Signed out. Still showing the live record.');
 
   const tr=e.target.closest('[data-triage]');
   if(tr){ const ref=tr.dataset.ref, st=tr.dataset.triage;
