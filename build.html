@@ -349,6 +349,33 @@ body{background:#070d1f}
   .meta dt{padding-top:7px}
 }
 @media(max-width:380px){ .stats{grid-template-columns:1fr} }
+
+/* the answer panel is the primary action: give it air */
+#dates .qi{padding:15px 16px;margin-bottom:11px}
+#dates .qi-h{margin-bottom:2px}
+#dates .qi-t{font-size:14px}
+#dates .ask{margin-top:12px;padding:13px 14px}
+#dates .ask-h{margin-bottom:11px}
+#dates .card-s{max-width:62ch}
+
+@media(max-width:860px){
+  #dates .qi{padding:14px}
+  #dates .ask{padding:12px}
+  .qi-p{gap:6px}
+  .pill{font-size:10px;padding:3px 8px}
+}
+@media(max-width:560px){
+  .stats{grid-template-columns:1fr 1fr}
+  .hero{padding:4px 2px 18px}
+  #dates .qi-t{font-size:13.5px;line-height:1.45}
+  #dates .ask-h{font-size:11.5px}
+  .ask .btn{padding:11px 14px;font-size:13px}
+  .ask .dt,.ask .why{padding:11px 12px;font-size:13px}
+  .rk{width:18px;height:18px;font-size:10px;margin-right:6px}
+}
+/* two stat columns even on the narrowest phones — one per row wastes the screen */
+@media(max-width:380px){ .stats{grid-template-columns:1fr 1fr;gap:8px}
+  .stat{padding:12px 11px} .stat-v{font-size:20px} .stat-l{font-size:10px} }
 </style>
 </head>
 <body>
@@ -501,6 +528,12 @@ function view(){
   <div class="stat"><div class="stat-v${dueSoon.length?' amb':''}">${dueSoon.length}</div><div class="stat-l">Due today or tomorrow</div></div>
 </div>
 
+${BRIEF?`<div class="card">
+  <div class="card-h"><div class="ic warm">✦</div>
+    <div><div class="card-t">This morning's brief</div>
+    <div class="card-s">From ${esc(BRIEF.author)} &middot; ${D(BRIEF.brief_date)}</div></div></div>
+  ${briefBlock(BRIEF.body)}
+</div>`:''}
 ${waiting.length?`
 <div class="card" id="dates">
   <div class="card-h"><div class="ic warm">◷</div>
@@ -545,12 +578,7 @@ ${waiting.length?`
   </div>
 </div>
 
-${BRIEF?`<div class="card">
-  <div class="card-h"><div class="ic warm">✦</div>
-    <div><div class="card-t">This morning's brief</div>
-    <div class="card-s">From ${esc(BRIEF.author)} &middot; ${D(BRIEF.brief_date)}</div></div></div>
-  ${briefBlock(BRIEF.body)}
-</div>`:''}`;
+`;
 }
 
 /* Renders the brief the way the document reads: section headings, sub-headings,
