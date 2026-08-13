@@ -90,6 +90,29 @@
 #sbd-root .agreed.ct{border-color:#e0a132 !important;} #sbd-root .agreed.ct .ag-l{color:#e0a132 !important;}
 #sbd-root .check{color:#94a3b8 !important;border-color:#1c2646 !important;}
 #sbd-root .check-l{color:#64748b !important;}
+#sbd-root .hero-t{color:#ffffff !important;} #sbd-root .hero-s,#sbd-root .hero-d{color:#94a3b8 !important;}
+#sbd-root .stat{background:#0e1328 !important;border-color:#1c2646 !important;}
+#sbd-root .stat-v{color:#ffffff !important;} #sbd-root .stat-l{color:#94a3b8 !important;}
+#sbd-root .stat-v.amb{color:#e0a132 !important;} #sbd-root .stat-v.red{color:#f0616d !important;}
+#sbd-root .card{background:#0e1328 !important;border-color:#1c2646 !important;}
+#sbd-root .ic{background:#131b3a !important;color:#94a3b8 !important;}
+#sbd-root .ic.warm{background:linear-gradient(140deg,#D49A00,#8a6400) !important;color:#000000 !important;}
+#sbd-root .qi{background:#131b3a !important;border-color:#1c2646 !important;}
+#sbd-root .qi.top{border-color:rgba(212,154,0,.42) !important;}
+#sbd-root .qi-t{color:#ffffff !important;} #sbd-root .qi-m{color:#64748b !important;}
+#sbd-root .hash{color:#94a3b8 !important;}
+#sbd-root .qi-b,#sbd-root .ask-h,#sbd-root .agreed,#sbd-root .goal-h{color:#cbd5e5 !important;}
+#sbd-root .rk{background:#D49A00 !important;color:#000000 !important;}
+#sbd-root .ask{background:#0b1226 !important;border-color:#1c2646 !important;}
+#sbd-root .p-blu{background:rgba(120,150,235,.15) !important;color:#93a9ee !important;}
+#sbd-root .agreed{border-color:#3fb984 !important;} #sbd-root .ag-l{color:#3fb984 !important;}
+#sbd-root .agreed.ct{border-color:#e0a132 !important;} #sbd-root .agreed.ct .ag-l{color:#e0a132 !important;}
+#sbd-root .check{color:#94a3b8 !important;border-color:#1c2646 !important;}
+#sbd-root .check-l{color:#64748b !important;}
+#sbd-root .bar{background:#1c2646 !important;}
+#sbd-root .bar .g{background:#3fb984 !important;} #sbd-root .bar .a{background:#D49A00 !important;}
+#sbd-root .bar .r{background:#f0616d !important;}
+#sbd-root .goal-h b{color:#ffffff !important;} #sbd-root .goal-m{color:#64748b !important;}
 /* ── END LOCK ──────────────────────────────────────────────────── */
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -232,6 +255,76 @@ body{background:#070d1f}
 .agreed.ct .ag-l{color:var(--amb)}
 .agreed .by{color:var(--mut)}
 @media(max-width:700px){.grid3{grid-template-columns:1fr}.ask .why{min-width:100%}}
+
+/* ── queue layout, warm-bloom variant ───────────────────────────── */
+body{background:#070d1f}
+#sbd-root{position:relative;overflow-x:hidden}
+#sbd-root:before{content:'';position:fixed;top:-220px;right:-180px;width:760px;height:620px;
+  background:radial-gradient(closest-side,rgba(212,154,0,.30),rgba(212,154,0,.10) 55%,transparent 78%);
+  filter:blur(18px);pointer-events:none;z-index:0}
+.main{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:20px 18px 60px}
+.top{display:flex;align-items:center;gap:12px;padding:2px 0 14px}
+
+.hero{padding:8px 2px 22px}
+.hero-d{font-size:12px;color:var(--dim);letter-spacing:.02em}
+.hero-t{font-size:31px;font-weight:600;line-height:1.12;margin-top:7px;color:#fff;letter-spacing:-.02em}
+.hero-s{font-size:16px;color:var(--dim);margin-top:5px;font-weight:400}
+.hero-a{display:flex;gap:9px;flex-wrap:wrap;margin-top:17px}
+.hero-a .btn{padding:11px 20px;font-size:13.5px;border-radius:11px}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:15px}
+.stat{border:1px solid var(--line);border-radius:15px;padding:15px 16px;background:var(--card)}
+.stat-v{font-size:26px;font-weight:700;line-height:1;color:#fff;font-variant-numeric:tabular-nums}
+.stat-v.amb{color:var(--amb)} .stat-v.red{color:var(--red)}
+.stat-l{font-size:11px;letter-spacing:.03em;margin-top:7px;color:var(--dim)}
+
+.cols{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:15px;align-items:start}
+.col{display:flex;flex-direction:column;gap:15px;min-width:0}
+.card{border:1px solid var(--line);border-radius:17px;padding:18px;margin:0;background:var(--card)}
+.card-h{display:flex;align-items:flex-start;gap:11px;margin-bottom:15px}
+.ic{width:34px;height:34px;border-radius:11px;flex:0 0 34px;display:grid;place-items:center;
+  background:var(--lift);color:var(--dim);font-size:15px;line-height:1}
+.ic.warm{background:linear-gradient(140deg,#D49A00,#8a6400);color:#000}
+
+.qi{border:1px solid var(--line);border-radius:13px;padding:13px 14px;margin-bottom:9px;background:var(--lift)}
+.qi:last-child{margin-bottom:0}
+.qi.top{border-color:rgba(212,154,0,.42)}
+.qi-h{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.qi-t{font-size:13.5px;font-weight:600;line-height:1.42;color:#fff;min-width:0}
+.qi-p{display:flex;gap:5px;flex-wrap:wrap;flex:0 0 auto}
+.rk{display:inline-grid;place-items:center;width:19px;height:19px;border-radius:6px;
+  background:var(--gold);color:#000;font-size:10.5px;font-weight:700;margin-right:7px;vertical-align:1px}
+.qi-m{font-size:11px;color:var(--mut);margin-top:6px}
+.hash{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--dim);margin-right:7px}
+.qi-b{font-size:12.5px;color:#cbd5e5;margin-top:8px;line-height:1.55}
+.p-blu{background:rgba(120,150,235,.15);color:#93a9ee}
+
+.check{margin-top:9px;font-size:11.5px;line-height:1.5;color:#94a3b8;
+  border-left:2px solid var(--line);padding:3px 0 3px 9px}
+.check-l{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--mut);font-weight:600;margin-bottom:2px}
+.ask{margin-top:11px;padding:11px 12px;border-radius:10px;background:#0b1226;border:1px solid var(--line)}
+.ask-h{font-size:12px;color:#cbd5e5;margin-bottom:9px;line-height:1.5}
+.ask-h b{color:#fff}
+.ask .dt{width:146px;padding:8px 9px;font-size:12px}
+.ask .why{flex:1;min-width:150px;padding:8px 9px;font-size:12px}
+.agreed{margin-top:10px;font-size:12px;color:#cbd5e5;border-left:2px solid var(--grn);padding:3px 0 3px 9px}
+.agreed.ct{border-color:var(--amb)}
+.ag-l{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--grn);font-weight:600;margin-bottom:2px}
+.agreed.ct .ag-l{color:var(--amb)}
+.agreed .by{color:var(--mut)}
+
+.goal{margin-bottom:15px}.goal:last-child{margin-bottom:0}
+.goal-h{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;color:#cbd5e5}
+.goal-h b{color:#fff;font-size:13px;font-variant-numeric:tabular-nums}
+.bar{height:6px;border-radius:4px;background:var(--line);margin-top:8px;overflow:hidden}
+.bar span{display:block;height:100%;border-radius:4px}
+.bar .g{background:var(--grn)} .bar .a{background:var(--gold)} .bar .r{background:var(--red)}
+.goal-m{font-size:11px;color:var(--mut);margin-top:5px}
+
+@media(max-width:1000px){.cols{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.stats{grid-template-columns:1fr}.hero-t{font-size:25px}.ask .why{min-width:100%}}
 </style>
 </head>
 <body>
@@ -239,7 +332,7 @@ body{background:#070d1f}
 <div class="wrap">
   <main class="main">
     <div class="top">
-      <div><div class="top-t" id="ttl">SBD Build</div><div class="top-s" id="sub">Thursday, August 13, 2026</div></div>
+      <div><div class="top-t" id="ttl">SBD Build</div><div class="top-s" id="sub">Dev queue</div></div>
       <button class="btn" id="refresh" style="margin-left:auto" hidden>Refresh</button>
     </div>
     <div id="views"></div>
@@ -250,9 +343,9 @@ body{background:#070d1f}
 
 <script>
 /* SBD Build — the dev queue.
-   One page, one job: what to work on, in order, and the dates to confirm.
-   Items arrive from the tracker, from the morning brief, or pushed in after the
-   fact. Everything else in this system reaches the team through Ignacio. */
+   One page: what to work on, in order, and the dates to answer. Items arrive
+   from the tracker, from the morning brief, or pushed in after the fact.
+   Everything else reaches the team through Ignacio. */
 const SB_URL='https://uwgpjjbbfwqiumzfkwuy.supabase.co';
 const SB_KEY='sb_publishable_USi4uTOHHwrNjKXB3-bbDQ_Gzk7PN2q';
 
@@ -277,24 +370,24 @@ async function q(path){
   return d||[];
 }
 
-let ITEMS=[], BRIEF=null;
+let ALL=[], BRIEF=null;
 const WHO='sbd_dev_who';
 const me=()=>localStorage.getItem(WHO)||'';
+const open_=()=>ALL.filter(t=>t.status!=='shipped');
 
 async function load(){
   const [items,briefs]=await Promise.all([
     q('tracker_items?select=number,title,status,priority,sprint,rank,origin,note,how_to_check,'+
       'proposed_on,date_state,counter_on,counter_note,answered_by,answered_at,shipped_on,verified_note,updated_at'+
-      '&status=neq.shipped&order=number.asc'),
+      '&order=number.asc'),
     q('briefs?select=brief_date,author,body&order=brief_date.desc&limit=1')
   ]);
-  ITEMS=items; BRIEF=briefs[0]||null;
+  ALL=items; BRIEF=briefs[0]||null;
 }
 
-/* ---------- ordering: ranked first, then by the date that actually applies ---------- */
 const agreed=t=>t.date_state==='countered'?t.counter_on:t.proposed_on;
-function ordered(){
-  return [...ITEMS].sort((a,b)=>{
+function ordered(rows){
+  return [...rows].sort((a,b)=>{
     if((a.rank==null)!==(b.rank==null)) return a.rank==null?1:-1;
     if(a.rank!=null&&b.rank!=null&&a.rank!==b.rank) return a.rank-b.rank;
     const da=agreed(a), db=agreed(b);
@@ -305,81 +398,136 @@ function ordered(){
   });
 }
 
+const prioPill=p=>({critical:P('p-red','Critical'),high:P('p-amb','High'),
+                    medium:P('p-blu','Medium'),low:P('p-gry','Low')}[p]||'');
 function datePill(t){
-  const d=agreed(t);
-  if(!d) return '';
+  const d=agreed(t); if(!d) return '';
   const n=days(d);
-  const late=n<0, todayish=n===0;
-  const label=late?`${Math.abs(n)}d overdue`:todayish?'Today':n===1?'Tomorrow':short(d);
-  return P(late?'p-red':todayish?'p-amb':n<=3?'p-amb':'p-gry',label);
+  const label=n<0?`${Math.abs(n)}d over`:n===0?'Today':n===1?'Tomorrow':short(d);
+  return P(n<0?'p-red':n<=1?'p-amb':n<=3?'p-amb':'p-gry',label);
 }
 
 function dateBlock(t){
   if(!t.proposed_on) return '';
   if(t.date_state==='confirmed')
-    return `<div class="agreed"><span class="ag-l">Confirmed</span>${D(t.proposed_on)}
-      ${t.answered_by?`&middot; ${esc(t.answered_by)}`:''}</div>`;
+    return `<div class="agreed"><span class="ag-l">Confirmed</span>${D(t.proposed_on)}${t.answered_by?` &middot; ${esc(t.answered_by)}`:''}</div>`;
   if(t.date_state==='countered')
-    return `<div class="agreed ct"><span class="ag-l">Moved to ${D(t.counter_on)}</span>${esc(t.counter_note||'')}
-      ${t.answered_by?`<span class="by">&middot; ${esc(t.answered_by)}</span>`:''}</div>`;
+    return `<div class="agreed ct"><span class="ag-l">Moved to ${D(t.counter_on)}</span>${esc(t.counter_note||'')}${t.answered_by?`<span class="by"> &middot; ${esc(t.answered_by)}</span>`:''}</div>`;
   return `<div class="ask">
-    <div class="ask-h">Proposed for <b>${D(t.proposed_on)}</b>. Confirm it, or send a different date with the reason.</div>
+    <div class="ask-h">Proposed for <b>${D(t.proposed_on)}</b> &mdash; confirm it, or send a different date with the reason.</div>
     <div class="row">
       <button class="btn btn-g" data-ok="${t.number}">Confirm</button>
       <input class="inp dt" id="nd-${t.number}" type="date" value="${t.proposed_on}">
-      <input class="inp why" id="wy-${t.number}" placeholder="Why the date needs to move">
+      <input class="inp why" id="wy-${t.number}" placeholder="Why it needs to move">
       <button class="btn btn-o" data-no="${t.number}">Send this instead</button>
     </div></div>`;
 }
 
-function card(t){
-  const src=t.origin||'Tracker';
-  const sp = t.status==='blocked'?P('p-red','Blocked'):t.status==='in-progress'?P('p-amb','In progress'):'';
+/* a queue row, in the reference's task-card idiom */
+function card(t,compact){
+  const st = t.status==='blocked'?P('p-red','Blocked'):t.status==='in-progress'?P('p-amb','In progress'):'';
   return `<div class="qi${t.rank!=null?' top':''}">
     <div class="qi-h">
-      <div class="qi-t">${t.rank!=null?`<span class="rk">${t.rank}</span>`:''}#${t.number} &middot; ${esc(t.title)}</div>
-      <div class="qi-p">${datePill(t)}${sp}</div>
+      <div class="qi-t">${t.rank!=null?`<span class="rk">${t.rank}</span>`:''}${esc(t.title)}</div>
+      <div class="qi-p">${prioPill(t.priority)}${datePill(t)}${st}</div>
     </div>
-    <div class="qi-m">${esc(src)}${t.priority?` &middot; ${esc(t.priority)}`:''}${t.sprint?` &middot; ${esc(t.sprint)}`:''}</div>
-    ${t.note?`<div class="qi-b">${esc(t.note)}</div>`:''}
-    ${t.how_to_check?`<div class="check"><span class="check-l">How to check it is done</span>${esc(t.how_to_check)}</div>`:''}
+    <div class="qi-m"><span class="hash">#${t.number}</span>${esc(t.origin||'Tracker')}${t.sprint?` &middot; ${esc(t.sprint)}`:''}</div>
+    ${!compact&&t.note?`<div class="qi-b">${esc(t.note)}</div>`:''}
+    ${!compact&&t.how_to_check?`<div class="check"><span class="check-l">How to check it is done</span>${esc(t.how_to_check)}</div>`:''}
     ${dateBlock(t)}
   </div>`;
 }
 
+function bar(pct,tone){ return `<div class="bar"><span class="${tone}" style="width:${Math.max(2,Math.min(100,pct))}%"></span></div>`; }
+
 function view(){
-  const rows=ordered();
+  const rows=ordered(open_());
   const waiting=rows.filter(t=>t.date_state==='pending');
   const rest=rows.filter(t=>t.date_state!=='pending');
   const overdue=rows.filter(t=>{const d=agreed(t);return d&&days(d)<0;});
-  return `
-${BRIEF?`<div class="card max">
-  <div class="card-h"><div class="card-t">This morning's brief</div>
-  <div class="card-s">From ${esc(BRIEF.author)} &middot; ${D(BRIEF.brief_date)}</div></div>
-  ${briefBlock(BRIEF.body)}
-</div>`:''}
+  const dueSoon=rows.filter(t=>{const d=agreed(t);return d&&days(d)>=0&&days(d)<=1;});
 
-<div class="grid3">
+  const proposed=ALL.filter(t=>t.proposed_on);
+  const answered=proposed.filter(t=>t.date_state!=='pending').length;
+  const sprint=ALL.filter(t=>t.sprint==='S8');
+  const sprintDone=sprint.filter(t=>t.status==='shipped').length;
+
+  const hr=new Date().getHours();
+  const greet=hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
+  const lead = overdue.length ? `${overdue.length} item${overdue.length>1?'s are':' is'} past its date.`
+             : waiting.length ? `${waiting.length} date${waiting.length>1?'s are':' is'} waiting on you.`
+             : dueSoon.length ? `${dueSoon.length} due in the next day.`
+             : 'Nothing overdue and no dates outstanding.';
+
+  return `
+<div class="hero">
+  <div class="hero-d">${new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</div>
+  <h1 class="hero-t">${greet}, dev team</h1>
+  <div class="hero-s">${lead}</div>
+  <div class="hero-a">
+    <button class="btn btn-g" id="jump">Answer dates${waiting.length?` (${waiting.length})`:''}</button>
+    <button class="btn btn-o" id="rf2">Refresh the queue</button>
+  </div>
+</div>
+
+<div class="stats">
   <div class="stat"><div class="stat-v">${rows.length}</div><div class="stat-l">In the queue</div></div>
   <div class="stat"><div class="stat-v${waiting.length?' amb':''}">${waiting.length}</div><div class="stat-l">Dates to answer</div></div>
   <div class="stat"><div class="stat-v${overdue.length?' red':''}">${overdue.length}</div><div class="stat-l">Past their date</div></div>
+  <div class="stat"><div class="stat-v${dueSoon.length?' amb':''}">${dueSoon.length}</div><div class="stat-l">Due today or tomorrow</div></div>
 </div>
 
-${waiting.length?`<div class="card max">
-  <div class="card-h"><div class="card-t">Dates waiting on you</div>
-  <div class="card-s">Confirm what works. Send back a different date with the reason for anything that does not — it gets taken as given.</div></div>
-  <div class="f" style="margin-bottom:14px">
-    <label class="lbl">Your name</label>
-    <input class="inp" id="who" value="${esc(me())}" placeholder="So Ignacio knows who answered" style="max-width:280px">
+<div class="cols">
+  <div class="col">
+    <div class="card">
+      <div class="card-h"><div class="ic">▤</div>
+        <div><div class="card-t">The queue</div>
+        <div class="card-s">Ranked work first, then by date</div></div></div>
+      ${rest.length?rest.map(t=>card(t,false)).join(''):'<div class="p muted">Nothing outstanding. Anything added to the tracker, pushed in, or carried from a brief appears here on refresh.</div>'}
+    </div>
   </div>
-  ${waiting.map(card).join('')}
-</div>`:''}
 
-<div class="card max">
-  <div class="card-h"><div class="card-t">The queue</div>
-  <div class="card-s">Ranked work first, then by date. Everything not yet shipped.</div></div>
-  ${rest.length?rest.map(card).join(''):'<div class="p muted">Nothing outstanding. Anything added to the tracker, pushed in, or carried from a brief appears here on refresh.</div>'}
-</div>`;
+  <div class="col side">
+    <div class="card" id="dates">
+      <div class="card-h"><div class="ic warm">◷</div>
+        <div><div class="card-t">Dates waiting on you</div>
+        <div class="card-s">A different date is fine. Send the reason with it.</div></div></div>
+      ${waiting.length?`
+        <div class="f" style="margin-bottom:13px">
+          <input class="inp" id="who" value="${esc(me())}" placeholder="Your name, so Ignacio knows who answered">
+        </div>
+        ${waiting.map(t=>card(t,true)).join('')}`
+      :'<div class="p muted">Every proposed date has been answered. Nothing waiting.</div>'}
+    </div>
+
+    <div class="card">
+      <div class="card-h"><div class="ic">◎</div>
+        <div><div class="card-t">Where things stand</div></div></div>
+      <div class="goal">
+        <div class="goal-h"><span>Dates agreed</span><b>${proposed.length?Math.round(answered/proposed.length*100):0}%</b></div>
+        ${bar(proposed.length?answered/proposed.length*100:0,'g')}
+        <div class="goal-m">${answered} of ${proposed.length} answered</div>
+      </div>
+      <div class="goal">
+        <div class="goal-h"><span>Sprint S8 shipped</span><b>${sprint.length?Math.round(sprintDone/sprint.length*100):0}%</b></div>
+        ${bar(sprint.length?sprintDone/sprint.length*100:0,'a')}
+        <div class="goal-m">${sprintDone} of ${sprint.length} items</div>
+      </div>
+      <div class="goal">
+        <div class="goal-h"><span>Queue on time</span><b>${rows.length?Math.round((rows.length-overdue.length)/rows.length*100):100}%</b></div>
+        ${bar(rows.length?(rows.length-overdue.length)/rows.length*100:100,overdue.length?'r':'g')}
+        <div class="goal-m">${overdue.length?`${overdue.length} past date`:'nothing overdue'}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+${BRIEF?`<div class="card">
+  <div class="card-h"><div class="ic warm">✦</div>
+    <div><div class="card-t">This morning's brief</div>
+    <div class="card-s">From ${esc(BRIEF.author)} &middot; ${D(BRIEF.brief_date)}</div></div></div>
+  ${briefBlock(BRIEF.body)}
+</div>`:''}`;
 }
 
 /* Renders the brief the way the document reads: section headings, sub-headings,
@@ -426,7 +574,6 @@ function md(src){
   return out;
 }
 
-/* brief collapse, unchanged behaviour */
 let briefOpen=false;
 function briefBlock(body){
   if(!body) return '';
@@ -440,31 +587,26 @@ function briefBlock(body){
 const views=document.getElementById('views'), toast=document.getElementById('toast');
 const refreshBtn=document.getElementById('refresh');
 function say(m){ toast.textContent=m; toast.classList.add('on'); setTimeout(()=>toast.classList.remove('on'),2800); }
-function draw(){
-  views.innerHTML=`<div class="view on">${view()}</div>`;
-  document.getElementById('sub').textContent=
-    new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-}
+function draw(){ views.innerHTML=`<div class="view on">${view()}</div>`; }
 async function refresh(quiet){
-  try{ await load(); draw(); if(!quiet) say('Refreshed.'); }
-  catch(e){ say(e.message); }
+  try{ await load(); draw(); if(!quiet) say('Refreshed.'); }catch(e){ say(e.message); }
 }
-async function act(fn){
-  try{ await fn(); await refresh(true); }catch(e){ say(e.message); }
-}
+async function act(fn){ try{ await fn(); await refresh(true); }catch(e){ say(e.message); } }
 const val=id=>{const n=document.getElementById(id);return n?n.value.trim():'';};
 
 document.addEventListener('click',e=>{
-  if(e.target===refreshBtn) return refresh();
+  if(e.target===refreshBtn||e.target.id==='rf2') return refresh();
+  if(e.target.id==='jump'){ const d=document.getElementById('dates');
+    if(d) d.scrollIntoView({behavior:'smooth',block:'start'}); return; }
   if(e.target.closest('[data-brief]')){ briefOpen=!briefOpen; return draw(); }
 
   const ok=e.target.closest('[data-ok]');
-  if(ok){ const n=Number(ok.dataset.ok); const who=val('who'); if(who) localStorage.setItem(WHO,who);
+  if(ok){ const n=Number(ok.dataset.ok), who=val('who'); if(who) localStorage.setItem(WHO,who);
     return act(async()=>{ await rpc('answer_date',{p_number:n,p_action:'confirm',p_who:who||null});
       say(`#${n} confirmed. Ignacio sees it on his board.`); }); }
 
   const no=e.target.closest('[data-no]');
-  if(no){ const n=Number(no.dataset.no); const who=val('who'); if(who) localStorage.setItem(WHO,who);
+  if(no){ const n=Number(no.dataset.no), who=val('who'); if(who) localStorage.setItem(WHO,who);
     return act(async()=>{ await rpc('answer_date',{p_number:n,p_action:'counter',
       p_new_date:val('nd-'+n)||null,p_reason:val('wy-'+n)||null,p_who:who||null});
       say(`#${n} moved to ${short(val('nd-'+n))}. Reason sent with it.`); }); }
@@ -473,7 +615,7 @@ document.addEventListener('click',e=>{
 (async()=>{
   views.innerHTML='<div class="view on"><div class="p muted">Loading the queue...</div></div>';
   try{ await load(); refreshBtn.hidden=false; draw(); }
-  catch(e){ views.innerHTML=`<div class="view on"><div class="card max"><div class="card-t">Could not load</div>
+  catch(e){ views.innerHTML=`<div class="view on"><div class="card"><div class="card-t">Could not load</div>
     <div class="p" style="margin-top:8px">${esc(e.message)}</div>
     <div class="row" style="margin-top:12px"><button class="btn" onclick="location.reload()">Try again</button></div></div></div>`; }
 })();
