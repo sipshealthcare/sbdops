@@ -286,11 +286,11 @@ body{background:#070d1f}
   background:var(--lift);color:var(--dim);font-size:15px;line-height:1}
 .ic.warm{background:linear-gradient(140deg,#D49A00,#8a6400);color:#000}
 
-.qi{border:1px solid var(--line);border-radius:13px;padding:13px 14px;margin-bottom:9px;background:var(--lift)}
+.qi{border:1px solid var(--line);border-radius:13px;padding:13px 14px;margin-bottom:9px;background:var(--lift);min-width:0;overflow-wrap:anywhere}
 .qi:last-child{margin-bottom:0}
 .qi.top{border-color:rgba(212,154,0,.42)}
 .qi-h{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-.qi-t{font-size:13.5px;font-weight:600;line-height:1.42;color:#fff;min-width:0}
+.qi-t{font-size:13.5px;font-weight:600;line-height:1.42;color:#fff;min-width:0;flex:1 1 auto;overflow-wrap:anywhere}
 .qi-p{display:flex;gap:5px;flex-wrap:wrap;flex:0 0 auto}
 .rk{display:inline-grid;place-items:center;width:19px;height:19px;border-radius:6px;
   background:var(--gold);color:#000;font-size:10.5px;font-weight:700;margin-right:7px;vertical-align:1px}
@@ -306,8 +306,8 @@ body{background:#070d1f}
 .ask{margin-top:11px;padding:11px 12px;border-radius:10px;background:#0b1226;border:1px solid var(--line)}
 .ask-h{font-size:12px;color:#cbd5e5;margin-bottom:9px;line-height:1.5}
 .ask-h b{color:#fff}
-.ask .dt{width:146px;padding:8px 9px;font-size:12px}
-.ask .why{flex:1;min-width:150px;padding:8px 9px;font-size:12px}
+.ask .dt{flex:0 0 146px;padding:8px 9px;font-size:12px}
+.ask .why{flex:1 1 220px;min-width:0;padding:8px 9px;font-size:12px}
 .agreed{margin-top:10px;font-size:12px;color:#cbd5e5;border-left:2px solid var(--grn);padding:3px 0 3px 9px}
 .agreed.ct{border-color:var(--amb)}
 .ag-l{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
@@ -477,6 +477,17 @@ function view(){
   <div class="stat"><div class="stat-v${dueSoon.length?' amb':''}">${dueSoon.length}</div><div class="stat-l">Due today or tomorrow</div></div>
 </div>
 
+${waiting.length?`
+<div class="card" id="dates">
+  <div class="card-h"><div class="ic warm">◷</div>
+    <div><div class="card-t">Dates waiting on you</div>
+    <div class="card-s">Confirm what works. A different date is fine &mdash; send the reason with it and it gets taken as given.</div></div></div>
+  <div class="f" style="margin-bottom:14px;max-width:340px">
+    <input class="inp" id="who" value="${esc(me())}" placeholder="Your name, so Ignacio knows who answered">
+  </div>
+  ${waiting.map(t=>card(t,true)).join('')}
+</div>`:''}
+
 <div class="cols">
   <div class="col">
     <div class="card">
@@ -488,18 +499,6 @@ function view(){
   </div>
 
   <div class="col side">
-    <div class="card" id="dates">
-      <div class="card-h"><div class="ic warm">◷</div>
-        <div><div class="card-t">Dates waiting on you</div>
-        <div class="card-s">A different date is fine. Send the reason with it.</div></div></div>
-      ${waiting.length?`
-        <div class="f" style="margin-bottom:13px">
-          <input class="inp" id="who" value="${esc(me())}" placeholder="Your name, so Ignacio knows who answered">
-        </div>
-        ${waiting.map(t=>card(t,true)).join('')}`
-      :'<div class="p muted">Every proposed date has been answered. Nothing waiting.</div>'}
-    </div>
-
     <div class="card">
       <div class="card-h"><div class="ic">◎</div>
         <div><div class="card-t">Where things stand</div></div></div>
