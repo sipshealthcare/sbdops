@@ -207,7 +207,6 @@ body{background:#070d1f}
    the database, not in this page. */
 const SB_URL='https://uwgpjjbbfwqiumzfkwuy.supabase.co';
 const SB_KEY='sb_publishable_USi4uTOHHwrNjKXB3-bbDQ_Gzk7PN2q';
-const TOK_KEY='sbd_dash_tok';
 
 const esc=t=>String(t??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
 const P=(c,t)=>`<span class="pill ${c}">${t}</span>`;
@@ -218,22 +217,16 @@ const stPill=s=>({'shipped':P('p-grn','Shipped'),'in-progress':P('p-amb','In pro
 const impPill=i=>P(i==='Blocking me now'?'p-red':i==='Slowing me down'?'p-amb':'p-gry',esc(i));
 const today=()=>new Date().toISOString().slice(0,10);
 
-let TOK=sessionStorage.getItem(TOK_KEY)||'';
-let ROLE=null;
-const canWrite=()=>ROLE==='master_admin';
-const hdrs=()=>({'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${TOK||SB_KEY}`});
+const hdrs=()=>({'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`});
 
-class AuthGone extends Error{}
 async function rpc(fn,args){
   const r=await fetch(`${SB_URL}/rest/v1/rpc/${fn}`,{method:'POST',headers:hdrs(),body:JSON.stringify(args||{})});
-  if(r.status===401) throw new AuthGone();
   let d=null; try{ d=await r.json(); }catch(_){}
   if(!r.ok) throw new Error((d&&(d.message||d.hint))||'Something went wrong on our side.');
   return d;
 }
 async function q(path){
   const r=await fetch(`${SB_URL}/rest/v1/${path}`,{headers:hdrs()});
-  if(r.status===401) throw new AuthGone();
   let d=null; try{ d=await r.json(); }catch(_){}
   if(!r.ok) throw new Error((d&&(d.message||d.hint))||'Could not load data.');
   return d||[];
@@ -264,7 +257,7 @@ const sprintNow=()=>{const c=[...D.board].filter(t=>t.sprint&&t.status!=='shippe
 const isStale=t=>(t.status==='shipped'&&!t.shipped_on)||(['open','in-progress','blocked'].includes(t.status)&&ageDays(t.updated_at)>=14);
 
 async function loadAll(){
-  rpc('snapshot_tracker').catch(e=>{if(e instanceof AuthGone)throw e;});
+  rpc('snapshot_tracker').catch(()=>{});
   const [intake,board,decisions,releases,refdocs,briefs,eods,addenda,snaps,tiers,fns]=await Promise.all([
     q('intake?select=ref,who,sips_function,area,impact,what,expected,status,severity,verdict,analysis,decision,decided_at,submitted_at,tracker_item_id&order=submitted_at.asc'),
     q('tracker_items?select=number,title,status,priority,sprint,owner,source,intake_ref,note,shipped_on,review_on,rank,created_at,updated_at&order=number.asc'),
@@ -554,7 +547,7 @@ function drawNav(){
   }).join('');
 }
 function draw(){
-  views.innerHTML=`<div class="view on">${banner()}${V[cur].h()}</div>`;
+  views.innerHTML=`<div class="view on">${V[cur].h()}</div>`;
   document.getElementById('ttl').textContent=V[cur].n;
   document.getElementById('sub').textContent=V[cur].s;
   drawNav(); window.scrollTo(0,0);
@@ -564,50 +557,9 @@ function shut(){ side.classList.remove('open'); scrim.classList.remove('on'); }
 function say(m){ toast.textContent=m; toast.classList.add('on'); setTimeout(()=>toast.classList.remove('on'),2600); }
 
 /* ---------- auth ---------- */
-function logout(msg){ TOK=''; ROLE=null; sessionStorage.removeItem(TOK_KEY); if(msg) say(msg); draw(); }
 
-
-function banner(){
-  if(canWrite()) return `<div class="note" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-    <span>Signed in as <span class="lead">Master admin</span>. Changes you make here write to the record.</span>
-    <button class="btn" data-auth="out" style="margin-left:auto">Sign out</button></div>`;
-  return `<div class="note" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-    <span><span class="lead">View only.</span> This is the live record, read straight from the database. Sign in to triage, post or change anything.</span>
-    <button class="btn btn-g" data-auth="in" style="margin-left:auto">Sign in</button></div>`;
-}
-function signinCard(msg){
-  views.innerHTML=`<div class="view on"><div class="card" style="max-width:420px">
-    <div class="card-h"><div class="card-t">Sign in</div>
-    <div class="card-s">Only needed to make changes. Accounts are created in the database.</div></div>
-    ${msg?`<div class="note" style="border-left-color:#f0616d">${esc(msg)}</div>`:''}
-    <div class="f"><label class="lbl">Email</label><input class="inp" id="lgE" type="email" autocomplete="username"></div>
-    <div class="f"><label class="lbl">Password</label><input class="inp" id="lgP" type="password" autocomplete="current-password"></div>
-    <div class="row"><button class="btn btn-g" id="lgGo">Sign in</button>
-    <button class="btn" id="lgCancel">Back to the record</button></div>
-  </div></div>`;
-  const goIn=async()=>{
-    const b=document.getElementById('lgGo'); b.disabled=true; b.textContent='Signing in...';
-    try{
-      const r=await fetch(`${SB_URL}/auth/v1/token?grant_type=password`,{method:'POST',
-        headers:{'Content-Type':'application/json','apikey':SB_KEY},
-        body:JSON.stringify({email:document.getElementById('lgE').value.trim(),password:document.getElementById('lgP').value})});
-      const d=await r.json().catch(()=>null);
-      if(!r.ok||!d||!d.access_token) throw new Error((d&&(d.error_description||d.msg))||'Sign in failed.');
-      TOK=d.access_token; sessionStorage.setItem(TOK_KEY,TOK);
-      ROLE=await rpc('my_role').catch(()=>null);
-      if(ROLE!=='master_admin'){ say(ROLE?`This account is ${ROLE}, not master_admin.`:'This account has no role assigned yet.'); }
-      await refresh(true); say(canWrite()?'Signed in. You can make changes now.':'Signed in, but still view only.');
-    }catch(e){ signinCard(e.message); }
-  };
-  document.getElementById('lgGo').onclick=goIn;
-  document.getElementById('lgCancel').onclick=()=>draw();
-  document.getElementById('lgP').onkeydown=e=>{ if(e.key==='Enter') goIn(); };
-}
 
 async function boot(){
-  try{
-    ROLE = TOK ? await rpc('my_role').catch(()=>null) : null;
-  }catch(e){ if(e instanceof AuthGone){ TOK=''; sessionStorage.removeItem(TOK_KEY); ROLE=null; } }
   try{
     views.innerHTML='<div class="view on"><div class="p muted">Loading the record...</div></div>';
     await loadAll();
@@ -620,14 +572,13 @@ async function boot(){
 
 async function refresh(quiet){
   try{ await loadAll(); draw(); if(!quiet) say('Refreshed. This is the record as of right now.'); }
-  catch(e){ if(e instanceof AuthGone) return logout('Session expired. Sign in again.'); say(e.message); }
+  catch(e){ say(e.message); }
 }
 
 /* ---------- actions ---------- */
 async function act(fn){
-  if(!canWrite()) return say('View only. Sign in as master_admin to make changes.');
   try{ await fn(); await refresh(true); }
-  catch(e){ if(e instanceof AuthGone) return logout('Session expired. Sign in again.'); say(e.message); }
+  catch(e){ say(e.message); }
 }
 const val=id=>{const n=document.getElementById(id);return n?n.value.trim():'';};
 
@@ -635,8 +586,6 @@ document.addEventListener('click',e=>{
   const n=e.target.closest('.nav-i'); if(n) return go(n.dataset.k);
   const s=e.target.closest('.stat[data-go]'); if(s) return go(s.dataset.go);
   if(e.target===refreshBtn) return refresh();
-  const au=e.target.closest('[data-auth]');
-  if(au) return au.dataset.auth==='in'?signinCard():logout('Signed out. Still showing the live record.');
 
   const tr=e.target.closest('[data-triage]');
   if(tr){ const ref=tr.dataset.ref, st=tr.dataset.triage;
