@@ -98,7 +98,7 @@
 #sbd-root .ic{background:#131b3a !important;color:#94a3b8 !important;}
 #sbd-root .ic.warm{background:linear-gradient(140deg,#D49A00,#8a6400) !important;color:#000000 !important;}
 #sbd-root .qi{background:#131b3a !important;border-color:#1c2646 !important;}
-#sbd-root .qi.top{border-color:rgba(212,154,0,.42) !important;}
+#sbd-root .qi.ranked{border-color:rgba(212,154,0,.42) !important;}
 #sbd-root .qi-t{color:#ffffff !important;} #sbd-root .qi-m{color:#64748b !important;}
 #sbd-root .hash{color:#94a3b8 !important;}
 #sbd-root .qi-b,#sbd-root .ask-h,#sbd-root .agreed,#sbd-root .goal-h{color:#cbd5e5 !important;}
@@ -288,7 +288,7 @@ body{background:#070d1f}
 
 .qi{border:1px solid var(--line);border-radius:13px;padding:13px 14px;margin-bottom:9px;background:var(--lift);min-width:0;overflow-wrap:anywhere}
 .qi:last-child{margin-bottom:0}
-.qi.top{border-color:rgba(212,154,0,.42)}
+.qi.ranked{border-color:rgba(212,154,0,.42)}
 .qi-h{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
 .qi-t{font-size:13.5px;font-weight:600;line-height:1.42;color:#fff;min-width:0;flex:1 1 auto;overflow-wrap:anywhere}
 .qi-p{display:flex;gap:5px;flex-wrap:wrap;flex:0 0 auto}
@@ -325,6 +325,30 @@ body{background:#070d1f}
 
 @media(max-width:1000px){.cols{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:640px){.stats{grid-template-columns:1fr}.hero-t{font-size:25px}.ask .why{min-width:100%}}
+
+@media(max-width:860px){
+  .main{padding:16px 13px 50px}
+  .cols{grid-template-columns:1fr;gap:13px}
+  .card{padding:15px;border-radius:15px}
+  .qi-h{flex-direction:column;align-items:stretch;gap:7px}
+  .qi-p{order:2}
+  .ask .row{flex-direction:column;align-items:stretch;gap:8px}
+  .ask .dt,.ask .why,.ask .btn{width:100%;flex:1 1 auto}
+  .hero-a .btn{flex:1 1 auto;text-align:center}
+}
+@media(max-width:560px){
+  .hero-t{font-size:23px}
+  .hero-s{font-size:14.5px}
+  .stats{grid-template-columns:1fr 1fr;gap:9px}
+  .stat{padding:13px}
+  .stat-v{font-size:22px}
+  .card-h{gap:9px}
+  .ic{width:30px;height:30px;flex:0 0 30px;border-radius:9px;font-size:13px}
+  .tblwrap,.btbl{font-size:11.5px}
+  .meta{grid-template-columns:1fr;gap:2px 0;padding:12px 13px}
+  .meta dt{padding-top:7px}
+}
+@media(max-width:380px){ .stats{grid-template-columns:1fr} }
 </style>
 </head>
 <body>
@@ -426,7 +450,7 @@ function dateBlock(t){
 /* a queue row, in the reference's task-card idiom */
 function card(t,compact){
   const st = t.status==='blocked'?P('p-red','Blocked'):t.status==='in-progress'?P('p-amb','In progress'):'';
-  return `<div class="qi${t.rank!=null?' top':''}">
+  return `<div class="qi${t.rank!=null?' ranked':''}">
     <div class="qi-h">
       <div class="qi-t">${t.rank!=null?`<span class="rk">${t.rank}</span>`:''}${esc(t.title)}</div>
       <div class="qi-p">${prioPill(t.priority)}${datePill(t)}${st}</div>
