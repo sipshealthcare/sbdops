@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>SBD Platform Ops</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#D49A00;--ink:#070d1f;--card:#0e1328;--line:#1c2646;--lift:#131b3a;
+--txt:#e6ebf5;--dim:#94a3b8;--mut:#64748b;--red:#f0616d;--amb:#e0a132;--grn:#3fb984}
+
+/* ── SIMVOLY / BAKND EMBED COLOR LOCK ─────────────────────────── */
+@layer host-reset{ #sbd-root, #sbd-root *{ box-sizing:border-box !important; } }
+#sbd-root, #sbd-root div, #sbd-root span, #sbd-root p, #sbd-root a, #sbd-root li,
+#sbd-root h1,#sbd-root h2,#sbd-root h3,#sbd-root h4,#sbd-root h5,#sbd-root h6,
+#sbd-root label,#sbd-root td,#sbd-root th,#sbd-root input,#sbd-root select,
+#sbd-root textarea,#sbd-root button{font-family:'Poppins',-apple-system,'Segoe UI',sans-serif !important;}
+#sbd-root{background:#070d1f !important;color:#e6ebf5 !important;}
+#sbd-root .side,#sbd-root .brand{background:#0a1024 !important;}
+#sbd-root .bmark{background:#D49A00 !important;color:#000000 !important;}
+#sbd-root .bname{color:#ffffff !important;}
+#sbd-root .bsub{color:#94a3b8 !important;}
+#sbd-root .report{background:#D49A00 !important;color:#000000 !important;}
+#sbd-root .nav-l{color:#64748b !important;}
+#sbd-root .nav-i{color:#94a3b8 !important;background:#0a1024 !important;}
+#sbd-root .nav-i:hover{color:#ffffff !important;background:#131b3a !important;}
+#sbd-root .nav-i.on{color:#D49A00 !important;background:#131b3a !important;}
+#sbd-root .nav-n{color:#e6ebf5 !important;background:#1c2646 !important;}
+#sbd-root .main,#sbd-root .top{background:#070d1f !important;}
+#sbd-root .top-t{color:#ffffff !important;}
+#sbd-root .top-s{color:#94a3b8 !important;}
+#sbd-root .burger span{background:#e6ebf5 !important;}
+#sbd-root .card{background:#0e1328 !important;border-color:#1c2646 !important;}
+#sbd-root .card-t{color:#ffffff !important;}
+#sbd-root .card-s{color:#94a3b8 !important;}
+#sbd-root .stat{background:#0e1328 !important;border-color:#1c2646 !important;}
+#sbd-root .stat:hover{border-color:#D49A00 !important;}
+#sbd-root .stat-v{color:#ffffff !important;}
+#sbd-root .stat-l{color:#94a3b8 !important;}
+#sbd-root .stat-d{color:#64748b !important;}
+#sbd-root .p{color:#cbd5e5 !important;}
+#sbd-root .lead{color:#ffffff !important;}
+#sbd-root .muted{color:#94a3b8 !important;}
+#sbd-root .sec{color:#D49A00 !important;}
+#sbd-root .pill{color:#e6ebf5 !important;}
+#sbd-root .p-red{background:rgba(240,97,109,.14) !important;color:#f0616d !important;}
+#sbd-root .p-amb{background:rgba(224,161,50,.14) !important;color:#e0a132 !important;}
+#sbd-root .p-grn{background:rgba(63,185,132,.14) !important;color:#3fb984 !important;}
+#sbd-root .p-gry{background:rgba(100,116,139,.18) !important;color:#94a3b8 !important;}
+#sbd-root .tbl th{color:#94a3b8 !important;background:#131b3a !important;}
+#sbd-root .tbl td{color:#cbd5e5 !important;}
+#sbd-root .item{background:#0e1328 !important;border-color:#1c2646 !important;}
+#sbd-root .item.done{background:#0a1024 !important;}
+#sbd-root .item-t{color:#ffffff !important;}
+#sbd-root .item-m{color:#64748b !important;}
+#sbd-root .item-b{color:#cbd5e5 !important;}
+#sbd-root .verdict{color:#ffffff !important;background:#131b3a !important;}
+#sbd-root .v-why{color:#94a3b8 !important;}
+#sbd-root .btn{color:#e6ebf5 !important;background:#1c2646 !important;}
+#sbd-root .btn-g{background:#D49A00 !important;color:#000000 !important;}
+#sbd-root .btn-o{background:#1c2646 !important;color:#94a3b8 !important;}
+#sbd-root .btn-r{background:#1c2646 !important;color:#f0616d !important;}
+#sbd-root .age{color:#64748b !important;}
+#sbd-root .note{color:#94a3b8 !important;background:#131b3a !important;}
+#sbd-root .lbl{color:#ffffff !important;}
+#sbd-root .hint{color:#64748b !important;}
+#sbd-root .inp,#sbd-root .ta{background:#070d1f !important;color:#e6ebf5 !important;border-color:#1c2646 !important;}
+#sbd-root .inp::placeholder,#sbd-root .ta::placeholder{color:#64748b !important;}
+#sbd-root .chip{background:#131b3a !important;color:#94a3b8 !important;border-color:#1c2646 !important;}
+#sbd-root .chip.on{background:#D49A00 !important;color:#000000 !important;border-color:#D49A00 !important;}
+#sbd-root .file{background:#070d1f !important;color:#94a3b8 !important;border-color:#1c2646 !important;}
+#sbd-root .file:hover{color:#e6ebf5 !important;border-color:#D49A00 !important;}
+#sbd-root .mrep{background:#D49A00 !important;color:#000000 !important;}
+#sbd-root .toast{background:#D49A00 !important;color:#000000 !important;}
+#sbd-root .ok-m{color:#ffffff !important;}
+#sbd-root .ok-s{color:#94a3b8 !important;}
+#sbd-root .ok-i{background:#3fb984 !important;color:#000000 !important;}
+/* ── END LOCK ──────────────────────────────────────────────────── */
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#070d1f}
+#sbd-root{min-height:100vh;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{display:flex;min-height:100vh}
+
+.side{width:222px;flex:0 0 222px;border-right:1px solid var(--line);display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;z-index:40;transform:translateX(-100%);transition:transform .22s}
+.side.open{transform:none}
+.brand{display:flex;align-items:center;gap:10px;padding:16px 14px 14px}
+.bmark{width:30px;height:30px;border-radius:7px;display:grid;place-items:center;font-weight:700;font-size:12px;flex:0 0 30px}
+.bname{font-weight:600;font-size:14px}
+.bsub{font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+.report{display:block;width:calc(100% - 20px);margin:0 10px 12px;border:0;border-radius:9px;padding:11px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit}
+.nav{padding:2px 10px 16px;overflow-y:auto;flex:1}
+.nav-l{font-size:10px;letter-spacing:.11em;text-transform:uppercase;font-weight:600;padding:10px 8px 6px}
+.nav-i{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;padding:10px 11px;border:0;border-radius:8px;font-size:13.5px;cursor:pointer;text-align:left;margin-bottom:2px;font-family:inherit}
+.nav-n{font-size:11px;font-weight:600;border-radius:20px;padding:1px 7px;min-width:21px;text-align:center}
+
+.main{flex:1;min-width:0;padding:14px 14px 40px}
+.top{display:flex;align-items:center;gap:12px;padding:2px 0 18px}
+.burger{width:36px;height:36px;border:1px solid var(--line);border-radius:9px;background:none;display:grid;place-content:center;gap:4px;cursor:pointer;flex:0 0 36px}
+.burger span{width:15px;height:2px;border-radius:2px;display:block}
+.top-t{font-size:20px;font-weight:600;line-height:1.2}
+.top-s{font-size:12.5px;margin-top:1px}
+.view{display:none}
+.view.on{display:block}
+.max{max-width:760px}
+
+.card{border:1px solid var(--line);border-radius:13px;padding:17px;margin-bottom:13px}
+.card-h{margin-bottom:14px}
+.card-t{font-size:15.5px;font-weight:600}
+.card-s{font-size:12.5px;margin-top:2px}
+
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:13px}
+.stat{border:1px solid var(--line);border-radius:12px;padding:14px;text-align:left;cursor:pointer;font-family:inherit;transition:border-color .15s}
+.stat-v{font-size:23px;font-weight:700;line-height:1.1}
+.stat-l{font-size:11px;letter-spacing:.05em;text-transform:uppercase;margin-top:5px}
+.stat-d{font-size:11px;margin-top:3px}
+
+.p{font-size:13.5px;margin-bottom:10px}
+.p:last-child{margin-bottom:0}
+.lead{font-weight:600}
+.muted{font-size:12.5px}
+.sec{font-size:10.5px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;margin:20px 0 9px}
+.sec:first-child{margin-top:0}
+
+.pill{display:inline-block;font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.row{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px;display:block;overflow-x:auto}
+.tbl thead,.tbl tbody,.tbl tr{display:table;width:100%;table-layout:fixed}
+.tbl th{text-align:left;font-size:10px;letter-spacing:.07em;text-transform:uppercase;font-weight:600;padding:9px 11px}
+.tbl td{padding:10px 11px;border-top:1px solid var(--line);vertical-align:top;word-break:break-word}
+.tbl th:first-child,.tbl td:first-child{width:70px;white-space:nowrap}
+
+.item{border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:10px}
+.item-h{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:6px}
+.item-t{font-size:14px;font-weight:600;line-height:1.4}
+.item-m{font-size:11px;margin-top:7px}
+.item-b{font-size:13px;margin-top:6px}
+.verdict{font-size:13px;font-weight:600;border-radius:9px;padding:11px 13px;margin-top:11px;border-left:3px solid var(--amb)}
+.v-why{font-size:12.5px;font-weight:400;margin-top:5px}
+.acts{margin-top:13px}
+
+.btn{border:0;border-radius:8px;padding:9px 16px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit}
+.age{font-size:11px;margin-top:5px}
+.note{font-size:12.5px;border-radius:10px;padding:12px 14px;border-left:3px solid var(--gold);margin-bottom:16px}
+
+.f{margin-bottom:18px}
+.lbl{display:block;font-size:13.5px;font-weight:600;margin-bottom:3px}
+.hint{display:block;font-size:12px;margin-bottom:9px}
+.inp,.ta{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px 13px;font-size:14px;font-family:inherit;line-height:1.5}
+.ta{min-height:88px;resize:vertical}
+.inp:focus,.ta:focus{outline:2px solid var(--gold);outline-offset:-1px}
+.chip{border:1px solid var(--line);border-radius:9px;padding:10px 14px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:500}
+.file{display:block;width:100%;border:1px dashed var(--line);border-radius:10px;padding:14px;font-size:13px;text-align:center;cursor:pointer;transition:.15s}
+.file input{display:none}
+.mrep{margin-left:auto;border:0;border-radius:9px;padding:9px 14px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;flex:0 0 auto}
+.ok{text-align:center;padding:26px 10px}
+.ok-i{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;margin:0 auto 14px;font-size:22px;font-weight:700}
+.ok-m{font-size:17px;font-weight:600;margin-bottom:6px}
+.ok-s{font-size:13px;max-width:400px;margin:0 auto 18px}
+
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,80px);padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:60;opacity:0;transition:.25s;pointer-events:none}
+.toast.on{transform:translate(-50%,0);opacity:1}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:35;display:none}
+.scrim.on{display:block}
+
+@media(min-width:900px){
+  .side{position:sticky;height:100vh;transform:none}
+  .scrim,.burger,.mrep{display:none!important}
+  .main{padding:22px 30px 60px}
+  .grid{grid-template-columns:repeat(4,1fr)}
+  .top-t{font-size:23px}
+}
+</style>
+</head>
+<body>
+<div id="sbd-root">
+<div class="wrap">
+
+  <aside class="side" id="side">
+    <div class="brand">
+      <div class="bmark">SBD</div>
+      <div><div class="bname">SBD Ops</div><div class="bsub">Master admin</div></div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <main class="main">
+    <div class="top">
+      <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+      <div><div class="top-t" id="ttl">Today</div><div class="top-s" id="sub">Thursday, August 13, 2026</div></div>
+    </div>
+    <div id="views"></div>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+</div>
+
+<script>
+const P=(c,t)=>`<span class="pill ${c}">${t}</span>`;
+
+/* Intake items, with state so the triage flow actually works */
+let ITEMS=[
+ {id:'SBD-114',t:'Assessment queue is empty when I know requests exist',
+  sev:['p-amb','Blocked work'],who:'Staff admin',age:'2 days',n:2,
+  said:'Signed in as staff admin, Assessment Queue shows nothing. Kirti says she raised two this morning.',
+  v:'Already built, not reachable',
+  w:'The queue exists and both requests are in the database. It renders only in the admin view, so this account has the right and no door. Same shape as the assessor console issue closed July 30.',
+  st:null},
+ {id:'SBD-112',t:'Adding someone by hand only offers White Belt',
+  sev:['p-red','Record integrity'],who:'Master admin',age:'4 days',n:3,
+  said:'There is no option for someone who has not been assessed yet, so they all go in as White.',
+  v:'Confirmed, and wider than reported',
+  w:'56 of 92 staff sit at White and 28 are still flagged as needing placement, so half the White population is unassessed. The field already holds a non-belt value on 13 records, so the data side is smaller than the interface side.',
+  st:null}
+];
+
+function intakeHTML(){
+ const open=ITEMS.filter(i=>!i.st), done=ITEMS.filter(i=>i.st);
+ return `
+<div class="card max">
+  <div class="card-h"><div class="card-t">Needs a decision</div>
+  <div class="card-s">Nothing here has changed anything yet</div></div>
+  ${open.length?open.map(i=>`
+  <div class="item">
+    <div class="item-h"><div class="item-t">${i.t}</div>${P(i.sev[0],i.sev[1])}</div>
+    <div class="item-b">${i.said}</div>
+    <div class="item-m">${i.id} &middot; ${i.who} &middot; ${i.age} &middot; reported ${i.n}&times;</div>
+    <div class="verdict">${i.v}<div class="v-why">${i.w}</div></div>
+    <div class="row acts">
+      <button class="btn btn-g" data-a="Approved" data-i="${i.id}">Approve</button>
+      <button class="btn btn-o" data-a="Tabled" data-i="${i.id}">Table</button>
+      <button class="btn btn-r" data-a="Denied" data-i="${i.id}">Deny</button>
+    </div>
+  </div>`).join(''):'<div class="p muted">Nothing waiting. Everything submitted has been decided.</div>'}
+</div>
+${done.length?`<div class="card max"><div class="card-h"><div class="card-t">Decided just now</div>
+<div class="card-s">Submitter is told the outcome automatically</div></div>
+${done.map(i=>`<div class="item done"><div class="item-h"><div class="item-t">${i.t}</div>${P(i.st==='Denied'?'p-gry':'p-grn',i.st)}</div>
+<div class="item-m">${i.id} &middot; ${i.st==='Approved'?'added to the tracker and tomorrow\'s brief':i.st==='Tabled'?'review date set':'closed on our side, the submitter sees it as tabled'}</div></div>`).join('')}</div>`:''}
+
+<div class="card max">
+  <div class="card-h"><div class="card-t">Closed this week</div></div>
+  <div class="item"><div class="item-h"><div class="item-t">Placement report shows the wrong belt</div>${P('p-grn','Fixed')}</div><div class="item-m">SBD-098 &middot; live July 27 &middot; submitter notified</div></div>
+  <div class="item"><div class="item-h"><div class="item-t">Schedule does not save</div>${P('p-grn','Fixed')}</div><div class="item-m">SBD-091 &middot; live July 26 &middot; submitter notified</div></div>
+</div>`;
+}
+
+const V={
+today:{n:'Today',s:'Thursday, August 13, 2026',h:()=>`
+<div class="grid">
+  <button class="stat" data-go="intake"><div class="stat-v">${ITEMS.filter(i=>!i.st).length}</div><div class="stat-l">Need a decision</div><div class="stat-d">from the admin team</div></button>
+  <button class="stat" data-go="decisions"><div class="stat-v">4</div><div class="stat-l">Open decisions</div><div class="stat-d">oldest 62 days</div></button>
+  <button class="stat" data-go="tracker"><div class="stat-v">14</div><div class="stat-l">Stale rows</div><div class="stat-d">shipped, still open</div></button>
+  <button class="stat" data-go="releases"><div class="stat-v">7/10</div><div class="stat-l">Last sprint</div><div class="stat-d">landed vs committed</div></button>
+</div>
+
+<div class="card max">
+  <div class="card-h"><div class="card-t">Blocking someone right now</div></div>
+  <div class="item"><div class="item-h"><div class="item-t">Endoscopy module count and gate rule</div>${P('p-red','18 days')}</div><div class="item-m">Dev cannot start the build without it</div></div>
+  <div class="item"><div class="item-h"><div class="item-t">Black Belt observation checklist content</div>${P('p-red','62 days')}</div><div class="item-m">The Black Belt gate cannot exist without it</div></div>
+</div>
+
+<div class="card max">
+  <div class="card-h"><div class="card-t">Daily brief</div><div class="card-s">Sent to the dev team at 08:10</div></div>
+  <div class="note">No hospital is waiting on anything in here and none of this is a client escalation. It matters so leadership, sales and client success can describe what the platform does today.</div>
+  <div class="sec">Priorities</div>
+  <div class="p"><span class="lead">1. Report comparison run.</span> Already in flight, so it stays first. Fourteen people waiting, nine of whom hold no belt.</div>
+  <div class="p"><span class="lead">2. Scripts as a standalone module.</span> 70 scripts already in the platform with no way to assign them.</div>
+  <div class="p"><span class="lead">3. Endoscopy, specifically assignable.</span> Not a belt requirement, not a facility-wide rollout.</div>
+  <div class="sec">Proposed dates</div>
+  <table class="tbl"><thead><tr><th>Due</th><th>Item</th><th>Owner</th></tr></thead><tbody>
+  <tr><td>Aug 14</td><td>Tracker caught up and republished</td><td>Dev</td></tr>
+  <tr><td>Aug 21</td><td>Scripts module live</td><td>Dev</td></tr>
+  <tr><td>Aug 28</td><td>Endoscopy modules live</td><td>Dev</td></tr>
+  </tbody></table>
+  <div class="p muted" style="margin-top:11px">Dates are proposals. The team confirms or sends a corrected one.</div>
+  <div class="row" style="margin-top:14px"><button class="btn btn-g">Open full brief</button><button class="btn btn-o">Archive</button></div>
+</div>`},
+
+
+intake:{n:'Intake',s:'From the SIPS admin team',b:()=>ITEMS.filter(i=>!i.st).length,h:intakeHTML},
+
+tracker:{n:'Tracker',s:'The ledger',b:()=>14,h:()=>`
+<div class="card max">
+  <div class="card-h"><div class="card-t">Flagged automatically</div>
+  <div class="card-s">Row untouched while an EOD says it shipped</div></div>
+  <table class="tbl"><thead><tr><th>#</th><th>Item</th><th>Status</th></tr></thead><tbody>
+  <tr><td>26</td><td>Publish to Staff actually publishes<div class="age">EOD says live July 26 &middot; row untouched 26 days</div></td><td>${P('p-amb','Stale')}</td></tr>
+  <tr><td>27</td><td>Attendance edits persist<div class="age">EOD says live July 26 &middot; row untouched 26 days</div></td><td>${P('p-amb','Stale')}</td></tr>
+  <tr><td>69</td><td>Show which AI model is serving<div class="age">Found in the function source, it already returns it</div></td><td>${P('p-amb','Stale')}</td></tr>
+  <tr><td>46</td><td>Usage cost, cached versus new<div class="age">Found in the function source, both are logged</div></td><td>${P('p-amb','Stale')}</td></tr>
+  <tr><td>104</td><td>Sprint tracker back in hand<div class="age">Open 31 days</div></td><td>${P('p-red','Open')}</td></tr>
+  </tbody></table>
+</div>
+<div class="card max">
+  <div class="card-h"><div class="card-t">Sprint S8</div><div class="card-s">Fri Aug 14 to Fri Aug 21 &middot; 8 committed</div></div>
+  <table class="tbl"><thead><tr><th>#</th><th>Item</th><th>Due</th></tr></thead><tbody>
+  <tr><td>107</td><td>Scripts standalone module</td><td>Aug 21</td></tr>
+  <tr><td>87</td><td>Rotate the shared API key</td><td>Aug 14</td></tr>
+  <tr><td>104</td><td>Tracker reconciled and republished</td><td>Aug 14</td></tr>
+  <tr><td>112</td><td>Assessment pending state on manual add</td><td>Aug 26</td></tr>
+  </tbody></table>
+</div>`},
+
+decisions:{n:'Decisions',s:'Open queue and the log',b:()=>4,h:()=>`
+<div class="card max">
+  <div class="card-h"><div class="card-t">Open</div><div class="card-s">Age is the thing to watch</div></div>
+  <div class="item"><div class="item-h"><div class="item-t">Black Belt observation checklist content</div>${P('p-red','62 days')}</div><div class="item-m">Blocks the Black Belt gate &middot; raised in 9 EODs</div></div>
+  <div class="item"><div class="item-h"><div class="item-t">Endoscopy module count and gate rule</div>${P('p-red','18 days')}</div><div class="item-m">Blocks the endoscopy build &middot; raised in 2 EODs</div></div>
+  <div class="item"><div class="item-h"><div class="item-t">DAVID chat protection: alert only, or auto limit</div>${P('p-amb','21 days')}</div><div class="item-m">Recommendation on file: alert only for a week, then auto limit</div></div>
+  <div class="item"><div class="item-h"><div class="item-t">Two facility entries share a display name</div>${P('p-amb','15 days')}</div><div class="item-m">Blocks safe granting in Role Management</div></div>
+</div>
+<div class="card max">
+  <div class="card-h"><div class="card-t">Decided</div><div class="card-s">Answered once, stays answered</div></div>
+  <div class="item"><div class="item-h"><div class="item-t">Assessor rights granted per facility</div>${P('p-grn','Approved')}</div><div class="item-b">Overrides the original spec, which set assessor as system wide. Travelling assessors get all sites explicitly.</div><div class="item-m">Jul 30 &middot; live the same day</div></div>
+  <div class="item"><div class="item-h"><div class="item-t">Facility level checklist editing</div>${P('p-gry','Tabled')}</div><div class="item-b">One checklist per belt is shared platform wide, so a facility edit changes the standard everyone is measured against. Read only view offered instead.</div><div class="item-m">Jul 24 &middot; review Sep 1</div></div>
+</div>`},
+
+cap:{n:'What it does',s:'Present tense only',h:()=>`
+<div class="card max">
+  <div class="card-h"><div class="card-t">Capability register</div><div class="card-s">Confirmed live. Safe to say out loud.</div></div>
+  <div class="sec">Assessment and placement</div>
+  <div class="p">Placement scores knowledge and simulation against per belt floors and a 60/40 blend, following Scoring Specification v1. Four outcomes: Clean, Conditional, Knowledge Foundation, No Belt. Dangerous answers raise a patient safety provision that holds someone from the next belt until a master admin clears it.</div>
+  <div class="sec">Three gate model</div>
+  <div class="p">Competency, Simulation and Observation gate separately. Observation runs on the floor with a two PIN handshake, typed or spoken evidence per item, and a Stop Work control.</div>
+  <div class="sec">Learning</div>
+  <div class="p">Foundations across ten modules with full source content. Instruments. Position Schools. Preceptor certification with proctored gates. Three passes at 80 percent on fresh questions before observation unlocks.</div>
+  <div class="sec">Operations</div>
+  <div class="p">Scheduling and attendance per facility with a publish gate. Transfers and free agent handling. Role management with per facility assessor rights. DAVID with per facility metering and cost tracking.</div>
+</div>
+<div class="card max">
+  <div class="card-h"><div class="card-t">Known limitations</div><div class="card-s">Do not promise these yet</div></div>
+  <div class="p">${P('p-amb','Not yet')} &nbsp;Endoscopy modules. In build, targeted Aug 28.</div>
+  <div class="p">${P('p-amb','Not yet')} &nbsp;Scripts as an assignable module. Content exists, assignment does not. Targeted Aug 21.</div>
+  <div class="p">${P('p-amb','Not yet')} &nbsp;Black Belt observation checklist. Awaiting content.</div>
+  <div class="p">${P('p-amb','Untested')} &nbsp;Concurrent load above roughly 30 users. Nothing has measured a 200 person onboarding.</div>
+</div>`},
+
+releases:{n:'Releases',s:'What is actually live',h:()=>`
+<div class="card max">
+  <div class="card-h"><div class="card-t">Recent</div><div class="card-s">Merged, deployed and confirmed are three separate facts</div></div>
+  <div class="item"><div class="item-h"><div class="item-t">Aug 12 &middot; No Belt approval, SIPS admin role</div>${P('p-grn','Live')}</div><div class="item-b">A No Belt result can be approved without certifying White. Approving and PIN generation split into separate permissions.</div><div class="item-m">Verified against the database &middot; tracker #79</div></div>
+  <div class="item"><div class="item-h"><div class="item-t">Aug 11 &middot; Scoring Specification v1 conformance</div>${P('p-grn','Live')}</div><div class="item-b">Item weighted means, a knowledge gate on belt selection, full precision to every comparison. Re-verified against all 49 stored placements with no belt moved.</div><div class="item-m">Verified &middot; tracker #96</div></div>
+  <div class="item"><div class="item-h"><div class="item-t">Jul 30 &middot; Observer PIN hardening</div>${P('p-red','Rolled back')}</div><div class="item-b">Took ordinary staff reads down during a demo window. Reverted within the hour. Narrower rule shipped Aug 4.</div><div class="item-m">tracker #37</div></div>
+</div>
+<div class="card max">
+  <div class="card-h"><div class="card-t">Platform</div><div class="card-s">Read live this morning</div></div>
+  <div class="grid" style="margin:0">
+    <div class="stat" style="cursor:default"><div class="stat-v">13</div><div class="stat-l">Facilities</div></div>
+    <div class="stat" style="cursor:default"><div class="stat-v">92</div><div class="stat-l">Staff</div><div class="stat-d">56 White, 28 unplaced</div></div>
+    <div class="stat" style="cursor:default"><div class="stat-v">27</div><div class="stat-l">Weekly users</div><div class="stat-d">highest on record</div></div>
+    <div class="stat" style="cursor:default"><div class="stat-v">3</div><div class="stat-l">Observations</div><div class="stat-d">all time</div></div>
+  </div>
+</div>`}
+};
+
+const KEYS=Object.keys(V), REVIEW=['today','intake','tracker','decisions','cap','releases'];
+const nav=document.getElementById('nav'), views=document.getElementById('views');
+const side=document.getElementById('side'), scrim=document.getElementById('scrim'), toast=document.getElementById('toast');
+let cur='today';
+
+function drawNav(){
+  nav.innerHTML='<div class="nav-l">Review</div>'+REVIEW.map(k=>{
+    const b=V[k].b?V[k].b():0;
+    return `<button class="nav-i${k===cur?' on':''}" data-k="${k}"><span>${V[k].n}</span>${b?`<span class="nav-n">${b}</span>`:''}</button>`;
+  }).join('');
+}
+function draw(){
+  views.innerHTML=`<div class="view on">${V[cur].h()}</div>`;
+  document.getElementById('ttl').textContent=V[cur].n;
+  document.getElementById('sub').textContent=V[cur].s;
+  drawNav(); window.scrollTo(0,0);
+}
+function go(k){ cur=k; draw(); shut(); }
+function shut(){ side.classList.remove('open'); scrim.classList.remove('on'); }
+function say(m){ toast.textContent=m; toast.classList.add('on'); setTimeout(()=>toast.classList.remove('on'),2200); }
+
+document.addEventListener('click',e=>{
+  const n=e.target.closest('.nav-i'); if(n) return go(n.dataset.k);
+  const s=e.target.closest('.stat[data-go]'); if(s) return go(s.dataset.go);
+  const c=e.target.closest('.chip');
+  if(c){ [...c.parentElement.children].forEach(x=>x.classList.remove('on')); c.classList.add('on'); return; }
+  const a=e.target.closest('[data-a]');
+  if(a){ ITEMS.find(i=>i.id===a.dataset.i).st=a.dataset.a; draw();
+         say(a.dataset.a==='Approved'?'Approved. Added to the tracker and tomorrow\'s brief.':a.dataset.a==='Tabled'?'Tabled. Review date set.':'Closed on our side. The submitter sees it as tabled.'); }
+});
+document.getElementById('burger').onclick=()=>{side.classList.add('open');scrim.classList.add('on');};
+scrim.onclick=shut;
+draw();
+</script>
+</body>
+</html>

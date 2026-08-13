@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>SBD Build</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#D49A00;--ink:#070d1f;--card:#0e1328;--line:#1c2646;--lift:#131b3a;
+--dim:#94a3b8;--mut:#64748b;--red:#f0616d;--amb:#e0a132;--grn:#3fb984}
+
+/* ── SIMVOLY / BAKND EMBED COLOR LOCK ─────────────────────────── */
+@layer host-reset{ #sbd-root, #sbd-root *{ box-sizing:border-box !important; } }
+#sbd-root, #sbd-root div,#sbd-root span,#sbd-root p,#sbd-root a,#sbd-root li,
+#sbd-root h1,#sbd-root h2,#sbd-root h3,#sbd-root label,#sbd-root td,#sbd-root th,
+#sbd-root input,#sbd-root textarea,#sbd-root button{font-family:'Poppins',-apple-system,'Segoe UI',sans-serif !important;}
+#sbd-root{background:#070d1f !important;color:#e6ebf5 !important;}
+#sbd-root .side,#sbd-root .brand{background:#0a1024 !important;}
+#sbd-root .bmark{background:#004789 !important;color:#ffffff !important;}
+#sbd-root .bname{color:#ffffff !important;}
+#sbd-root .bsub{color:#94a3b8 !important;}
+#sbd-root .nav-l{color:#64748b !important;}
+#sbd-root .nav-i{color:#94a3b8 !important;background:#0a1024 !important;}
+#sbd-root .nav-i:hover{color:#ffffff !important;background:#131b3a !important;}
+#sbd-root .nav-i.on{color:#D49A00 !important;background:#131b3a !important;}
+#sbd-root .nav-n{color:#e6ebf5 !important;background:#1c2646 !important;}
+#sbd-root .main,#sbd-root .top{background:#070d1f !important;}
+#sbd-root .top-t{color:#ffffff !important;}
+#sbd-root .top-s{color:#94a3b8 !important;}
+#sbd-root .burger span{background:#e6ebf5 !important;}
+#sbd-root .card{background:#0e1328 !important;border-color:#1c2646 !important;}
+#sbd-root .card-t{color:#ffffff !important;}
+#sbd-root .card-s{color:#94a3b8 !important;}
+#sbd-root .p{color:#cbd5e5 !important;}
+#sbd-root .lead{color:#ffffff !important;}
+#sbd-root .muted{color:#94a3b8 !important;}
+#sbd-root .sec{color:#D49A00 !important;}
+#sbd-root .note{color:#94a3b8 !important;background:#131b3a !important;}
+#sbd-root .pill{color:#e6ebf5 !important;}
+#sbd-root .p-red{background:rgba(240,97,109,.14) !important;color:#f0616d !important;}
+#sbd-root .p-amb{background:rgba(224,161,50,.14) !important;color:#e0a132 !important;}
+#sbd-root .p-grn{background:rgba(63,185,132,.14) !important;color:#3fb984 !important;}
+#sbd-root .p-gry{background:rgba(100,116,139,.18) !important;color:#94a3b8 !important;}
+#sbd-root .item{background:#0e1328 !important;border-color:#1c2646 !important;}
+#sbd-root .item-t{color:#ffffff !important;}
+#sbd-root .item-m{color:#64748b !important;}
+#sbd-root .item-b{color:#cbd5e5 !important;}
+#sbd-root .due{color:#ffffff !important;background:#131b3a !important;}
+#sbd-root .due-d{color:#e0a132 !important;}
+#sbd-root .tbl th{color:#94a3b8 !important;background:#131b3a !important;}
+#sbd-root .tbl td{color:#cbd5e5 !important;}
+#sbd-root .btn{background:#1c2646 !important;color:#e6ebf5 !important;}
+#sbd-root .btn-g{background:#D49A00 !important;color:#000000 !important;}
+#sbd-root .btn-o{background:#1c2646 !important;color:#94a3b8 !important;}
+#sbd-root .lbl{color:#ffffff !important;}
+#sbd-root .hint{color:#64748b !important;}
+#sbd-root .ta{background:#070d1f !important;color:#e6ebf5 !important;border-color:#1c2646 !important;}
+#sbd-root .ta::placeholder{color:#64748b !important;}
+#sbd-root .st{background:#131b3a !important;color:#94a3b8 !important;border-color:#1c2646 !important;}
+#sbd-root .st.on{background:#3fb984 !important;color:#000000 !important;border-color:#3fb984 !important;}
+#sbd-root .toast{background:#D49A00 !important;color:#000000 !important;}
+/* ── END LOCK ──────────────────────────────────────────────────── */
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#070d1f}
+#sbd-root{min-height:100vh;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{display:flex;min-height:100vh}
+.side{width:216px;flex:0 0 216px;border-right:1px solid var(--line);display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;z-index:40;transform:translateX(-100%);transition:transform .22s}
+.side.open{transform:none}
+.brand{display:flex;align-items:center;gap:10px;padding:16px 14px 14px}
+.bmark{width:30px;height:30px;border-radius:7px;display:grid;place-items:center;font-weight:700;font-size:11px;flex:0 0 30px}
+.bname{font-weight:600;font-size:14px}
+.bsub{font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+.nav{padding:2px 10px 16px;overflow-y:auto;flex:1}
+.nav-l{font-size:10px;letter-spacing:.11em;text-transform:uppercase;font-weight:600;padding:10px 8px 6px}
+.nav-i{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;padding:10px 11px;border:0;border-radius:8px;font-size:13.5px;cursor:pointer;text-align:left;margin-bottom:2px;font-family:inherit}
+.nav-n{font-size:11px;font-weight:600;border-radius:20px;padding:1px 7px;min-width:21px;text-align:center}
+.main{flex:1;min-width:0;padding:14px 14px 40px}
+.top{display:flex;align-items:center;gap:12px;padding:2px 0 18px}
+.burger{width:36px;height:36px;border:1px solid var(--line);border-radius:9px;background:none;display:grid;place-content:center;gap:4px;cursor:pointer;flex:0 0 36px}
+.burger span{width:15px;height:2px;border-radius:2px;display:block}
+.top-t{font-size:20px;font-weight:600;line-height:1.2}
+.top-s{font-size:12.5px;margin-top:1px}
+.view{display:none}.view.on{display:block}
+.max{max-width:760px}
+.card{border:1px solid var(--line);border-radius:13px;padding:17px;margin-bottom:13px}
+.card-h{margin-bottom:14px}
+.card-t{font-size:15.5px;font-weight:600}
+.card-s{font-size:12.5px;margin-top:2px}
+.p{font-size:13.5px;margin-bottom:10px}
+.p:last-child{margin-bottom:0}
+.lead{font-weight:600}
+.muted{font-size:12.5px}
+.sec{font-size:10.5px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;margin:20px 0 9px}
+.sec:first-child{margin-top:0}
+.note{font-size:12.5px;border-radius:10px;padding:12px 14px;border-left:3px solid var(--gold);margin-bottom:16px}
+.pill{display:inline-block;font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.row{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.item{border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:10px}
+.item-h{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:5px}
+.item-t{font-size:14px;font-weight:600;line-height:1.4}
+.item-m{font-size:11px;margin-top:7px}
+.item-b{font-size:13px;margin-top:6px}
+.due{display:flex;justify-content:space-between;align-items:center;gap:12px;border-radius:10px;padding:12px 14px;margin-bottom:9px;font-size:13.5px;font-weight:600;flex-wrap:wrap}
+.due-d{font-size:12px;font-weight:600;letter-spacing:.03em}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px;display:block;overflow-x:auto}
+.tbl thead,.tbl tbody,.tbl tr{display:table;width:100%;table-layout:fixed}
+.tbl th{text-align:left;font-size:10px;letter-spacing:.07em;text-transform:uppercase;font-weight:600;padding:9px 11px}
+.tbl td{padding:10px 11px;border-top:1px solid var(--line);vertical-align:top;word-break:break-word}
+.tbl th:first-child,.tbl td:first-child{width:66px;white-space:nowrap}
+.btn{border:0;border-radius:8px;padding:9px 16px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit}
+.lbl{display:block;font-size:13.5px;font-weight:600;margin-bottom:3px}
+.hint{display:block;font-size:12px;margin-bottom:9px}
+.ta{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px 13px;font-size:14px;font-family:inherit;line-height:1.5;min-height:90px;resize:vertical}
+.ta:focus{outline:2px solid var(--gold);outline-offset:-1px}
+.st{border:1px solid var(--line);border-radius:8px;padding:7px 13px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:600}
+.f{margin-bottom:18px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,80px);padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:60;opacity:0;transition:.25s;pointer-events:none}
+.toast.on{transform:translate(-50%,0);opacity:1}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:35;display:none}
+.scrim.on{display:block}
+@media(min-width:900px){
+  .side{position:sticky;height:100vh;transform:none}
+  .scrim,.burger{display:none!important}
+  .main{padding:22px 30px 60px}
+  .top-t{font-size:23px}
+}
+</style>
+</head>
+<body>
+<div id="sbd-root">
+<div class="wrap">
+  <aside class="side" id="side">
+    <div class="brand"><div class="bmark">DEV</div>
+      <div><div class="bname">SBD Build</div><div class="bsub">Dev team</div></div></div>
+    <nav class="nav" id="nav"></nav>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+  <main class="main">
+    <div class="top">
+      <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
+      <div><div class="top-t" id="ttl">Today</div><div class="top-s" id="sub">Thursday, August 13, 2026</div></div>
+    </div>
+    <div id="views"></div>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+</div>
+
+<script>
+const P=(c,t)=>`<span class="pill ${c}">${t}</span>`;
+let DUES=[
+ {id:'d1',t:'Tracker caught up and republished',d:'Fri Aug 14',ok:false},
+ {id:'d2',t:'Rotate the shared API key',d:'Fri Aug 14',ok:false},
+ {id:'d3',t:'Scripts standalone module live',d:'Fri Aug 21',ok:false},
+ {id:'d4',t:'Endoscopy modules live',d:'Fri Aug 28',ok:false}
+];
+const dueHTML=()=>DUES.map(x=>`<div class="due"><div>${x.t}<div class="due-d">${x.d}</div></div>
+<div class="row"><button class="st${x.ok?' on':''}" data-d="${x.id}">${x.ok?'Confirmed':'Confirm'}</button>
+<button class="btn btn-o" data-adj="${x.id}">Needs a different date</button></div></div>`).join('');
+
+const V={
+today:{n:'Today',s:'Thursday, August 13, 2026',h:()=>`
+<div class="card max">
+  <div class="card-h"><div class="card-t">This morning's brief</div><div class="card-s">From Ignacio &middot; received 08:10</div></div>
+  <div class="note">No hospital is waiting on anything in here and none of this is a client escalation. It matters so leadership, sales and client success can describe what the platform does today.</div>
+  <div class="sec">Priorities, in order</div>
+  <div class="p"><span class="lead">1. Report comparison run.</span> Already in flight, so it stays first. Fourteen people waiting, nine of whom hold no belt, which makes this their determination rather than an adjustment.</div>
+  <div class="p"><span class="lead">2. Scripts as a standalone module.</span> 70 scripts already in the platform with no way to assign them. Should ride the existing Foundations pattern. If it cannot, say so before you start.</div>
+  <div class="p"><span class="lead">3. Endoscopy, specifically assignable.</span> Not a belt requirement and not a facility-wide rollout. Lands only on people a leader assigns.</div>
+  <div class="row" style="margin-top:14px"><button class="btn btn-o">Read the full brief</button></div>
+</div>
+
+<div class="card max">
+  <div class="card-h"><div class="card-t">Dates proposed to you</div>
+  <div class="card-s">Confirm what works. Send back a different date with the reason for anything that does not.</div></div>
+  <div id="dues">${dueHTML()}</div>
+</div>
+
+<div class="card max">
+  <div class="card-h"><div class="card-t">Waiting on Ignacio</div><div class="card-s">Your questions, and how long they have been open</div></div>
+  <div class="item"><div class="item-h"><div class="item-t">Endoscopy module count and gate rule</div>${P('p-red','18 days')}</div><div class="item-m">Raised Jul 26 &middot; blocks the endoscopy build</div></div>
+  <div class="item"><div class="item-h"><div class="item-t">Black Belt observation checklist content</div>${P('p-red','62 days')}</div><div class="item-m">Raised Jun 12 &middot; blocks the Black Belt gate</div></div>
+  <div class="item"><div class="item-h"><div class="item-t">DAVID chat protection: alert only or auto limit</div>${P('p-amb','21 days')}</div><div class="item-m">Raised Jul 23 &middot; recommendation sent, not blocking</div></div>
+  <div class="row" style="margin-top:4px"><button class="btn btn-g" data-go="ask">Ask something new</button></div>
+</div>`},
+
+sprint:{n:'Sprint',s:'S8 &middot; Fri Aug 14 to Fri Aug 21',b:()=>8,h:()=>`
+<div class="card max">
+  <div class="card-h"><div class="card-t">Committed this sprint</div><div class="card-s">8 items. Last sprint landed 7 of 10.</div></div>
+  <table class="tbl"><thead><tr><th>#</th><th>Item</th><th>Due</th></tr></thead><tbody>
+  <tr><td>107</td><td>Scripts standalone module</td><td>Aug 21</td></tr>
+  <tr><td>87</td><td>Rotate the shared API key</td><td>Aug 14</td></tr>
+  <tr><td>104</td><td>Tracker reconciled and republished</td><td>Aug 14</td></tr>
+  <tr><td>112</td><td>Assessment pending state on manual add</td><td>Aug 26</td></tr>
+  <tr><td>114</td><td>Assessment queue reachable by staff admin</td><td>Aug 21</td></tr>
+  <tr><td>105</td><td>Load test at 200 concurrent</td><td>Aug 28</td></tr>
+  </tbody></table>
+</div>
+<div class="card max">
+  <div class="card-h"><div class="card-t">Approved from intake</div><div class="card-s">Came from the SIPS admin team, triaged and approved</div></div>
+  <div class="item"><div class="item-h"><div class="item-t">Assessment queue is empty for staff admin</div>${P('p-amb','Blocked work')}</div>
+  <div class="item-b">The queue exists and the requests are in the database. It renders only in the admin view, so the account has the right and no door.</div>
+  <div class="item-m">SBD-114 &rarr; tracker #114 &middot; approved Aug 13</div></div>
+  <div class="item"><div class="item-h"><div class="item-t">Manual add only offers White Belt</div>${P('p-red','Record integrity')}</div>
+  <div class="item-b">56 of 92 staff sit at White and 28 still need placement. Needs an assessment pending state. Blast radius write-up requested first.</div>
+  <div class="item-m">SBD-112 &rarr; tracker #112 &middot; approved Aug 13</div></div>
+</div>`},
+
+eod:{n:'Post EOD',s:'End of day report',h:()=>`
+<div class="card max">
+  <div class="card-h"><div class="card-t">End of day, Thursday August 13</div>
+  <div class="card-s">Same four sections as always. One ask: name the tracker number on anything you mark shipped.</div></div>
+  <div class="f"><label class="lbl">Completed today</label>
+    <span class="hint">What shipped, with the tracker number and how to check it.</span>
+    <textarea class="ta" placeholder="#104 Tracker reconciled and republished. To check: open the board, rows 26 and 27 now read Shipped."></textarea></div>
+  <div class="f"><label class="lbl">QA and verification run today</label>
+    <span class="hint">What you checked against the live system rather than against the report of it.</span>
+    <textarea class="ta"></textarea></div>
+  <div class="f"><label class="lbl">Still working</label>
+    <span class="hint">With an expected date on each.</span>
+    <textarea class="ta"></textarea></div>
+  <div class="f"><label class="lbl">Needs Ignacio</label>
+    <span class="hint">Anything blocked on a decision. These become tracked questions with a date on them.</span>
+    <textarea class="ta"></textarea></div>
+  <button class="btn btn-g" data-post="1">Post EOD</button>
+</div>`},
+
+ask:{n:'Ask',s:'Questions to Ignacio',h:()=>`
+<div class="card max">
+  <div class="card-h"><div class="card-t">Ask a question</div>
+  <div class="card-s">This becomes a tracked item with a date on it, rather than a paragraph in tonight's EOD that ages quietly.</div></div>
+  <div class="f"><label class="lbl">What do you need decided</label>
+    <textarea class="ta" placeholder="For endoscopy, how many modules and do the gates follow the Foundations three-pass rule?"></textarea></div>
+  <div class="f"><label class="lbl">What it blocks</label>
+    <span class="hint">So it can be prioritised honestly against everything else.</span>
+    <textarea class="ta" style="min-height:60px" placeholder="The endoscopy build cannot start without it."></textarea></div>
+  <button class="btn btn-g" data-post="1">Send</button>
+</div>`},
+
+releases:{n:'Releases',s:'What is live',h:()=>`
+<div class="card max">
+  <div class="card-h"><div class="card-t">Post a release</div></div>
+  <div class="f"><label class="lbl">What went out</label>
+    <span class="hint">Tracker numbers, and what to check.</span>
+    <textarea class="ta" style="min-height:70px"></textarea></div>
+  <button class="btn btn-g" data-post="1">Log it</button>
+</div>
+<div class="card max">
+  <div class="card-h"><div class="card-t">Recent</div></div>
+  <div class="item"><div class="item-h"><div class="item-t">Aug 12 &middot; No Belt approval, SIPS admin role</div>${P('p-grn','Live')}</div><div class="item-m">Verified against the database &middot; #79</div></div>
+  <div class="item"><div class="item-h"><div class="item-t">Aug 11 &middot; Scoring Specification v1 conformance</div>${P('p-grn','Live')}</div><div class="item-m">Re-verified against all 49 stored placements &middot; #96</div></div>
+  <div class="item"><div class="item-h"><div class="item-t">Jul 30 &middot; Observer PIN hardening</div>${P('p-red','Rolled back')}</div><div class="item-m">Narrower rule shipped Aug 4 &middot; #37</div></div>
+</div>`},
+
+checks:{n:'Standards',s:'Check before you ship',h:()=>`
+<div class="card max">
+  <div class="card-h"><div class="card-t">Two standing checks</div>
+  <div class="card-s">Both came out of work this team found and fixed itself. Written down so they are caught by process rather than by memory.</div></div>
+  <div class="sec">A save is not done until it comes back</div>
+  <div class="p">No write path is done until somebody has saved, reloaded, and watched the value return, and until a rejected write surfaces an error to the person doing it.</div>
+  <div class="p muted">Why: five separate cases where the interface reported success while the write was rejected and discarded. The schedule one ran two months before anyone noticed.</div>
+  <div class="sec">Never print a default where a decision belongs</div>
+  <div class="p">Where a determination belongs, absence is shown as absence rather than filled with a fallback.</div>
+  <div class="p muted">Why: White substituted as a placeholder belt and printed as a result, "not gated" printing as a blank that read as missing data, and a report re-deriving a belt over an assessor's override.</div>
+</div>
+<div class="card max">
+  <div class="card-h"><div class="card-t">Runbooks</div></div>
+  <div class="item"><div class="item-t">Reconcile the tracker against the merge history</div></div>
+  <div class="item"><div class="item-t">Run the re-score tool, read only</div></div>
+  <div class="item"><div class="item-t">The 74 access control checks before a database move</div></div>
+</div>`}
+};
+
+const KEYS=['today','sprint','eod','ask','releases','checks'];
+const nav=document.getElementById('nav'),views=document.getElementById('views');
+const side=document.getElementById('side'),scrim=document.getElementById('scrim'),toast=document.getElementById('toast');
+let cur='today';
+function draw(){
+  nav.innerHTML='<div class="nav-l">Build</div>'+KEYS.map(k=>{
+    const b=V[k].b?V[k].b():0;
+    return `<button class="nav-i${k===cur?' on':''}" data-k="${k}"><span>${V[k].n}</span>${b?`<span class="nav-n">${b}</span>`:''}</button>`;}).join('');
+  views.innerHTML=`<div class="view on">${V[cur].h()}</div>`;
+  document.getElementById('ttl').textContent=V[cur].n;
+  document.getElementById('sub').innerHTML=V[cur].s;
+  window.scrollTo(0,0);
+}
+function go(k){cur=k;draw();shut();}
+function shut(){side.classList.remove('open');scrim.classList.remove('on');}
+function say(m){toast.textContent=m;toast.classList.add('on');setTimeout(()=>toast.classList.remove('on'),2200);}
+document.addEventListener('click',e=>{
+  const n=e.target.closest('[data-k]'); if(n) return go(n.dataset.k);
+  const g=e.target.closest('[data-go]'); if(g) return go(g.dataset.go);
+  const d=e.target.closest('[data-d]');
+  if(d){const x=DUES.find(y=>y.id===d.dataset.d);x.ok=!x.ok;
+        document.getElementById('dues').innerHTML=dueHTML();
+        return say(x.ok?'Date confirmed. Ignacio sees it on his board.':'Confirmation removed.');}
+  const a=e.target.closest('[data-adj]');
+  if(a) return say('Send the date you can hit and the reason. It gets taken as given.');
+  const p=e.target.closest('[data-post]');
+  if(p) return say("Posted. It is in the record and on Ignacio's board.");
+});
+document.getElementById('burger').onclick=()=>{side.classList.add('open');scrim.classList.add('on');};
+scrim.onclick=shut;
+draw();
+</script>
+</body>
+</html>

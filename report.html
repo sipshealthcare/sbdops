@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Report something &middot; SBD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#D49A00;--ink:#070d1f;--card:#0e1328;--line:#1c2646;--lift:#131b3a;
+--dim:#94a3b8;--mut:#64748b;--red:#f0616d;--amb:#e0a132;--grn:#3fb984}
+
+/* ── SIMVOLY / BAKND EMBED COLOR LOCK ─────────────────────────── */
+@layer host-reset{ #sbd-root, #sbd-root *{ box-sizing:border-box !important; } }
+#sbd-root, #sbd-root div,#sbd-root span,#sbd-root p,#sbd-root a,#sbd-root li,
+#sbd-root h1,#sbd-root h2,#sbd-root h3,#sbd-root label,#sbd-root input,
+#sbd-root textarea,#sbd-root button{font-family:'Poppins',-apple-system,'Segoe UI',sans-serif !important;}
+#sbd-root{background:#070d1f !important;color:#e6ebf5 !important;}
+#sbd-root .hd{background:#0a1024 !important;border-color:#1c2646 !important;}
+#sbd-root .bmark{background:#D49A00 !important;color:#000000 !important;}
+#sbd-root .bname{color:#ffffff !important;}
+#sbd-root .bsub{color:#94a3b8 !important;}
+#sbd-root .tab{background:#0a1024 !important;color:#94a3b8 !important;}
+#sbd-root .tab.on{background:#131b3a !important;color:#D49A00 !important;}
+#sbd-root .tab-n{background:#1c2646 !important;color:#e6ebf5 !important;}
+#sbd-root .card{background:#0e1328 !important;border-color:#1c2646 !important;}
+#sbd-root .card-t{color:#ffffff !important;}
+#sbd-root .card-s{color:#94a3b8 !important;}
+#sbd-root .lbl{color:#ffffff !important;}
+#sbd-root .hint{color:#64748b !important;}
+#sbd-root .inp,#sbd-root .ta{background:#070d1f !important;color:#e6ebf5 !important;border-color:#1c2646 !important;}
+#sbd-root .inp::placeholder,#sbd-root .ta::placeholder{color:#64748b !important;}
+#sbd-root .chip{background:#131b3a !important;color:#94a3b8 !important;border-color:#1c2646 !important;}
+#sbd-root .chip.on{background:#D49A00 !important;color:#000000 !important;border-color:#D49A00 !important;}
+#sbd-root .file{background:#070d1f !important;color:#94a3b8 !important;border-color:#1c2646 !important;}
+#sbd-root .file:hover{color:#e6ebf5 !important;border-color:#D49A00 !important;}
+#sbd-root .btn{background:#1c2646 !important;color:#94a3b8 !important;}
+#sbd-root .btn-g{background:#D49A00 !important;color:#000000 !important;}
+#sbd-root .pill{color:#e6ebf5 !important;}
+#sbd-root .p-red{background:rgba(240,97,109,.14) !important;color:#f0616d !important;}
+#sbd-root .p-amb{background:rgba(224,161,50,.14) !important;color:#e0a132 !important;}
+#sbd-root .p-grn{background:rgba(63,185,132,.14) !important;color:#3fb984 !important;}
+#sbd-root .p-gry{background:rgba(100,116,139,.18) !important;color:#94a3b8 !important;}
+#sbd-root .item{background:#0e1328 !important;border-color:#1c2646 !important;}
+#sbd-root .item-t{color:#ffffff !important;}
+#sbd-root .item-m{color:#64748b !important;}
+#sbd-root .item-b{color:#cbd5e5 !important;}
+#sbd-root .known{background:#131b3a !important;color:#94a3b8 !important;}
+#sbd-root .known b{color:#e0a132 !important;}
+#sbd-root .ok-i{background:#3fb984 !important;color:#000000 !important;}
+#sbd-root .ok-m{color:#ffffff !important;}
+#sbd-root .ok-s{color:#94a3b8 !important;}
+#sbd-root .idbar{background:#131b3a !important;color:#94a3b8 !important;}
+#sbd-root .idbar b{color:#ffffff !important;}
+#sbd-root .lnk{color:#D49A00 !important;}
+#sbd-root .err{background:rgba(240,97,109,.12) !important;color:#f0616d !important;}
+#sbd-root .load{color:#64748b !important;}
+/* ── END LOCK ──────────────────────────────────────────────────── */
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#070d1f}
+#sbd-root{min-height:100vh;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.hd{border-bottom:1px solid var(--line);padding:14px 16px;position:sticky;top:0;z-index:10}
+.hd-in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:11px}
+.bmark{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-weight:700;font-size:12px;flex:0 0 32px}
+.bname{font-weight:600;font-size:15px}
+.bsub{font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+.tabs{max-width:640px;margin:0 auto;display:flex;gap:6px;padding:11px 0 0}
+.tab{flex:1;border:0;border-radius:9px;padding:10px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:7px}
+.tab-n{font-size:11px;border-radius:20px;padding:1px 7px;font-weight:600}
+.main{max-width:640px;margin:0 auto;padding:18px 16px 50px}
+.view{display:none}.view.on{display:block}
+
+.card{border:1px solid var(--line);border-radius:13px;padding:18px;margin-bottom:13px}
+.card-t{font-size:16px;font-weight:600}
+.card-s{font-size:13px;margin-top:4px}
+.known{font-size:12.5px;border-radius:10px;padding:12px 14px;margin:14px 0 0;border-left:3px solid var(--amb)}
+.known b{font-weight:600}
+
+.f{margin-bottom:19px}
+.lbl{display:block;font-size:14px;font-weight:600;margin-bottom:3px}
+.hint{display:block;font-size:12px;margin-bottom:10px}
+.inp,.ta{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px 13px;font-size:15px;font-family:inherit;line-height:1.5}
+.ta{min-height:96px;resize:vertical}
+.inp:focus,.ta:focus{outline:2px solid var(--gold);outline-offset:-1px}
+.row{display:flex;flex-wrap:wrap;gap:7px}
+.chip{border:1px solid var(--line);border-radius:9px;padding:11px 15px;font-size:13.5px;cursor:pointer;font-family:inherit;font-weight:500}
+.file{display:block;border:1px dashed var(--line);border-radius:10px;padding:15px;font-size:13px;text-align:center;cursor:pointer}
+.file input{display:none}
+.btn{border:0;border-radius:9px;padding:13px 24px;font-size:14.5px;font-weight:600;cursor:pointer;font-family:inherit}
+
+.pill{display:inline-block;font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.item{border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:10px}
+.item-h{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.item-t{font-size:14px;font-weight:600;line-height:1.4}
+.item-b{font-size:13px;margin-top:7px}
+.item-m{font-size:11.5px;margin-top:8px}
+.ok{text-align:center;padding:30px 12px}
+.ok-i{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;margin:0 auto 15px;font-size:24px;font-weight:700}
+.ok-m{font-size:18px;font-weight:600;margin-bottom:7px}
+.ok-s{font-size:13.5px;max-width:420px;margin:0 auto 20px}
+.idbar{font-size:12.5px;border-radius:10px;padding:10px 13px;margin-bottom:13px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.idbar b{font-weight:600}
+.lnk{background:none;border:0;font-family:inherit;font-size:12.5px;cursor:pointer;text-decoration:underline;padding:0}
+.err{font-size:13px;border-radius:10px;padding:11px 13px;margin-bottom:13px}
+.load{font-size:13px;text-align:center;padding:26px 0}
+.btn:disabled{opacity:.55;cursor:default}
+@media(min-width:700px){.main{padding:24px 16px 60px}}
+</style>
+</head>
+<body>
+<div id="sbd-root">
+<div class="hd">
+  <div class="hd-in">
+    <div class="bmark">SBD</div>
+    <div><div class="bname">Report something</div><div class="bsub">SIPS admin</div></div>
+  </div>
+  <div class="tabs">
+    <button class="tab on" data-t="new">New report</button>
+    <button class="tab" data-t="mine">Mine</button>
+  </div>
+</div>
+<div class="main" id="main"></div>
+</div>
+
+<script>
+const AREAS=['Staff and roster','Assessments','Observations','Schedule','Foundations','Reports','DAVID','Somewhere else'];
+const IMPACTS=['Blocking me now','Slowing me down','Minor','Just an idea'];
+const S={who:localStorage.getItem('sbd_who')||'',code:localStorage.getItem('sbd_code')||'',tab:'new'};
+const el=document.getElementById('main');
+const esc=t=>String(t||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+const chips=(a,d)=>a.map((x,i)=>`<button type="button" class="chip${i===d?' on':''}">${x}</button>`).join('');
+const idbar=()=>`<div class="idbar">Reporting as <b>${esc(S.who)}</b><button class="lnk" id="chg">change</button></div>`;
+
+function gate(msg){
+  el.innerHTML=`<div class="card">
+    <div class="card-t">Before you start</div>
+    <div class="card-s">Once only. This is remembered on this device.</div>
+    ${msg?`<div class="err" style="margin-top:13px">${esc(msg)}</div>`:''}
+    <div class="f" style="margin-top:17px"><label class="lbl" for="g1">Your name</label>
+      <input class="inp" id="g1" value="${esc(S.who)}" placeholder="Jane Doe"></div>
+    <div class="f"><label class="lbl" for="g2">Team code</label>
+      <span class="hint">Ask Ignacio if you do not have it.</span>
+      <input class="inp" id="g2" value="${esc(S.code)}" placeholder=""></div>
+    <button class="btn btn-g" id="gsave">Continue</button>
+  </div>`;
+  document.getElementById('gsave').onclick=()=>{
+    const w=document.getElementById('g1').value.trim(), c=document.getElementById('g2').value.trim();
+    if(!w) return gate('We need a name so you can be told what happened to it.');
+    S.who=w; S.code=c; localStorage.setItem('sbd_who',w); localStorage.setItem('sbd_code',c); render();
+  };
+}
+
+function formView(){
+  el.innerHTML=idbar()+`
+  <div class="card">
+    <div class="card-t">What did you run into?</div>
+    <div class="card-s">Anything at all. Broken, confusing, or just an idea. You do not need to work out whether it is a bug, and nothing you send here changes the platform.</div>
+    <div class="known"><b>Already known, no need to report:</b> endoscopy modules are not built yet, scripts cannot be assigned on their own yet, and the Black Belt observation checklist is still empty.</div>
+  </div>
+  <div class="card">
+    <div id="ferr"></div>
+    <div class="f"><label class="lbl" for="q1">What happened</label>
+      <span class="hint">In your own words. No need to be technical.</span>
+      <textarea class="ta" id="q1" placeholder="I tried to..."></textarea></div>
+    <div class="f"><label class="lbl">Where in the platform</label>
+      <span class="hint">Tap the closest one.</span>
+      <div class="row" id="area">${chips(AREAS,1)}</div></div>
+    <div class="f"><label class="lbl" for="q2">What you expected instead</label>
+      <span class="hint">Optional, but it usually saves a follow up.</span>
+      <input class="inp" id="q2" placeholder="I expected the queue to show the two requests"></div>
+    <div class="f"><label class="lbl">How much is it in your way</label>
+      <span class="hint">Your honest read. Priority gets worked out on our side.</span>
+      <div class="row" id="impact">${chips(IMPACTS,0)}</div></div>
+    <button class="btn btn-g" id="send">Send it</button>
+  </div>`;
+  document.getElementById('send').onclick=submit;
+}
+
+async function submit(){
+  const btn=document.getElementById('send'), errb=document.getElementById('ferr');
+  const what=document.getElementById('q1').value.trim();
+  errb.innerHTML='';
+  if(what.length<10){ errb.innerHTML='<div class="err">Say a little more about what happened.</div>'; return; }
+  btn.disabled=true; btn.textContent='Sending...';
+  try{
+    const r=await fetch('/api/intake',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({code:S.code,who:S.who,what,
+        expected:document.getElementById('q2').value.trim(),
+        area:document.querySelector('#area .chip.on').textContent,
+        impact:document.querySelector('#impact .chip.on').textContent})});
+    const d=await r.json();
+    if(!r.ok) throw new Error(d.error||'Could not send that.');
+    el.innerHTML=`<div class="card"><div class="ok">
+      <div class="ok-i">&#10003;</div>
+      <div class="ok-m">Sent. Thank you.</div>
+      <div class="ok-s">Logged as ${esc(d.id)}. Nothing in the platform changes because of this. It gets checked against what we already know, and you will hear back either way, usually within a day.</div>
+      <button class="btn" id="again">Report something else</button>
+    </div></div>`;
+    document.getElementById('again').onclick=()=>{S.tab='new';render();};
+    window.scrollTo(0,0);
+  }catch(e){
+    errb.innerHTML=`<div class="err">${esc(e.message)}</div>`;
+    btn.disabled=false; btn.textContent='Send it';
+  }
+}
+
+async function mineView(){
+  el.innerHTML=idbar()+`<div class="card"><div class="card-t">What you have reported</div>
+    <div class="card-s">You hear back on every one. Nothing is ever closed off, it is either done, in progress, or tabled.</div></div>
+    <div class="load" id="ml">Loading...</div>`;
+  try{
+    const r=await fetch(`/api/mine?who=${encodeURIComponent(S.who)}&code=${encodeURIComponent(S.code)}`);
+    const d=await r.json();
+    if(!r.ok) throw new Error(d.error||'Could not load those.');
+    const box=document.getElementById('ml');
+    if(!d.items.length){ box.outerHTML='<div class="load">Nothing yet. Anything you send will show up here with its outcome.</div>'; return; }
+    box.outerHTML=d.items.map(i=>`<div class="item">
+      <div class="item-h"><div class="item-t">${esc(i.what).slice(0,140)}</div><span class="pill p-${i.tone}">${esc(i.text)}</span></div>
+      ${i.answer?`<div class="item-b">${esc(i.answer)}</div>`:''}
+      <div class="item-m">${esc(i.id)} &middot; sent ${new Date(i.submitted).toLocaleDateString()}${i.decided?' &middot; answered '+new Date(i.decided).toLocaleDateString():''}</div>
+    </div>`).join('');
+  }catch(e){
+    document.getElementById('ml').outerHTML=`<div class="err">${esc(e.message)}</div>`;
+  }
+}
+
+function render(){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.t===S.tab));
+  if(!S.who) return gate();
+  S.tab==='mine'?mineView():formView();
+  window.scrollTo(0,0);
+}
+
+document.addEventListener('click',e=>{
+  const t=e.target.closest('.tab'); if(t){ S.tab=t.dataset.t; return render(); }
+  if(e.target.id==='chg'){ S.who=''; return gate(); }
+  const c=e.target.closest('.chip');
+  if(c){ [...c.parentElement.children].forEach(x=>x.classList.remove('on')); c.classList.add('on'); }
+});
+render();
+</script>
+</body>
+</html>
