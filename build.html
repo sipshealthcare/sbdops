@@ -77,6 +77,19 @@
 #sbd-root .check-l{color:#64748b !important;}
 #sbd-root .proof{color:#cbd5e5 !important;border-color:#3fb984 !important;}
 #sbd-root .proof-l{color:#3fb984 !important;}
+#sbd-root .qi{background:#0e1328 !important;border-color:#1c2646 !important;}
+#sbd-root .qi.top{border-left-color:#D49A00 !important;}
+#sbd-root .qi-t{color:#ffffff !important;} #sbd-root .qi-m{color:#64748b !important;}
+#sbd-root .qi-b,#sbd-root .ask-h,#sbd-root .agreed{color:#cbd5e5 !important;}
+#sbd-root .rk{background:#D49A00 !important;color:#000000 !important;}
+#sbd-root .stat{background:#0e1328 !important;border-color:#1c2646 !important;}
+#sbd-root .stat-v{color:#ffffff !important;} #sbd-root .stat-l{color:#94a3b8 !important;}
+#sbd-root .stat-v.amb{color:#e0a132 !important;} #sbd-root .stat-v.red{color:#f0616d !important;}
+#sbd-root .ask{background:#131b3a !important;}
+#sbd-root .agreed{border-color:#3fb984 !important;} #sbd-root .ag-l{color:#3fb984 !important;}
+#sbd-root .agreed.ct{border-color:#e0a132 !important;} #sbd-root .agreed.ct .ag-l{color:#e0a132 !important;}
+#sbd-root .check{color:#94a3b8 !important;border-color:#1c2646 !important;}
+#sbd-root .check-l{color:#64748b !important;}
 /* ── END LOCK ──────────────────────────────────────────────────── */
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -185,21 +198,48 @@ body{background:#070d1f}
   border-left:2px solid var(--grn);padding:3px 0 3px 9px}
 .proof-l{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
   color:var(--grn);font-weight:600;margin-bottom:2px}
+
+.wrap{display:block}
+.main{max-width:860px;margin:0 auto}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:13px}
+.stat{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--card)}
+.stat-v{font-size:23px;font-weight:700;line-height:1.1;color:#fff}
+.stat-v.amb{color:var(--amb)} .stat-v.red{color:var(--red)}
+.stat-l{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;margin-top:5px;color:var(--dim)}
+.qi{border:1px solid var(--line);border-radius:12px;padding:14px 15px;margin-bottom:10px;background:var(--card)}
+.qi.top{border-left:3px solid var(--gold)}
+.qi-h{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.qi-t{font-size:14px;font-weight:600;line-height:1.4;color:#fff}
+.qi-p{display:flex;gap:5px;flex-wrap:wrap;flex:0 0 auto}
+.rk{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;
+  background:var(--gold);color:#000;font-size:11px;font-weight:700;margin-right:7px;vertical-align:1px}
+.qi-m{font-size:11px;color:var(--mut);margin-top:6px}
+.qi-b{font-size:12.5px;color:#cbd5e5;margin-top:8px;line-height:1.55}
+.check{margin-top:9px;font-size:11.5px;line-height:1.5;color:#94a3b8;
+  border-left:2px solid var(--line);padding:3px 0 3px 9px}
+.check-l{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--mut);font-weight:600;margin-bottom:2px}
+.ask{margin-top:11px;padding:11px 12px;border-radius:9px;background:var(--lift)}
+.ask-h{font-size:12px;color:#cbd5e5;margin-bottom:9px}
+.ask-h b{color:#fff}
+.ask .dt{width:148px;padding:8px 9px;font-size:12px}
+.ask .why{flex:1;min-width:170px;padding:8px 9px;font-size:12px}
+.agreed{margin-top:10px;font-size:12px;color:#cbd5e5;border-left:2px solid var(--grn);
+  padding:3px 0 3px 9px}
+.agreed.ct{border-color:var(--amb)}
+.ag-l{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--grn);font-weight:600;margin-bottom:2px}
+.agreed.ct .ag-l{color:var(--amb)}
+.agreed .by{color:var(--mut)}
+@media(max-width:700px){.grid3{grid-template-columns:1fr}.ask .why{min-width:100%}}
 </style>
 </head>
 <body>
 <div id="sbd-root">
 <div class="wrap">
-  <aside class="side" id="side">
-    <div class="brand"><div class="bmark">DEV</div>
-      <div><div class="bname">SBD Build</div><div class="bsub">Dev team</div></div></div>
-    <nav class="nav" id="nav"></nav>
-  </aside>
-  <div class="scrim" id="scrim"></div>
   <main class="main">
     <div class="top">
-      <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
-      <div><div class="top-t" id="ttl">Today</div><div class="top-s" id="sub">Thursday, August 13, 2026</div></div>
+      <div><div class="top-t" id="ttl">SBD Build</div><div class="top-s" id="sub">Thursday, August 13, 2026</div></div>
       <button class="btn" id="refresh" style="margin-left:auto" hidden>Refresh</button>
     </div>
     <div id="views"></div>
@@ -209,23 +249,21 @@ body{background:#070d1f}
 </div>
 
 <script>
-/* Backend: Supabase project SBD OPS. Same hand-rolled rpc() pattern as
-   index.html: fetch only, no SDK, no build step. Every call here requires a
-   signed-in user whose app_users row says dev; the database enforces it, not
-   this page. A dev never receives untriaged intake — that filter is a row
-   level security policy, not a page filter. */
+/* SBD Build — the dev queue.
+   One page, one job: what to work on, in order, and the dates to confirm.
+   Items arrive from the tracker, from the morning brief, or pushed in after the
+   fact. Everything else in this system reaches the team through Ignacio. */
 const SB_URL='https://uwgpjjbbfwqiumzfkwuy.supabase.co';
 const SB_KEY='sb_publishable_USi4uTOHHwrNjKXB3-bbDQ_Gzk7PN2q';
 
 const esc=t=>String(t??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
 const P=(c,t)=>`<span class="pill ${c}">${t}</span>`;
-const fmtD=d=>d?new Date(d+(String(d).length===10?'T12:00:00':'')).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
-const ageDays=d=>Math.max(0,Math.floor((Date.now()-new Date(d).getTime())/86400000));
-const agePill=n=>P(n>=30?'p-red':n>=10?'p-amb':'p-gry',`${n} day${n===1?'':'s'}`);
-const stPill=s=>({'shipped':P('p-grn','Shipped'),'in-progress':P('p-amb','In progress'),'blocked':P('p-red','Blocked'),'backlog':P('p-gry','Backlog'),'open':P('p-gry','Open')}[s]||P('p-gry',esc(s)));
+const D=d=>d?new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}):'';
+const short=d=>d?new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
 const today=()=>new Date().toISOString().slice(0,10);
-
+const days=d=>Math.round((new Date(d+'T12:00:00')-new Date(today()+'T12:00:00'))/86400000);
 const hdrs=()=>({'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`});
+
 async function rpc(fn,args){
   const r=await fetch(`${SB_URL}/rest/v1/rpc/${fn}`,{method:'POST',headers:hdrs(),body:JSON.stringify(args||{})});
   let d=null; try{ d=await r.json(); }catch(_){}
@@ -235,9 +273,115 @@ async function rpc(fn,args){
 async function q(path){
   const r=await fetch(`${SB_URL}/rest/v1/${path}`,{headers:hdrs()});
   let d=null; try{ d=await r.json(); }catch(_){}
-  if(!r.ok) throw new Error((d&&(d.message||d.hint))||'Could not load data.');
+  if(!r.ok) throw new Error((d&&(d.message||d.hint))||'Could not load the queue.');
   return d||[];
 }
+
+let ITEMS=[], BRIEF=null;
+const WHO='sbd_dev_who';
+const me=()=>localStorage.getItem(WHO)||'';
+
+async function load(){
+  const [items,briefs]=await Promise.all([
+    q('tracker_items?select=number,title,status,priority,sprint,rank,origin,note,how_to_check,'+
+      'proposed_on,date_state,counter_on,counter_note,answered_by,answered_at,shipped_on,verified_note,updated_at'+
+      '&status=neq.shipped&order=number.asc'),
+    q('briefs?select=brief_date,author,body&order=brief_date.desc&limit=1')
+  ]);
+  ITEMS=items; BRIEF=briefs[0]||null;
+}
+
+/* ---------- ordering: ranked first, then by the date that actually applies ---------- */
+const agreed=t=>t.date_state==='countered'?t.counter_on:t.proposed_on;
+function ordered(){
+  return [...ITEMS].sort((a,b)=>{
+    if((a.rank==null)!==(b.rank==null)) return a.rank==null?1:-1;
+    if(a.rank!=null&&b.rank!=null&&a.rank!==b.rank) return a.rank-b.rank;
+    const da=agreed(a), db=agreed(b);
+    if(!!da!==!!db) return da?-1:1;
+    if(da&&db&&da!==db) return da<db?-1:1;
+    const pr={critical:0,high:1,medium:2,low:3};
+    return (pr[a.priority]??9)-(pr[b.priority]??9) || a.number-b.number;
+  });
+}
+
+function datePill(t){
+  const d=agreed(t);
+  if(!d) return '';
+  const n=days(d);
+  const late=n<0, todayish=n===0;
+  const label=late?`${Math.abs(n)}d overdue`:todayish?'Today':n===1?'Tomorrow':short(d);
+  return P(late?'p-red':todayish?'p-amb':n<=3?'p-amb':'p-gry',label);
+}
+
+function dateBlock(t){
+  if(!t.proposed_on) return '';
+  if(t.date_state==='confirmed')
+    return `<div class="agreed"><span class="ag-l">Confirmed</span>${D(t.proposed_on)}
+      ${t.answered_by?`&middot; ${esc(t.answered_by)}`:''}</div>`;
+  if(t.date_state==='countered')
+    return `<div class="agreed ct"><span class="ag-l">Moved to ${D(t.counter_on)}</span>${esc(t.counter_note||'')}
+      ${t.answered_by?`<span class="by">&middot; ${esc(t.answered_by)}</span>`:''}</div>`;
+  return `<div class="ask">
+    <div class="ask-h">Proposed for <b>${D(t.proposed_on)}</b>. Confirm it, or send a different date with the reason.</div>
+    <div class="row">
+      <button class="btn btn-g" data-ok="${t.number}">Confirm</button>
+      <input class="inp dt" id="nd-${t.number}" type="date" value="${t.proposed_on}">
+      <input class="inp why" id="wy-${t.number}" placeholder="Why the date needs to move">
+      <button class="btn btn-o" data-no="${t.number}">Send this instead</button>
+    </div></div>`;
+}
+
+function card(t){
+  const src=t.origin||'Tracker';
+  const sp = t.status==='blocked'?P('p-red','Blocked'):t.status==='in-progress'?P('p-amb','In progress'):'';
+  return `<div class="qi${t.rank!=null?' top':''}">
+    <div class="qi-h">
+      <div class="qi-t">${t.rank!=null?`<span class="rk">${t.rank}</span>`:''}#${t.number} &middot; ${esc(t.title)}</div>
+      <div class="qi-p">${datePill(t)}${sp}</div>
+    </div>
+    <div class="qi-m">${esc(src)}${t.priority?` &middot; ${esc(t.priority)}`:''}${t.sprint?` &middot; ${esc(t.sprint)}`:''}</div>
+    ${t.note?`<div class="qi-b">${esc(t.note)}</div>`:''}
+    ${t.how_to_check?`<div class="check"><span class="check-l">How to check it is done</span>${esc(t.how_to_check)}</div>`:''}
+    ${dateBlock(t)}
+  </div>`;
+}
+
+function view(){
+  const rows=ordered();
+  const waiting=rows.filter(t=>t.date_state==='pending');
+  const rest=rows.filter(t=>t.date_state!=='pending');
+  const overdue=rows.filter(t=>{const d=agreed(t);return d&&days(d)<0;});
+  return `
+${BRIEF?`<div class="card max">
+  <div class="card-h"><div class="card-t">This morning's brief</div>
+  <div class="card-s">From ${esc(BRIEF.author)} &middot; ${D(BRIEF.brief_date)}</div></div>
+  ${briefBlock(BRIEF.body)}
+</div>`:''}
+
+<div class="grid3">
+  <div class="stat"><div class="stat-v">${rows.length}</div><div class="stat-l">In the queue</div></div>
+  <div class="stat"><div class="stat-v${waiting.length?' amb':''}">${waiting.length}</div><div class="stat-l">Dates to answer</div></div>
+  <div class="stat"><div class="stat-v${overdue.length?' red':''}">${overdue.length}</div><div class="stat-l">Past their date</div></div>
+</div>
+
+${waiting.length?`<div class="card max">
+  <div class="card-h"><div class="card-t">Dates waiting on you</div>
+  <div class="card-s">Confirm what works. Send back a different date with the reason for anything that does not — it gets taken as given.</div></div>
+  <div class="f" style="margin-bottom:14px">
+    <label class="lbl">Your name</label>
+    <input class="inp" id="who" value="${esc(me())}" placeholder="So Ignacio knows who answered" style="max-width:280px">
+  </div>
+  ${waiting.map(card).join('')}
+</div>`:''}
+
+<div class="card max">
+  <div class="card-h"><div class="card-t">The queue</div>
+  <div class="card-s">Ranked work first, then by date. Everything not yet shipped.</div></div>
+  ${rest.length?rest.map(card).join(''):'<div class="p muted">Nothing outstanding. Anything added to the tracker, pushed in, or carried from a brief appears here on refresh.</div>'}
+</div>`;
+}
+
 /* Renders the brief the way the document reads: section headings, sub-headings,
    bullets, tables, and bold. Escapes first, so document text can never inject. */
 function md(src){
@@ -282,304 +426,57 @@ function md(src){
   return out;
 }
 
-/* ---------- state ---------- */
-const D={board:[],intake:[],decisions:[],releases:[],refdocs:[],briefs:[],eods:[],addenda:[]};
-const WHO_KEY='sbd_dev_who';
-const sprintNow=()=>{const c=[...D.board].filter(t=>t.sprint&&t.status!=='shipped').sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));return c.length?c[0].sprint:null;};
-
-async function loadAll(){
-  rpc('snapshot_tracker').catch(()=>{});
-  const [board,intake,decisions,releases,refdocs,briefs,eods,addenda]=await Promise.all([
-    q('tracker_items?select=number,title,status,priority,sprint,source,intake_ref,shipped_on,review_on,rank,how_to_check,note,verified_note,verified_at,created_at,updated_at&order=number.asc'),
-    q('intake?select=ref,who,area,impact,what,status,verdict,analysis,decided_at&order=decided_at.desc'),
-    q('decisions?select=ref,question,blocks,raised_on,status,answer,reasoning,answered_on,review_on&order=raised_on.asc'),
-    q('releases?select=released_on,outcome,summary,detail,verification,item_numbers&order=released_on.desc&limit=20'),
-    q('reference_docs?select=slug,title,body'),
-    q('briefs?select=brief_date,author,body&order=brief_date.desc&limit=1'),
-    q('eod_reports?select=report_date,author,completed,qa,still_working,needs_ignacio&order=report_date.desc&limit=14'),
-    q('eod_addenda?select=addendum_date,author,author_role,body,created_at&order=created_at.desc&limit=30')
-  ]);
-  Object.assign(D,{board,intake,decisions,releases,refdocs,briefs,eods,addenda});
-}
-
-/* ---------- views ---------- */
-function todayHTML(){
-  const brief=D.briefs[0];
-  const ranked=D.board.filter(t=>t.rank!=null&&t.status!=='shipped').sort((a,b)=>a.rank-b.rank||a.number-b.number);
-  const open=D.decisions.filter(d=>d.status==='open').sort((a,b)=>new Date(a.raised_on)-new Date(b.raised_on));
-  return `
-<div class="card max">
-  <div class="card-h"><div class="card-t">This morning's brief</div>
-  <div class="card-s">${brief?`From ${esc(brief.author)} &middot; ${fmtD(brief.brief_date)}`:'Nothing received yet'}</div></div>
-  ${brief?briefBlock(brief.body):'<div class="p muted">No brief has been sent yet. When Ignacio posts one it appears here on refresh, dated, with priorities in order.</div>'}
-</div>
-
-<div class="card max">
-  <div class="card-h"><div class="card-t">Priority order</div>
-  <div class="card-s">Set on the master board. Rank 1 means do this first. Hit Refresh to pick up changes.</div></div>
-  ${ranked.length?ranked.map(t=>`
-  <div class="due"><div>${t.rank}. &nbsp;#${t.number} &middot; ${esc(t.title)}<div class="due-d">${[t.sprint?esc(t.sprint):'',esc(t.priority)].filter(Boolean).join(' &middot; ')}</div></div>
-  <div class="row">${stPill(t.status)}</div></div>`).join('')
-  :'<div class="p muted">Nothing is ranked right now. When Ignacio sets an order it shows here, numbered.</div>'}
-</div>
-
-<div class="card max">
-  <div class="card-h"><div class="card-t">Waiting on Ignacio</div><div class="card-s">Your questions, and how long they have been open</div></div>
-  ${open.length?open.map(d=>`
-  <div class="item"><div class="item-h"><div class="item-t">${esc(d.question)}</div>${agePill(ageDays(d.raised_on))}</div>
-  <div class="item-m">Raised ${fmtD(d.raised_on)}${d.blocks?' &middot; blocks: '+esc(d.blocks):''}</div></div>`).join('')
-  :'<div class="p muted">Nothing waiting. Questions you raise under Ask land here with their age.</div>'}
-  <div class="row" style="margin-top:4px"><button class="btn btn-g" data-go="ask">Ask something new</button></div>
-</div>`;
-}
-
-function sprintHTML(){
-  const sp=sprintNow();
-  const spRows=D.board.filter(t=>sp&&t.sprint===sp).sort((a,b)=>(a.rank??999)-(b.rank??999)||a.number-b.number);
-  const rest=D.board.filter(t=>!sp||t.sprint!==sp).sort((a,b)=>a.number-b.number);
-  const appr=D.intake.filter(i=>i.status==='approved'||i.status==='shipped');
-  const trackerOf=r=>D.board.find(t=>t.intake_ref===r);
-  const stOpts=s=>['open','in-progress','shipped','blocked','backlog'].map(x=>`<option${x===s?' selected':''}>${x}</option>`).join('');
-  const row=t=>`<tr><td>${t.number}</td>
-  <td>${t.rank!=null?`<span class="due-d">${t.rank}.</span> `:''}${esc(t.title)}<div class="age">${[t.sprint?esc(t.sprint):'',t.intake_ref?'from '+esc(t.intake_ref):'',t.shipped_on?'shipped '+fmtD(t.shipped_on):'',t.review_on?'review '+fmtD(t.review_on):''].filter(Boolean).join(' &middot; ')||'&nbsp;'}</div>
-    ${t.how_to_check?`<div class="check"><span class="check-l">How to check</span>${esc(t.how_to_check)}</div>`:''}
-    ${t.verified_note?`<div class="proof"><span class="proof-l">Verified${t.verified_at?' '+fmtD(t.verified_at):''}</span>${esc(t.verified_note)}</div>`:''}</td>
-  <td><div class="row" style="gap:5px">
-    <select class="ta" id="st-${t.number}" style="min-height:0;width:118px;padding:8px 9px;font-size:12px">${stOpts(t.status)}</select>
-    <input class="inp" id="dt-${t.number}" type="date" style="width:132px;padding:8px 9px;font-size:12px">
-    <button class="btn" data-upd="${t.number}">Apply</button>
-    <input class="inp" id="vf-${t.number}" placeholder="How you checked it is live${t.status==='shipped'?'':' (needed to ship)'}" style="width:100%;padding:8px 9px;font-size:12px">
-  </div></td></tr>`;
-  return `
-<div class="card max">
-  <div class="card-h"><div class="card-t">${sp?`Committed &middot; ${esc(sp)}`:'Committed'}</div>
-  <div class="card-s">${spRows.length?`${spRows.length} items. Status changes write straight to the record.`:'No items carry a sprint tag right now.'}</div></div>
-  ${spRows.length?`<table class="tbl"><thead><tr><th>#</th><th>Item</th><th>Change</th></tr></thead><tbody>${spRows.map(row).join('')}</tbody></table>`:''}
-  <div class="p muted" style="margin-top:10px">Shipped needs a ship date <em>and</em> a line on how you checked it is live, against the running system rather than the report of it. Backlog needs a review date. Titles and priorities are read only from this side.</div>
-</div>
-${rest.length?`
-<div class="card max">
-  <div class="card-h"><div class="card-t">Everything else on the ledger</div></div>
-  <table class="tbl"><thead><tr><th>#</th><th>Item</th><th>Change</th></tr></thead><tbody>${rest.map(row).join('')}</tbody></table>
-</div>`:''}
-<div class="card max">
-  <div class="card-h"><div class="card-t">Approved from intake</div><div class="card-s">Came from the SIPS admin team, triaged and approved. Untriaged intake never reaches this page.</div></div>
-  ${appr.length?appr.map(i=>{const t=trackerOf(i.ref);return `
-  <div class="item"><div class="item-h"><div class="item-t">${esc(i.what).slice(0,120)}</div>${i.impact?P(i.impact==='Blocking me now'?'p-red':i.impact==='Slowing me down'?'p-amb':'p-gry',esc(i.impact)):''}</div>
-  ${i.verdict?`<div class="item-b">${esc(i.verdict)}${i.analysis?' &mdash; '+esc(i.analysis):''}</div>`:''}
-  <div class="item-m">${esc(i.ref)}${t?` &rarr; tracker #${t.number}`:''}${i.decided_at?' &middot; approved '+fmtD(i.decided_at):''}</div></div>`;}).join('')
-  :'<div class="p muted">Nothing approved yet. When intake is triaged and approved on the master board it appears here.</div>'}
-</div>`;
-}
-
-function eodHTML(){
-  const who=localStorage.getItem(WHO_KEY)||'';
-  return `
-<div class="card max">
-  <div class="card-h"><div class="card-t">End of day, ${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div>
-  <div class="card-s">Same four sections as always. One ask: name the tracker number on anything you mark shipped.</div></div>
-  <div class="f"><label class="lbl">Your name</label>
-    <input class="inp" id="eodWho" value="${esc(who)}" placeholder="Who is posting this"></div>
-  <div class="f"><label class="lbl">Completed today</label>
-    <span class="hint">What shipped, with the tracker number and how to check it.</span>
-    <textarea class="ta" id="eodDone" placeholder="#104 Tracker reconciled and republished. To check: open the board, rows 26 and 27 now read Shipped."></textarea></div>
-  <div class="f"><label class="lbl">QA and verification run today</label>
-    <span class="hint">What you checked against the live system rather than against the report of it.</span>
-    <textarea class="ta" id="eodQa"></textarea></div>
-  <div class="f"><label class="lbl">Still working</label>
-    <span class="hint">One per line, with an expected date on each.</span>
-    <textarea class="ta" id="eodStill"></textarea></div>
-  <div class="f"><label class="lbl">Needs Ignacio</label>
-    <span class="hint">Anything blocked on a decision. These become tracked questions with a date on them.</span>
-    <textarea class="ta" id="eodNeeds"></textarea></div>
-  <button class="btn btn-g" data-act="postEod">Post EOD</button>
-</div>
-
-<div class="card max">
-  <div class="card-h"><div class="card-t">Forgot to mention</div>
-  <div class="card-s">Left something out of an EOD? Push it through here. It lands dated on both boards.</div></div>
-  <div class="f"><textarea class="ta" id="addBody" style="min-height:64px" placeholder="One thing, in plain words."></textarea></div>
-  <div class="row" style="margin-bottom:14px"><button class="btn btn-g" data-act="addendum">Push it through</button></div>
-  ${D.addenda.length?D.addenda.slice(0,8).map(a=>`
-  <div class="item"><div class="item-b" style="margin-top:0">${esc(a.body)}</div>
-  <div class="item-m">${fmtD(a.addendum_date)} &middot; ${esc(a.author)} &middot; ${a.author_role==='master_admin'?'master admin':'dev team'}</div></div>`).join(''):''}
-</div>
-
-<div class="card max">
-  <div class="card-h"><div class="card-t">Recent reports</div></div>
-  ${D.eods.length?D.eods.map(r=>`
-  <div class="item"><div class="item-h"><div class="item-t">${fmtD(r.report_date)}${r.author?' &middot; '+esc(r.author):''}</div></div>
-  ${r.completed?`<div class="item-b">${esc(r.completed).slice(0,240)}</div>`:''}
-  ${r.needs_ignacio?`<div class="item-m">Needs Ignacio: ${esc(r.needs_ignacio).slice(0,140)}</div>`:''}</div>`).join('')
-  :'<div class="p muted">No EOD reports in the record yet. The first one posted above starts the history.</div>'}
-</div>`;
-}
-
-function askHTML(){
-  const open=D.decisions.filter(d=>d.status==='open').sort((a,b)=>new Date(a.raised_on)-new Date(b.raised_on));
-  return `
-<div class="card max">
-  <div class="card-h"><div class="card-t">Ask a question</div>
-  <div class="card-s">This becomes a tracked item with a date on it, rather than a paragraph in tonight's EOD that ages quietly.</div></div>
-  <div class="f"><label class="lbl">What do you need decided</label>
-    <textarea class="ta" id="askQ" placeholder="For endoscopy, how many modules and do the gates follow the Foundations three-pass rule?"></textarea></div>
-  <div class="f"><label class="lbl">What it blocks</label>
-    <span class="hint">So it can be prioritised honestly against everything else.</span>
-    <textarea class="ta" id="askB" style="min-height:60px" placeholder="The endoscopy build cannot start without it."></textarea></div>
-  <button class="btn btn-g" data-act="ask">Send</button>
-</div>
-<div class="card max">
-  <div class="card-h"><div class="card-t">Open</div><div class="card-s">Everything this team is waiting on</div></div>
-  ${open.length?open.map(d=>`
-  <div class="item"><div class="item-h"><div class="item-t">${esc(d.question)}</div>${agePill(ageDays(d.raised_on))}</div>
-  <div class="item-m">${esc(d.ref)} &middot; raised ${fmtD(d.raised_on)}${d.blocks?' &middot; blocks: '+esc(d.blocks):''}</div></div>`).join('')
-  :'<div class="p muted">Nothing open.</div>'}
-</div>`;
-}
-
-function releasesHTML(){
-  const byNum=Object.fromEntries(D.board.map(b=>[b.number,b.title]));
-  return `
-<div class="card max">
-  <div class="card-h"><div class="card-t">Post a release</div>
-  <div class="card-s">Merged, deployed and confirmed are three separate facts. Verification records the third.</div></div>
-  <div class="f"><label class="lbl">What went out</label>
-    <input class="inp" id="relSum" placeholder="One line. What changed."></div>
-  <div class="f"><label class="lbl">Tracker numbers</label>
-    <span class="hint">Comma separated. Numbers with no tracker row are kept and flagged, not dropped.</span>
-    <input class="inp" id="relNums" placeholder="104, 87"></div>
-  <div class="f"><label class="lbl">Detail</label>
-    <textarea class="ta" id="relDet" style="min-height:60px"></textarea></div>
-  <div class="f"><label class="lbl">How it was verified</label>
-    <span class="hint">Against the live system, not against the report of it.</span>
-    <input class="inp" id="relVer" placeholder="Checked the board: rows 26 and 27 read Shipped."></div>
-  <div class="row">
-    <select class="ta" id="relOut" style="min-height:0;width:150px;padding:9px 10px"><option value="live">live</option><option value="rolled-back">rolled-back</option></select>
-    <button class="btn btn-g" data-act="postRelease">Log it</button>
-  </div>
-</div>
-<div class="card max">
-  <div class="card-h"><div class="card-t">Recent</div></div>
-  ${D.releases.length?D.releases.map(r=>`
-  <div class="item"><div class="item-h"><div class="item-t">${fmtD(r.released_on)} &middot; ${esc(r.summary)}</div>${r.outcome==='live'?P('p-grn','Live'):P('p-red','Rolled back')}</div>
-  ${r.detail?`<div class="item-b">${esc(r.detail)}</div>`:''}
-  <div class="item-m">${[r.verification?'Verified: '+esc(r.verification):'',(r.item_numbers||[]).length?(r.item_numbers||[]).map(n=>byNum[n]?`#${n}`:`#${n} (no row)`).join(', '):''].filter(Boolean).join(' &middot; ')||'No verification recorded'}</div></div>`).join('')
-  :'<div class="p muted">No releases in the record yet. The first one logged above starts the history.</div>'}
-</div>`;
-}
-
-function checksHTML(){
-  const order=['standards','severity','capability','limitations','glossary','surfaces'];
-  const want=D.refdocs.filter(r=>['standards','severity'].includes(r.slug));
-  const docs=(want.length?want:D.refdocs).sort((a,b)=>order.indexOf(a.slug)-order.indexOf(b.slug));
-  if(!docs.length) return '<div class="card max"><div class="card-h"><div class="card-t">Standards</div></div><div class="p muted">No reference documents in the database yet. Standards and severity render here once loaded.</div></div>';
-  return docs.map(r=>`<div class="card max"><div class="card-h"><div class="card-t">${esc(r.title)}</div></div>${md(r.body)||'<div class="p muted">Empty.</div>'}</div>`).join('');
-}
-
-
-/* The brief runs to thousands of words. Show the opening, let it be opened. */
+/* brief collapse, unchanged behaviour */
 let briefOpen=false;
 function briefBlock(body){
   if(!body) return '';
-  const short = body.length < 700;
-  if(short) return md(body);
+  if(body.length<700) return md(body);
   return `<div class="clamp${briefOpen?' open':''}">${md(body)}</div>
   <div class="morebar"><div class="rule"></div>
     <button class="btn" data-brief="1">${briefOpen?'See less':'See more'}</button>
     <div class="rule"></div></div>`;
 }
 
-/* ---------- registry, nav, draw ---------- */
-const V={
-  today:{n:'Today',s:new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}),h:todayHTML},
-  sprint:{n:'Sprint',s:'Committed work and where it stands',b:()=>{const sp=sprintNow();return D.board.filter(t=>sp&&t.sprint===sp&&t.status!=='shipped').length;},h:sprintHTML},
-  eod:{n:'Post EOD',s:'End of day report',h:eodHTML},
-  ask:{n:'Ask',s:'Questions to Ignacio',b:()=>D.decisions.filter(d=>d.status==='open').length,h:askHTML},
-  releases:{n:'Releases',s:'What is live',h:releasesHTML},
-  checks:{n:'Standards',s:'Check before you ship',h:checksHTML}
-};
-const KEYS=['today','sprint','eod','ask','releases','checks'];
-const nav=document.getElementById('nav'),views=document.getElementById('views');
-const side=document.getElementById('side'),scrim=document.getElementById('scrim'),toast=document.getElementById('toast');
+const views=document.getElementById('views'), toast=document.getElementById('toast');
 const refreshBtn=document.getElementById('refresh');
-let cur='today';
-
+function say(m){ toast.textContent=m; toast.classList.add('on'); setTimeout(()=>toast.classList.remove('on'),2800); }
 function draw(){
-  nav.innerHTML='<div class="nav-l">Build</div>'+KEYS.map(k=>{
-    const b=V[k].b?V[k].b():0;
-    return `<button class="nav-i${k===cur?' on':''}" data-k="${k}"><span>${V[k].n}</span>${b?`<span class="nav-n">${b}</span>`:''}</button>`;}).join('');
-  views.innerHTML=`<div class="view on">${V[cur].h()}</div>`;
-  document.getElementById('ttl').textContent=V[cur].n;
-  document.getElementById('sub').innerHTML=V[cur].s;
-  window.scrollTo(0,0);
+  views.innerHTML=`<div class="view on">${view()}</div>`;
+  document.getElementById('sub').textContent=
+    new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
 }
-function go(k){cur=k;draw();shut();}
-function shut(){side.classList.remove('open');scrim.classList.remove('on');}
-function say(m){toast.textContent=m;toast.classList.add('on');setTimeout(()=>toast.classList.remove('on'),2600);}
-
-/* ---------- auth ---------- */
-
-
-async function boot(){
-  try{
-    views.innerHTML='<div class="view on"><div class="p muted">Loading the record...</div></div>';
-    await loadAll();
-    refreshBtn.hidden=false;
-    draw();
-  }catch(e){
-    views.innerHTML=`<div class="view on"><div class="card max"><div class="card-t">Could not load</div><div class="p" style="margin-top:8px">${esc(e.message)}</div><div class="row" style="margin-top:12px"><button class="btn" onclick="location.reload()">Try again</button></div></div></div>`;
-  }
-}
-
 async function refresh(quiet){
-  try{ await loadAll(); draw(); if(!quiet) say('Refreshed. This is the record as of right now.'); }
+  try{ await load(); draw(); if(!quiet) say('Refreshed.'); }
   catch(e){ say(e.message); }
 }
 async function act(fn){
-  try{ await fn(); await refresh(true); }
-  catch(e){ say(e.message); }
+  try{ await fn(); await refresh(true); }catch(e){ say(e.message); }
 }
 const val=id=>{const n=document.getElementById(id);return n?n.value.trim():'';};
 
 document.addEventListener('click',e=>{
-  const n=e.target.closest('[data-k]'); if(n) return go(n.dataset.k);
-  const g=e.target.closest('[data-go]'); if(g) return go(g.dataset.go);
   if(e.target===refreshBtn) return refresh();
   if(e.target.closest('[data-brief]')){ briefOpen=!briefOpen; return draw(); }
 
-  const up=e.target.closest('[data-upd]');
-  if(up){ const num=Number(up.dataset.upd);
-    return act(async()=>{ const st=val('st-'+num), dt=val('dt-'+num)||null;
-      await rpc('update_tracker',{p_number:num,p_status:st,
-        p_shipped_on:st==='shipped'?(dt||today()):null,
-        p_review_on:st==='backlog'?dt:null,
-        p_verified:val('vf-'+num)||null});
-      say(`#${num} is now ${st}. Ignacio sees it on his board.`); }); }
+  const ok=e.target.closest('[data-ok]');
+  if(ok){ const n=Number(ok.dataset.ok); const who=val('who'); if(who) localStorage.setItem(WHO,who);
+    return act(async()=>{ await rpc('answer_date',{p_number:n,p_action:'confirm',p_who:who||null});
+      say(`#${n} confirmed. Ignacio sees it on his board.`); }); }
 
-  const a=e.target.closest('[data-act]');
-  if(!a) return;
-  if(a.dataset.act==='postEod') return act(async()=>{
-    const who=val('eodWho'); if(who) localStorage.setItem(WHO_KEY,who);
-    const still=val('eodStill')?val('eodStill').split(/\n+/).map(s=>s.trim()).filter(Boolean):[];
-    await rpc('post_eod',{p_date:today(),p_author:who||'Dev team',p_completed:val('eodDone')||null,
-      p_qa:val('eodQa')||null,p_still_working:still,p_needs_ignacio:val('eodNeeds')||null});
-    say("Posted. It is in the record and on Ignacio's board."); });
-  if(a.dataset.act==='addendum') return act(async()=>{
-    await rpc('post_addendum',{p_body:val('addBody'),p_author:localStorage.getItem(WHO_KEY)||'Dev team'});
-    say('Pushed through, with a date on it.'); });
-  if(a.dataset.act==='ask') return act(async()=>{
-    const ref=await rpc('raise_question',{p_question:val('askQ'),p_blocks:val('askB')||null});
-    say(`Sent as ${ref}. It now has a date on it.`); });
-  if(a.dataset.act==='postRelease') return act(async()=>{
-    const nums=val('relNums')?val('relNums').split(/[,\s]+/).map(Number).filter(n=>Number.isInteger(n)&&n>0):[];
-    const res=await rpc('post_release',{p_date:today(),p_outcome:val('relOut')||'live',p_summary:val('relSum'),
-      p_detail:val('relDet')||null,p_verification:val('relVer')||null,p_item_numbers:nums});
-    const un=(res&&res.unlinked)||[];
-    say(un.length?`Logged. Note: no tracker row for ${un.map(n=>'#'+n).join(', ')} — kept anyway.`:'Logged. Every number matched a tracker row.'); });
+  const no=e.target.closest('[data-no]');
+  if(no){ const n=Number(no.dataset.no); const who=val('who'); if(who) localStorage.setItem(WHO,who);
+    return act(async()=>{ await rpc('answer_date',{p_number:n,p_action:'counter',
+      p_new_date:val('nd-'+n)||null,p_reason:val('wy-'+n)||null,p_who:who||null});
+      say(`#${n} moved to ${short(val('nd-'+n))}. Reason sent with it.`); }); }
 });
-document.getElementById('burger').onclick=()=>{side.classList.add('open');scrim.classList.add('on');};
-scrim.onclick=shut;
-boot();
+
+(async()=>{
+  views.innerHTML='<div class="view on"><div class="p muted">Loading the queue...</div></div>';
+  try{ await load(); refreshBtn.hidden=false; draw(); }
+  catch(e){ views.innerHTML=`<div class="view on"><div class="card max"><div class="card-t">Could not load</div>
+    <div class="p" style="margin-top:8px">${esc(e.message)}</div>
+    <div class="row" style="margin-top:12px"><button class="btn" onclick="location.reload()">Try again</button></div></div></div>`; }
+})();
 </script>
 </body>
 </html>
