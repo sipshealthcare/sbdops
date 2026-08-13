@@ -19,8 +19,8 @@ success can accurately describe what the platform does today.
 ## Where everything lives
 
 ```
-index.html         master admin surface   → sbdops.vercel.app
-report.html        SIPS admin intake      → sbdops.vercel.app/report
+index.html         SIPS admin intake      → sbdops.vercel.app
+dash.html          master admin surface   → sbdops.vercel.app/dash
 build.html         dev team surface       → sbdops.vercel.app/build
 tracker/items/     one file per item, one status change per commit
 eod/               one file per day, from the dev team
@@ -60,7 +60,7 @@ Everything else is direct push.
 ## Deployment
 
 Static. Vercel serves the three HTML files straight from the repo root, no build step.
-`vercel.json` turns on clean URLs so `/report` and `/build` work without the extension, and sets
+`vercel.json` turns on clean URLs so `/dash` and `/build` work without the extension, and sets
 `noindex` on every response.
 
 **Before real data goes in this repo, turn on Vercel deployment protection.** The capability
@@ -68,19 +68,16 @@ register, the known limitations and the decision log are exactly the things that
 a public URL. Right now the surfaces run on illustrative data so the exposure is low, but that
 stops being true the moment they read from here.
 
-## Intake, without a database
+## Intake
 
-`report.html` posts to `/api/intake`, a serverless function in this repo that commits the
-submission into `intake/` as a JSON file. There is no database anywhere. The repo is the record,
-so a submission is a commit and the audit trail comes for free. `/api/mine` reads the same files
-back so a submitter sees their own items and nothing else.
+`index.html` calls two Supabase database functions directly. `submit_intake` writes a submission,
+`my_intake` reads back a submitter's own items and nothing else. Both calls go through database
+functions rather than straight at a table, which is what stops a submitter reading the triage
+queue.
 
-Two environment variables, set in Vercel project settings and never in the page:
-
-| Variable | What it is |
-|---|---|
-| `GITHUB_TOKEN` | Fine-grained personal access token, Contents read and write, scoped to this repo only |
-| `SUBMIT_CODE` | Shared word the admin team enters once. Keeps the open internet from committing here. Not real auth and not pretending to be. |
+No serverless functions and no environment variables. The Supabase publishable key lives in the
+page by design, because it is not a secret, so changing the surface never needs a redeploy to
+reconfigure.
 
 Triage fields on a submission (`status`, `severity`, `verdict`, `analysis`, `decision`, `tracker`)
 arrive empty by design. Submitting changes nothing until it is triaged and approved.
