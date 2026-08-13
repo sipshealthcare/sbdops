@@ -73,6 +73,10 @@
 #sbd-root .bp b,#sbd-root .bl b,#sbd-root .btbl b{color:#ffffff !important;}
 #sbd-root .mono{color:#D49A00 !important;}
 #sbd-root .bl li:before{background:#D49A00 !important;}
+#sbd-root .check{color:#94a3b8 !important;border-color:#1c2646 !important;}
+#sbd-root .check-l{color:#64748b !important;}
+#sbd-root .proof{color:#cbd5e5 !important;border-color:#3fb984 !important;}
+#sbd-root .proof-l{color:#3fb984 !important;}
 /* ── END LOCK ──────────────────────────────────────────────────── */
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -172,6 +176,15 @@ body{background:#070d1f}
 .btbl tbody tr:hover td{background:rgba(212,154,0,.045)}
 .bp b,.bl b,.btbl b{color:#fff;font-weight:600}
 .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:var(--gold)}
+
+.check{margin-top:7px;font-size:11.5px;line-height:1.5;color:#94a3b8;
+  border-left:2px solid var(--line);padding:3px 0 3px 9px}
+.check-l{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--mut);font-weight:600;margin-bottom:2px}
+.proof{margin-top:7px;font-size:11.5px;line-height:1.5;color:#cbd5e5;
+  border-left:2px solid var(--grn);padding:3px 0 3px 9px}
+.proof-l{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--grn);font-weight:600;margin-bottom:2px}
 </style>
 </head>
 <body>
@@ -277,7 +290,7 @@ const sprintNow=()=>{const c=[...D.board].filter(t=>t.sprint&&t.status!=='shippe
 async function loadAll(){
   rpc('snapshot_tracker').catch(()=>{});
   const [board,intake,decisions,releases,refdocs,briefs,eods,addenda]=await Promise.all([
-    q('tracker_items?select=number,title,status,priority,sprint,source,intake_ref,shipped_on,review_on,rank,created_at,updated_at&order=number.asc'),
+    q('tracker_items?select=number,title,status,priority,sprint,source,intake_ref,shipped_on,review_on,rank,how_to_check,note,verified_note,verified_at,created_at,updated_at&order=number.asc'),
     q('intake?select=ref,who,area,impact,what,status,verdict,analysis,decided_at&order=decided_at.desc'),
     q('decisions?select=ref,question,blocks,raised_on,status,answer,reasoning,answered_on,review_on&order=raised_on.asc'),
     q('releases?select=released_on,outcome,summary,detail,verification,item_numbers&order=released_on.desc&limit=20'),
@@ -328,18 +341,21 @@ function sprintHTML(){
   const trackerOf=r=>D.board.find(t=>t.intake_ref===r);
   const stOpts=s=>['open','in-progress','shipped','blocked','backlog'].map(x=>`<option${x===s?' selected':''}>${x}</option>`).join('');
   const row=t=>`<tr><td>${t.number}</td>
-  <td>${t.rank!=null?`<span class="due-d">${t.rank}.</span> `:''}${esc(t.title)}<div class="age">${[t.sprint?esc(t.sprint):'',t.intake_ref?'from '+esc(t.intake_ref):'',t.shipped_on?'shipped '+fmtD(t.shipped_on):'',t.review_on?'review '+fmtD(t.review_on):''].filter(Boolean).join(' &middot; ')||'&nbsp;'}</div></td>
+  <td>${t.rank!=null?`<span class="due-d">${t.rank}.</span> `:''}${esc(t.title)}<div class="age">${[t.sprint?esc(t.sprint):'',t.intake_ref?'from '+esc(t.intake_ref):'',t.shipped_on?'shipped '+fmtD(t.shipped_on):'',t.review_on?'review '+fmtD(t.review_on):''].filter(Boolean).join(' &middot; ')||'&nbsp;'}</div>
+    ${t.how_to_check?`<div class="check"><span class="check-l">How to check</span>${esc(t.how_to_check)}</div>`:''}
+    ${t.verified_note?`<div class="proof"><span class="proof-l">Verified${t.verified_at?' '+fmtD(t.verified_at):''}</span>${esc(t.verified_note)}</div>`:''}</td>
   <td><div class="row" style="gap:5px">
     <select class="ta" id="st-${t.number}" style="min-height:0;width:118px;padding:8px 9px;font-size:12px">${stOpts(t.status)}</select>
     <input class="inp" id="dt-${t.number}" type="date" style="width:132px;padding:8px 9px;font-size:12px">
     <button class="btn" data-upd="${t.number}">Apply</button>
+    <input class="inp" id="vf-${t.number}" placeholder="How you checked it is live${t.status==='shipped'?'':' (needed to ship)'}" style="width:100%;padding:8px 9px;font-size:12px">
   </div></td></tr>`;
   return `
 <div class="card max">
   <div class="card-h"><div class="card-t">${sp?`Committed &middot; ${esc(sp)}`:'Committed'}</div>
   <div class="card-s">${spRows.length?`${spRows.length} items. Status changes write straight to the record.`:'No items carry a sprint tag right now.'}</div></div>
   ${spRows.length?`<table class="tbl"><thead><tr><th>#</th><th>Item</th><th>Change</th></tr></thead><tbody>${spRows.map(row).join('')}</tbody></table>`:''}
-  <div class="p muted" style="margin-top:10px">Shipped needs a ship date, backlog a review date; use the date box. Titles and priorities are read only from this side.</div>
+  <div class="p muted" style="margin-top:10px">Shipped needs a ship date <em>and</em> a line on how you checked it is live, against the running system rather than the report of it. Backlog needs a review date. Titles and priorities are read only from this side.</div>
 </div>
 ${rest.length?`
 <div class="card max">
@@ -536,7 +552,8 @@ document.addEventListener('click',e=>{
     return act(async()=>{ const st=val('st-'+num), dt=val('dt-'+num)||null;
       await rpc('update_tracker',{p_number:num,p_status:st,
         p_shipped_on:st==='shipped'?(dt||today()):null,
-        p_review_on:st==='backlog'?dt:null});
+        p_review_on:st==='backlog'?dt:null,
+        p_verified:val('vf-'+num)||null});
       say(`#${num} is now ${st}. Ignacio sees it on his board.`); }); }
 
   const a=e.target.closest('[data-act]');
