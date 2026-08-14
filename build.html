@@ -207,7 +207,14 @@ body{background:#070d1f}
   .top-t{font-size:23px}
 }
 .clamp{position:relative;overflow:hidden;max-height:280px}
-.clamp.open{max-height:none}
+.clamp.open{max-height:min(62vh,560px);overflow-y:auto;padding-right:14px;
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  padding-top:14px;padding-bottom:14px;
+  scrollbar-width:thin;scrollbar-color:var(--line) transparent;overscroll-behavior:contain}
+.clamp.open::-webkit-scrollbar{width:9px}
+.clamp.open::-webkit-scrollbar-track{background:transparent}
+.clamp.open::-webkit-scrollbar-thumb{background:var(--line);border-radius:5px}
+.clamp.open::-webkit-scrollbar-thumb:hover{background:var(--gold)}
 .clamp:not(.open)::after{content:'';position:absolute;left:0;right:0;bottom:0;height:76px;
   background:linear-gradient(to bottom,rgba(14,19,40,0) 0%,#0e1328 92%);pointer-events:none}
 .morebar{display:flex;align-items:center;gap:10px;margin-top:12px}
@@ -779,7 +786,7 @@ function vBrief(){
   <div class="card-h"><div class="ic warm">\u2726</div>
     <div><div class="card-t">This morning's brief</div>
     <div class="card-s">From ${esc(BRIEF.author)} &middot; ${D(BRIEF.brief_date)}</div></div></div>
-  ${md(BRIEF.body)}
+  ${briefBlock(BRIEF.body)}
 </div>`;
 }
 
