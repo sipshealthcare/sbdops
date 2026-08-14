@@ -460,6 +460,9 @@ body{background:#070d1f}
 .counter .flab{font-size:11px;color:var(--dim);white-space:nowrap}
 .counter .inp{padding:9px 11px;font-size:12.5px;width:100%}
 .counter .send{flex:0 0 auto;margin-top:23px}
+/* .ask .why sets a row flex-basis; inside a column .fld that would become a
+   220px tall input, so neutralise it here */
+.fld .inp,.fld .why,.fld .dt,.fld .dtwrap{flex:0 0 auto;height:auto}
 /* the date field must read as editable */
 .inp[type=date]{cursor:pointer}
 .inp[type=date]:hover{border-color:var(--gold)}
