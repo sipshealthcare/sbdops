@@ -696,7 +696,7 @@ function stats(){
   return {
     rows,
     waiting: rows.filter(t=>t.date_state==='pending'),
-    rest:    rows.filter(t=>t.date_state!=='pending'),
+    rest:    rows.filter(t=>t.date_state!=='pending'||t.rank!=null),
     overdue: rows.filter(t=>{const d=agreed(t);return d&&days(d)<0;}),
     dueSoon: rows.filter(t=>{const d=agreed(t);return d&&days(d)>=0&&days(d)<=1;}),
     proposed: ALL.filter(t=>t.proposed_on),
@@ -907,7 +907,7 @@ const V={
   dates:   {icon:'\u25F7', label:'Dates to answer',    h:vDates,
             n:()=>open_().filter(t=>t.date_state==='pending').length},
   queue:   {icon:'\u25A4', label:'The queue',          h:vQueue,
-            n:()=>open_().filter(t=>t.date_state!=='pending').length},
+            n:()=>open_().filter(t=>t.date_state!=='pending'||t.rank!=null).length},
   standing:{icon:'\u25CE', label:'Where things stand', h:vStanding}
 };
 const KEYS=['brief','today','dates','queue','standing'];
