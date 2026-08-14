@@ -549,94 +549,120 @@ function card(t,compact){
 
 function bar(pct,tone){ return `<div class="bar"><span class="${tone}" style="width:${Math.max(2,Math.min(100,pct))}%"></span></div>`; }
 
-function view(){
+/* Each nav item is its own view. Shared stats are computed once per draw. */
+function stats(){
   const rows=ordered(open_());
-  const waiting=rows.filter(t=>t.date_state==='pending');
-  const rest=rows.filter(t=>t.date_state!=='pending');
-  const overdue=rows.filter(t=>{const d=agreed(t);return d&&days(d)<0;});
-  const dueSoon=rows.filter(t=>{const d=agreed(t);return d&&days(d)>=0&&days(d)<=1;});
+  return {
+    rows,
+    waiting: rows.filter(t=>t.date_state==='pending'),
+    rest:    rows.filter(t=>t.date_state!=='pending'),
+    overdue: rows.filter(t=>{const d=agreed(t);return d&&days(d)<0;}),
+    dueSoon: rows.filter(t=>{const d=agreed(t);return d&&days(d)>=0&&days(d)<=1;}),
+    proposed: ALL.filter(t=>t.proposed_on),
+    sprint:   ALL.filter(t=>t.sprint==='S8')
+  };
+}
 
-  const proposed=ALL.filter(t=>t.proposed_on);
-  const answered=proposed.filter(t=>t.date_state!=='pending').length;
-  const sprint=ALL.filter(t=>t.sprint==='S8');
-  const sprintDone=sprint.filter(t=>t.status==='shipped').length;
-
+function heroBlock(){
+  const S=stats();
   const hr=new Date().getHours();
   const greet=hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
-  const lead = overdue.length ? `${overdue.length} item${overdue.length>1?'s are past their':' is past its'} date.`
-             : waiting.length ? `${waiting.length} date${waiting.length>1?'s are':' is'} waiting on you.`
-             : dueSoon.length ? `${dueSoon.length} due in the next day.`
+  const lead = S.overdue.length ? `${S.overdue.length} item${S.overdue.length>1?'s are past their':' is past its'} date.`
+             : S.waiting.length ? `${S.waiting.length} date${S.waiting.length>1?'s are':' is'} waiting on you.`
+             : S.dueSoon.length ? `${S.dueSoon.length} due in the next day.`
              : 'Nothing overdue and no dates outstanding.';
-
   return `
-<div class="hero" id="s-top">
+<div class="hero">
   <div class="hero-d">${new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</div>
   <h1 class="hero-t">${greet}, dev team</h1>
   <div class="hero-s">${lead}</div>
   <div class="hero-a">
-    <button class="btn btn-g" id="jump">Answer dates${waiting.length?` (${waiting.length})`:''}</button>
-    <button class="btn btn-o" id="rf2">Refresh the queue</button>
+    <button class="btn btn-g" data-go="dates">Answer dates${S.waiting.length?` (${S.waiting.length})`:''}</button>
+    <button class="btn btn-o" id="rf2">Refresh</button>
   </div>
 </div>
-
 <div class="stats">
-  <div class="stat"><div class="stat-v">${rows.length}</div><div class="stat-l">In the queue</div></div>
-  <div class="stat"><div class="stat-v${waiting.length?' amb':''}">${waiting.length}</div><div class="stat-l">Dates to answer</div></div>
-  <div class="stat"><div class="stat-v${overdue.length?' red':''}">${overdue.length}</div><div class="stat-l">Past their date</div></div>
-  <div class="stat"><div class="stat-v${dueSoon.length?' amb':''}">${dueSoon.length}</div><div class="stat-l">Due today or tomorrow</div></div>
-</div>
+  <button class="stat" data-go="queue"><div class="stat-v">${S.rows.length}</div><div class="stat-l">In the queue</div></button>
+  <button class="stat" data-go="dates"><div class="stat-v${S.waiting.length?' amb':''}">${S.waiting.length}</div><div class="stat-l">Dates to answer</div></button>
+  <button class="stat" data-go="queue"><div class="stat-v${S.overdue.length?' red':''}">${S.overdue.length}</div><div class="stat-l">Past their date</div></button>
+  <button class="stat" data-go="queue"><div class="stat-v${S.dueSoon.length?' amb':''}">${S.dueSoon.length}</div><div class="stat-l">Due today or tomorrow</div></button>
+</div>`;
+}
 
-${BRIEF?`<div class="card" id="s-brief">
-  <div class="card-h"><div class="ic warm">✦</div>
+function vToday(){
+  const S=stats();
+  const next=S.rows.slice(0,5);
+  return heroBlock()+`
+<div class="card">
+  <div class="card-h"><div class="ic warm">\u25B8</div>
+    <div><div class="card-t">Up next</div>
+    <div class="card-s">The top of the queue. Open The queue for everything.</div></div></div>
+  ${next.length?next.map(t=>card(t,true)).join(''):'<div class="p muted">Nothing outstanding.</div>'}
+  ${S.rows.length>5?`<div class="row" style="margin-top:4px"><button class="btn" data-go="queue">See all ${S.rows.length}</button></div>`:''}
+</div>`;
+}
+
+function vBrief(){
+  if(!BRIEF) return `<div class="card"><div class="card-h"><div class="ic warm">\u2726</div>
+    <div><div class="card-t">Morning brief</div></div></div>
+    <div class="p muted">No brief has been sent yet. When Ignacio posts one it appears here, dated, with priorities in order.</div></div>`;
+  return `<div class="card">
+  <div class="card-h"><div class="ic warm">\u2726</div>
     <div><div class="card-t">This morning's brief</div>
     <div class="card-s">From ${esc(BRIEF.author)} &middot; ${D(BRIEF.brief_date)}</div></div></div>
-  ${briefBlock(BRIEF.body)}
-</div>`:''}
-${waiting.length?`
-<div class="card" id="dates">
-  <div class="card-h"><div class="ic warm">◷</div>
+  ${md(BRIEF.body)}
+</div>`;
+}
+
+function vDates(){
+  const S=stats();
+  return `<div class="card">
+  <div class="card-h"><div class="ic warm">\u25F7</div>
     <div><div class="card-t">Dates waiting on you</div>
     <div class="card-s">Confirm what works. A different date is fine &mdash; send the reason with it and it gets taken as given.</div></div></div>
-  <div class="f" style="margin-bottom:14px;max-width:340px">
-    <input class="inp" id="who" value="${esc(me())}" placeholder="Your name, so Ignacio knows who answered">
-  </div>
-  ${waiting.map(t=>card(t,true)).join('')}
-</div>`:''}
-
-<div class="cols" id="s-queue">
-  <div class="col">
-    <div class="card">
-      <div class="card-h"><div class="ic">▤</div>
-        <div><div class="card-t">The queue</div>
-        <div class="card-s">Ranked work first, then by date</div></div></div>
-      ${rest.length?rest.map(t=>card(t,false)).join(''):'<div class="p muted">Nothing outstanding. Anything added to the tracker, pushed in, or carried from a brief appears here on refresh.</div>'}
+  ${S.waiting.length?`
+    <div class="f" style="margin-bottom:14px;max-width:340px">
+      <input class="inp" id="who" value="${esc(me())}" placeholder="Your name, so Ignacio knows who answered">
     </div>
-  </div>
+    ${S.waiting.map(t=>card(t,true)).join('')}`
+  :'<div class="p muted">Every proposed date has been answered. Nothing waiting on you.</div>'}
+</div>`;
+}
 
-  <div class="col standing" id="s-standing">
-    <div class="card">
-      <div class="card-h"><div class="ic">◎</div>
-        <div><div class="card-t">Where things stand</div></div></div>
-      <div class="goal">
-        <div class="goal-h"><span>Dates agreed</span><b>${proposed.length?Math.round(answered/proposed.length*100):0}%</b></div>
-        ${bar(proposed.length?answered/proposed.length*100:0,'g')}
-        <div class="goal-m">${answered} of ${proposed.length} answered</div>
-      </div>
-      <div class="goal">
-        <div class="goal-h"><span>Sprint S8 shipped</span><b>${sprint.length?Math.round(sprintDone/sprint.length*100):0}%</b></div>
-        ${bar(sprint.length?sprintDone/sprint.length*100:0,'a')}
-        <div class="goal-m">${sprintDone} of ${sprint.length} items</div>
-      </div>
-      <div class="goal">
-        <div class="goal-h"><span>Queue on time</span><b>${rows.length?Math.round((rows.length-overdue.length)/rows.length*100):100}%</b></div>
-        ${bar(rows.length?(rows.length-overdue.length)/rows.length*100:100,overdue.length?'r':'g')}
-        <div class="goal-m">${overdue.length?`${overdue.length} past date`:'nothing overdue'}</div>
-      </div>
-    </div>
-  </div>
-</div>
+function vQueue(){
+  const S=stats();
+  return `<div class="card">
+  <div class="card-h"><div class="ic">\u25A4</div>
+    <div><div class="card-t">The queue</div>
+    <div class="card-s">Ranked work first, then by date. Everything not yet shipped.</div></div></div>
+  ${S.rows.length?S.rows.map(t=>card(t,false)).join(''):'<div class="p muted">Nothing outstanding. Anything added to the tracker, pushed in, or carried from a brief appears here on refresh.</div>'}
+</div>`;
+}
 
-`;
+function vStanding(){
+  const S=stats();
+  const answered=S.proposed.filter(t=>t.date_state!=='pending').length;
+  const sprintDone=S.sprint.filter(t=>t.status==='shipped').length;
+  return `<div class="card">
+  <div class="card-h"><div class="ic">\u25CE</div>
+    <div><div class="card-t">Where things stand</div>
+    <div class="card-s">Read from the record, not reported</div></div></div>
+  <div class="goal">
+    <div class="goal-h"><span>Dates agreed</span><b>${S.proposed.length?Math.round(answered/S.proposed.length*100):0}%</b></div>
+    ${bar(S.proposed.length?answered/S.proposed.length*100:0,'g')}
+    <div class="goal-m">${answered} of ${S.proposed.length} answered</div>
+  </div>
+  <div class="goal">
+    <div class="goal-h"><span>Sprint S8 shipped</span><b>${S.sprint.length?Math.round(sprintDone/S.sprint.length*100):0}%</b></div>
+    ${bar(S.sprint.length?sprintDone/S.sprint.length*100:0,'a')}
+    <div class="goal-m">${sprintDone} of ${S.sprint.length} items</div>
+  </div>
+  <div class="goal">
+    <div class="goal-h"><span>Queue on time</span><b>${S.rows.length?Math.round((S.rows.length-S.overdue.length)/S.rows.length*100):100}%</b></div>
+    ${bar(S.rows.length?(S.rows.length-S.overdue.length)/S.rows.length*100:100,S.overdue.length?'r':'g')}
+    <div class="goal-m">${S.overdue.length?`${S.overdue.length} past date`:'nothing overdue'}</div>
+  </div>
+</div>`;
 }
 
 /* Renders the brief the way the document reads: section headings, sub-headings,
@@ -694,37 +720,40 @@ function briefBlock(body){
 }
 
 
-/* Section nav. One page, so these scroll rather than route. Counts come from
-   the same data the sections render, so the badge can never disagree. */
-const SECTIONS=[
-  {id:'s-top',     icon:'\u25C6', label:'Today'},
-  {id:'s-brief',   icon:'\u2726', label:'Morning brief'},
-  {id:'dates',     icon:'\u25F7', label:'Dates to answer', n:()=>open_().filter(t=>t.date_state==='pending').length},
-  {id:'s-queue',   icon:'\u25A4', label:'The queue',       n:()=>open_().filter(t=>t.date_state!=='pending').length},
-  {id:'s-standing',icon:'\u25CE', label:'Where things stand'}
-];
-let curSec='s-top';
+/* Views. One nav item, one screen. Counts come from the same data the screens
+   render, so a badge can never disagree with what it opens. */
+const V={
+  today:   {icon:'\u25C6', label:'Today',              h:vToday},
+  brief:   {icon:'\u2726', label:'Morning brief',      h:vBrief},
+  dates:   {icon:'\u25F7', label:'Dates to answer',    h:vDates,
+            n:()=>open_().filter(t=>t.date_state==='pending').length},
+  queue:   {icon:'\u25A4', label:'The queue',          h:vQueue,
+            n:()=>open_().length},
+  standing:{icon:'\u25CE', label:'Where things stand', h:vStanding}
+};
+const KEYS=['today','brief','dates','queue','standing'];
+let cur='today';
 function drawNav(){
   const nav=document.getElementById('nav'); if(!nav) return;
-  nav.innerHTML='<div class="nav-l">Queue</div>'+SECTIONS.filter(x=>document.getElementById(x.id)||x.id==='s-top')
-    .map(x=>{const n=x.n?x.n():0;
-      return `<button class="nav-i${x.id===curSec?' on':''}" data-sec="${x.id}">
-        <span class="ni">${x.icon}</span><span class="lbl">${x.label}</span>
-        ${n?`<span class="nav-n">${n}</span>`:''}</button>`;}).join('');
+  nav.innerHTML='<div class="nav-l">Queue</div>'+KEYS.map(k=>{
+    const n=V[k].n?V[k].n():0;
+    return `<button class="nav-i${k===cur?' on':''}" data-k="${k}">
+      <span class="ni">${V[k].icon}</span><span class="lbl">${V[k].label}</span>
+      ${n?`<span class="nav-n">${n}</span>`:''}</button>`;}).join('');
 }
 function shut(){ document.getElementById('side').classList.remove('open');
                  document.getElementById('scrim').classList.remove('on'); }
-function spy(){
-  const obs=new IntersectionObserver(es=>{
-    es.forEach(e=>{ if(e.isIntersecting){ curSec=e.target.id; drawNav(); } });
-  },{rootMargin:'-15% 0px -70% 0px',threshold:0});
-  SECTIONS.forEach(x=>{const el=document.getElementById(x.id); if(el) obs.observe(el);});
-}
+function go(k){ cur=k; draw(); shut(); window.scrollTo(0,0); }
 
 const views=document.getElementById('views'), toast=document.getElementById('toast');
 const refreshBtn=document.getElementById('refresh');
 function say(m){ toast.textContent=m; toast.classList.add('on'); setTimeout(()=>toast.classList.remove('on'),2800); }
-function draw(){ views.innerHTML=`<div class="view on">${view()}</div>`; drawNav(); spy(); }
+function draw(){
+  views.innerHTML=`<div class="view on">${V[cur].h()}</div>`;
+  document.getElementById('ttl').textContent=V[cur].label;
+  document.getElementById('sub').textContent=cur==='today'?'Dev queue':V[cur].label;
+  drawNav();
+}
 async function refresh(quiet){
   try{ await load(); draw(); if(!quiet) say('Refreshed.'); }catch(e){ say(e.message); }
 }
@@ -737,12 +766,8 @@ document.getElementById('scrim').onclick=shut;
 
 document.addEventListener('click',e=>{
   if(e.target===refreshBtn||e.target.id==='rf2') return refresh();
-  const sec=e.target.closest('[data-sec]');
-  if(sec){ const el=document.getElementById(sec.dataset.sec);
-    if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
-    curSec=sec.dataset.sec; drawNav(); shut(); return; }
-  if(e.target.id==='jump'){ const d=document.getElementById('dates');
-    if(d) d.scrollIntoView({behavior:'smooth',block:'start'}); return; }
+  const nv=e.target.closest('[data-k]'); if(nv) return go(nv.dataset.k);
+  const gt=e.target.closest('[data-go]'); if(gt) return go(gt.dataset.go);
   if(e.target.closest('[data-brief]')){ briefOpen=!briefOpen; return draw(); }
 
   const ok=e.target.closest('[data-ok]');
