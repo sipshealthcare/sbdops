@@ -626,7 +626,7 @@ function vNeeds(){
   const answered=ALL.filter(t=>t.reply_at).sort((a,b)=>new Date(b.reply_at)-new Date(a.reply_at)).slice(0,8);
   return heroBlock()+`
 <div class="card">
-  <div class="card-h"><div class="ic warm">\u2691</div>
+  <div class="card-h"><div class="ic warm">\u25B2</div>
     <div><div class="card-t">Needs you</div>
     <div class="card-s">The dev team is blocked until you answer. Your answer carries a date, which goes straight to their Dates to answer tab.</div></div></div>
   ${rows.length?rows.map(t=>`
@@ -660,7 +660,7 @@ function vIntake(){
   const done=INTAKE.filter(i=>i.status!=='new').sort((a,b)=>new Date(b.decided_at||0)-new Date(a.decided_at||0));
   const sev=TIERS.map(t=>`<option value="${t.tier}">${t.tier} &middot; ${esc(t.name)}</option>`).join('');
   return `<div class="card">
-  <div class="card-h"><div class="ic warm">\u2709</div>
+  <div class="card-h"><div class="ic warm">\u25CB</div>
     <div><div class="card-t">Needs a decision</div>
     <div class="card-s">Nothing here has changed anything yet</div></div></div>
   ${open.length?open.map(i=>`<div class="qi">
@@ -703,7 +703,7 @@ function vTracker(){
   const sent=ALL.filter(t=>t.date_state==='countered');
   return `
 ${sent.length?`<div class="card">
-  <div class="card-h"><div class="ic warm">\u21BA</div><div><div class="card-t">Dates sent back to you</div>
+  <div class="card-h"><div class="ic warm">\u21A9</div><div><div class="card-t">Dates sent back to you</div>
   <div class="card-s">The dev team proposed a different date. Taken as given unless you say otherwise.</div></div></div>
   ${sent.map(t=>`<div class="qi"><div class="qi-h"><div class="qi-t">${esc(t.title)}</div>
     <div class="qi-p">${P('p-amb',short(t.counter_on))}</div></div>
@@ -719,7 +719,7 @@ ${sent.length?`<div class="card">
     </div></div>`).join('')}
 </div>`:''}
 <div class="card">
-  <div class="card-h"><div class="ic warm">\u2191</div>
+  <div class="card-h"><div class="ic warm">\u25B4</div>
     <div><div class="card-t">Priority order</div>
     <div class="card-s">Rank 1 is done first. The dev team sees this order on refresh.</div></div></div>
   ${ranked.length?ranked.map(t=>`<div class="qi ranked">
@@ -755,7 +755,7 @@ function vDecisions(){
   const open=DEC.filter(d=>d.status==='open').sort((a,b)=>new Date(a.raised_on)-new Date(b.raised_on));
   const closed=DEC.filter(d=>d.status!=='open');
   return `<div class="card">
-  <div class="card-h"><div class="ic warm">\u2047</div><div><div class="card-t">Open decisions</div>
+  <div class="card-h"><div class="ic warm">\u25C7</div><div><div class="card-t">Open decisions</div>
   <div class="card-s">Age is the thing to watch</div></div></div>
   ${open.length?open.map(d=>`<div class="qi">
     <div class="qi-h"><div class="qi-t">${esc(d.question)}</div>
@@ -872,10 +872,10 @@ function md(src){
 
 /* ---------- router ---------- */
 const V={
-  needs:    {icon:'\u2691', label:'Needs you',  h:vNeeds,     n:()=>needsYou().length},
-  intake:   {icon:'\u2709', label:'Intake',     h:vIntake,    n:()=>INTAKE.filter(i=>i.status==='new').length},
+  needs:    {icon:'\u25B2', label:'Needs you',  h:vNeeds,     n:()=>needsYou().length},
+  intake:   {icon:'\u25CB', label:'Intake',     h:vIntake,    n:()=>INTAKE.filter(i=>i.status==='new').length},
   tracker:  {icon:'\u25A4', label:'Tracker',    h:vTracker,   n:()=>ALL.filter(t=>t.date_state==='countered').length},
-  decisions:{icon:'\u2047', label:'Decisions',  h:vDecisions, n:()=>DEC.filter(d=>d.status==='open').length},
+  decisions:{icon:'\u25C7', label:'Decisions',  h:vDecisions, n:()=>DEC.filter(d=>d.status==='open').length},
   brief:    {icon:'\u2726', label:'Brief',      h:vBrief},
   record:   {icon:'\u21BB', label:'The record', h:vRecord}
 };

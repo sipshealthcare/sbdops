@@ -650,7 +650,7 @@ function vToday(){
       <div class="row" style="margin-top:10px"><button class="btn btn-g" data-go="dates">Answer them</button></div>
     </div>`:''}
     ${blocked.length?`<div class="card">
-      <div class="card-h"><div class="ic">\u23F8</div>
+      <div class="card-h"><div class="ic">\u25A1</div>
         <div><div class="card-t">Waiting on Ignacio</div>
         <div class="card-s">${blocked.length} sent for an answer</div></div></div>
       ${blocked.map(t=>`<div class="mini"><span class="mini-t">#${t.number} ${esc(t.title).slice(0,44)}</span></div>`).join('')}
@@ -699,7 +699,7 @@ function vQueue(){
   const live=S.rest.filter(t=>!waitingOnHim(t));
   return `
 ${blocked.length?`<div class="card">
-  <div class="card-h"><div class="ic warm">\u23F8</div>
+  <div class="card-h"><div class="ic warm">\u25A1</div>
     <div><div class="card-t">Waiting on Ignacio</div>
     <div class="card-s">Sent for an answer. They come back here with a date once he replies.</div></div></div>
   ${blocked.map(t=>card(t,false)).join('')}
