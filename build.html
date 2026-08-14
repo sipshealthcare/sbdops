@@ -497,6 +497,9 @@ body{background:#070d1f}
   padding:5px 9px;font-size:11px;font-family:inherit;cursor:pointer;font-weight:500;white-space:nowrap}
 .qd:hover{border-color:var(--gold);color:var(--txt)}
 .qd.on{background:var(--gold);color:#000;border-color:var(--gold);font-weight:600}
+.donerow{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
+.donerow .why{flex:1 1 220px;min-width:0;padding:8px 11px;font-size:12px}
+@media(max-width:860px){.donerow{flex-direction:column}.donerow .why,.donerow .btn{width:100%}}
 </style>
 </head>
 <body>
@@ -653,6 +656,9 @@ function card(t,compact){
     ${!compact&&t.how_to_check?`<div class="check"><span class="check-l">How to check it is done</span>${esc(t.how_to_check)}</div>`:''}
     ${dateBlock(t)}
     ${askBlock(t)}
+    ${t.status!=='shipped'?`<div class="donerow">
+      <input class="inp why" id="dn-${t.number}" placeholder="How you checked it is live">
+      <button class="btn btn-o" data-done="${t.number}">Mark it done</button></div>`:''}
   </div>`;
 }
 
@@ -940,6 +946,12 @@ document.addEventListener('click',e=>{
   const nv=e.target.closest('[data-k]'); if(nv) return go(nv.dataset.k);
   const gt=e.target.closest('[data-go]'); if(gt) return go(gt.dataset.go);
   if(e.target.closest('[data-brief]')){ briefOpen=!briefOpen; return draw(); }
+
+  const dn=e.target.closest('[data-done]');
+  if(dn){ const n=Number(dn.dataset.done), who=val('who');
+    if(!val('dn-'+n)) return say('Say how you checked it is live.');
+    return act(async()=>{ await rpc('mark_done',{p_number:n,p_evidence:val('dn-'+n),p_who:who||'Dev team'});
+      say(`#${n} marked done. It leaves the queue.`); }); }
 
   const qo=e.target.closest('[data-qopen]');
   if(qo){ const r=document.getElementById('qr-'+qo.dataset.qopen);

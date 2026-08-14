@@ -135,6 +135,9 @@
 #sbd-root .pubtog.on{color:#3fb984 !important;border-color:rgba(63,185,132,.5) !important;}
 #sbd-root .pubrow{border-color:#1c2646 !important;}
 #sbd-root .plink{color:#D49A00 !important;}
+#sbd-root .ctx{color:#cbd5e5 !important;border-color:#1c2646 !important;}
+#sbd-root .ctx-l,#sbd-root .orbar2{color:#64748b !important;}
+#sbd-root .orbar2:before,#sbd-root .orbar2:after{background:#1c2646 !important;}
 /* ── END LOCK ──────────────────────────────────────────────────── */
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -462,6 +465,14 @@ body{background:#070d1f}
 .pubsum{flex:1 1 200px;min-width:0;padding:7px 10px;font-size:12px}
 .pubsave{padding:7px 12px;font-size:11.5px}
 .plink{display:block;margin-top:9px;color:var(--gold);font-size:11px;text-decoration:none;font-weight:600}
+
+.ctx{margin-top:9px;font-size:12.5px;line-height:1.55;color:#cbd5e5;
+  border-left:2px solid var(--line);padding:3px 0 3px 10px}
+.ctx-l{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--mut);font-weight:600;margin-bottom:3px}
+.orbar2{display:flex;align-items:center;gap:10px;margin:12px 0 10px;
+  font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut)}
+.orbar2:before,.orbar2:after{content:'';flex:1;height:1px;background:var(--line)}
 </style>
 </head>
 <body>
@@ -586,6 +597,9 @@ function card(t,compact){
     ${!compact&&t.how_to_check?`<div class="check"><span class="check-l">How to check it is done</span>${esc(t.how_to_check)}</div>`:''}
     ${dateBlock(t)}
     ${askBlock(t)}
+    ${t.status!=='shipped'?`<div class="row" style="margin-top:10px">
+      <input class="inp why" id="dn-${t.number}" placeholder="How you know it is done">
+      <button class="btn btn-o" data-done="${t.number}">Mark complete</button></div>`:''}
     ${pubRow(t)}
   </div>`;
 }
@@ -668,6 +682,8 @@ function vNeeds(){
   <div class="qi ranked">
     <div class="qi-h"><div class="qi-t">${esc(t.title)}</div><div class="qi-p">${prioPill(t.priority)}</div></div>
     <div class="qi-m"><span class="hash">#${t.number}</span>asked by ${esc(t.question_by||'Dev team')} &middot; ${D(String(t.question_at).slice(0,10))}</div>
+    ${t.note?`<div class="ctx"><span class="ctx-l">What this is</span>${esc(t.note)}</div>`:''}
+    ${t.origin?`<div class="qi-m" style="margin-top:6px">Came from ${esc(t.origin)}${t.proposed_on?` &middot; date proposed ${D(t.proposed_on)}`:''}</div>`:''}
     <div class="agreed wt"><span class="ag-l">Their question</span>${esc(t.question_note)}</div>
     <div class="ask">
       <div class="ask-h">Answer it, and set the date you expect it done by.</div>
@@ -675,6 +691,11 @@ function vNeeds(){
       <div class="row">
         <input class="inp dt" id="ad-${t.number}" type="date">
         <button class="btn btn-g" data-ans="${t.number}">Answer and propose the date</button>
+      </div>
+      <div class="orbar2"><span>or close it out</span></div>
+      <div class="row">
+        <input class="inp why" id="dn-${t.number}" placeholder="How you know it is already done">
+        <button class="btn btn-o" data-done="${t.number}">Mark complete</button>
       </div>
     </div>
   </div>`).join(''):'<div class="p muted">Nothing is blocked on you. When the dev team sends a question from their queue it lands here.</div>'}
@@ -972,6 +993,12 @@ document.addEventListener('click',e=>{
   if(pm){ const ref=pm.dataset.pm;
     return act(async()=>{ const n=await rpc('promote_intake',{p_ref:ref,p_title:val('pt-'+ref),p_priority:'medium'});
       say(`On the tracker as #${n}.`); }); }
+
+  const dn=e.target.closest('[data-done]');
+  if(dn){ const n=Number(dn.dataset.done);
+    if(!val('dn-'+n)) return say('Say how you know it is done.');
+    return act(async()=>{ await rpc('mark_done',{p_number:n,p_evidence:val('dn-'+n),p_who:me()});
+      say(`#${n} marked complete. It leaves every waiting list.`); }); }
 
   const pb=e.target.closest('[data-pub]');
   if(pb){ const n=Number(pb.dataset.pub), v=pb.dataset.v==='1';
