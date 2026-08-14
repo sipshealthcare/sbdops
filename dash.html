@@ -554,6 +554,7 @@ const SB_KEY='sb_publishable_USi4uTOHHwrNjKXB3-bbDQ_Gzk7PN2q';
 const esc=t=>String(t??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
 const P=(c,t)=>`<span class="pill ${c}">${t}</span>`;
 const D=d=>d?new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}):'';
+const DL=d=>d?new Date(d+(String(d).length===10?'T12:00:00':'')).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}):'';
 const short=d=>d?new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
 const today=()=>new Date().toISOString().slice(0,10);
 const days=d=>Math.round((new Date(d+'T12:00:00')-new Date(today()+'T12:00:00'))/86400000);
