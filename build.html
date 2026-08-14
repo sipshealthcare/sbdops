@@ -137,6 +137,8 @@
 #sbd-root .qd{background:#131b3a !important;color:#94a3b8 !important;border-color:#1c2646 !important;}
 #sbd-root .qd.on{background:#D49A00 !important;color:#000000 !important;border-color:#D49A00 !important;}
 #sbd-root .dtwrap .dtico{color:#94a3b8 !important;}
+#sbd-root .nodate{background:#131b3a !important;border-left-color:#e0a132 !important;color:#cbd5e5 !important;}
+#sbd-root .nd-l{color:#e0a132 !important;}
 /* ── END LOCK ──────────────────────────────────────────────────── */
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -500,6 +502,10 @@ body{background:#070d1f}
 .donerow{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center}
 .donerow .why{flex:1 1 220px;min-width:0;padding:8px 11px;font-size:12px}
 @media(max-width:860px){.donerow{flex-direction:column}.donerow .why,.donerow .btn{width:100%}}
+.nodate{margin-top:10px;padding:9px 12px;border-radius:9px;background:var(--lift);
+  border-left:2px solid var(--amb);font-size:12px;color:#cbd5e5}
+.nd-l{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--amb);font-weight:600;margin-bottom:3px}
 </style>
 </head>
 <body>
@@ -655,6 +661,8 @@ function card(t,compact){
     ${!compact&&t.note?`<div class="qi-b">${esc(t.note)}</div>`:''}
     ${!compact&&t.how_to_check?`<div class="check"><span class="check-l">How to check it is done</span>${esc(t.how_to_check)}</div>`:''}
     ${dateBlock(t)}
+    ${t.status!=='shipped'&&t.status!=='backlog'&&!t.proposed_on
+      ?'<div class="nodate"><span class="nd-l">No date set</span>Ignacio has not put a date on this yet.</div>':''}
     ${askBlock(t)}
     ${t.status!=='shipped'?`<div class="donerow">
       <input class="inp why" id="dn-${t.number}" placeholder="How you checked it is live">

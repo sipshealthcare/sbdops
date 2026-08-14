@@ -138,6 +138,10 @@
 #sbd-root .ctx{color:#cbd5e5 !important;border-color:#1c2646 !important;}
 #sbd-root .ctx-l,#sbd-root .orbar2{color:#64748b !important;}
 #sbd-root .orbar2:before,#sbd-root .orbar2:after{background:#1c2646 !important;}
+#sbd-root .nodate{background:#131b3a !important;border-left-color:#e0a132 !important;}
+#sbd-root .nodate.off{border-left-color:#1c2646 !important;color:#64748b !important;}
+#sbd-root .nd-l{color:#e0a132 !important;}
+#sbd-root .nodate.off .nd-l{color:#64748b !important;}
 /* ── END LOCK ──────────────────────────────────────────────────── */
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -473,6 +477,18 @@ body{background:#070d1f}
 .orbar2{display:flex;align-items:center;gap:10px;margin:12px 0 10px;
   font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut)}
 .orbar2:before,.orbar2:after{content:'';flex:1;height:1px;background:var(--line)}
+
+.nodate{margin-top:10px;padding:10px 12px;border-radius:9px;background:var(--lift);
+  border-left:2px solid var(--amb)}
+.nodate.off{border-left-color:var(--line);font-size:12px;color:var(--mut)}
+.nd-l{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--amb);font-weight:600;margin-bottom:7px}
+.nodate.off .nd-l{color:var(--mut);margin-bottom:2px}
+.ndrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ndrow .dt{width:158px;padding:8px 10px;font-size:12.5px}
+@media(max-width:1150px){.stats{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:860px){.ndrow{flex-direction:column;align-items:stretch}.ndrow .dt,.ndrow .btn{width:100%}}
 </style>
 </head>
 <body>
@@ -596,6 +612,7 @@ function card(t,compact){
     ${!compact&&t.note?`<div class="qi-b">${esc(t.note)}</div>`:''}
     ${!compact&&t.how_to_check?`<div class="check"><span class="check-l">How to check it is done</span>${esc(t.how_to_check)}</div>`:''}
     ${dateBlock(t)}
+    ${noDate(t)}
     ${askBlock(t)}
     ${t.status!=='shipped'?`<div class="row" style="margin-top:10px">
       <input class="inp why" id="dn-${t.number}" placeholder="How you know it is done">
@@ -605,6 +622,21 @@ function card(t,compact){
 }
 
 /* Leadership visibility, decided item by item. Off by default. */
+
+/* An item in hand with no date cannot slip, so it never appears in the
+   rollover. Backlog is exempt: dating work nobody has started is fiction. */
+function noDate(t){
+  if(t.status==='shipped'||t.proposed_on) return '';
+  if(t.status==='backlog')
+    return `<div class="nodate off"><span class="nd-l">Backlog</span>No date needed until this is picked up.</div>`;
+  return `<div class="nodate">
+    <span class="nd-l">No date set</span>
+    <div class="ndrow">
+      <input class="inp dt" id="pd-${t.number}" type="date" min="${today()}">
+      <button class="btn btn-g" data-propose="${t.number}">Propose this date</button>
+    </div></div>`;
+}
+
 function pubRow(t){
   return `<div class="pubrow">
     <button class="pubtog${t.public_visible?' on':''}" data-pub="${t.number}" data-v="${t.public_visible?0:1}">
@@ -646,11 +678,13 @@ function heroBlock(){
   const ny=needsYou().length;
   const openDec=DEC.filter(d=>d.status==='open').length;
   const countered=ALL.filter(t=>t.date_state==='countered').length;
+  const undated=ALL.filter(t=>t.status!=='shipped'&&t.status!=='backlog'&&!t.proposed_on).length;
   const hr=new Date().getHours();
   const greet=hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
   const lead = ny? `${ny} item${ny>1?'s are':' is'} blocked on your answer.`
     : need? `${need} intake item${need>1?'s':''} waiting on triage.`
     : countered? `${countered} date${countered>1?'s were':' was'} sent back to you.`
+    : undated? `${undated} item${undated>1?'s have':' has'} no date set.`
     : 'Nothing is blocked on you.';
   return `
 <div class="hero">
@@ -667,6 +701,7 @@ function heroBlock(){
   <button class="stat" data-go="intake"><div class="stat-v${need?' amb':''}">${need}</div><div class="stat-l">Intake to triage</div></button>
   <button class="stat" data-go="decisions"><div class="stat-v${openDec?' amb':''}">${openDec}</div><div class="stat-l">Open decisions</div></button>
   <button class="stat" data-go="tracker"><div class="stat-v${countered?' red':''}">${countered}</div><div class="stat-l">Dates sent back</div></button>
+  <button class="stat" data-go="tracker"><div class="stat-v${undated?' amb':''}">${undated}</div><div class="stat-l">No date set</div></button>
 </div>`;
 }
 
@@ -754,10 +789,16 @@ function vIntake(){
 
 function vTracker(){
   const rows=[...ALL].sort((a,b)=>a.number-b.number);
+  const undated=ALL.filter(t=>t.status!=='shipped'&&t.status!=='backlog'&&!t.proposed_on);
   const ranked=ALL.filter(t=>t.rank!=null).sort((a,b)=>a.rank-b.rank);
   const unranked=ALL.filter(t=>t.rank==null&&t.status!=='shipped');
   const sent=ALL.filter(t=>t.date_state==='countered');
   return `
+${undated.length?`<div class="card">
+  <div class="card-h"><div class="ic warm">\u25F7</div><div><div class="card-t">No date set</div>
+  <div class="card-s">In hand, but with nothing to slip against. Propose a date and it goes to the dev team to confirm.</div></div></div>
+  ${undated.map(t=>card(t,false)).join('')}
+</div>`:''}
 ${sent.length?`<div class="card">
   <div class="card-h"><div class="ic warm">\u21A9</div><div><div class="card-t">Dates sent back to you</div>
   <div class="card-s">The dev team proposed a different date. Taken as given unless you say otherwise.</div></div></div>
@@ -993,6 +1034,12 @@ document.addEventListener('click',e=>{
   if(pm){ const ref=pm.dataset.pm;
     return act(async()=>{ const n=await rpc('promote_intake',{p_ref:ref,p_title:val('pt-'+ref),p_priority:'medium'});
       say(`On the tracker as #${n}.`); }); }
+
+  const pd=e.target.closest('[data-propose]');
+  if(pd){ const n=Number(pd.dataset.propose);
+    if(!val('pd-'+n)) return say('Pick the date you want to propose.');
+    return act(async()=>{ await rpc('propose_date',{p_number:n,p_date:val('pd-'+n)});
+      say(`#${n} proposed for ${short(val('pd-'+n))}. Now on the dev team's Dates to answer tab.`); }); }
 
   const dn=e.target.closest('[data-done]');
   if(dn){ const n=Number(dn.dataset.done);
