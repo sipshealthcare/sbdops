@@ -124,6 +124,10 @@
 #sbd-root .nav-i.on .nav-n{background:rgba(0,0,0,.22) !important;color:#000000 !important;}
 #sbd-root .sidefoot{color:#64748b !important;border-color:#1c2646 !important;}
 #sbd-root .burger span{background:#e6ebf5 !important;}
+#sbd-root .agreed.wt{border-color:#D49A00 !important;}
+#sbd-root .agreed.wt .ag-l{color:#D49A00 !important;}
+#sbd-root .mini{border-color:#1c2646 !important;}
+#sbd-root .mini-t{color:#cbd5e5 !important;}
 /* ── END LOCK ──────────────────────────────────────────────────── */
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -423,6 +427,18 @@ body{background:#070d1f}
   .scrim,.burger{display:none!important}
   .main{padding:22px 30px 70px}
 }
+
+.askq{margin-top:10px}
+.lnkq{font-size:11.5px;padding:7px 12px}
+.qrow{display:flex;gap:7px;margin-top:9px;flex-wrap:wrap}
+.qrow .inp{flex:1 1 240px;min-width:0;padding:9px 11px;font-size:12.5px}
+.agreed.wt{border-color:var(--gold)}
+.agreed.wt .ag-l{color:var(--gold)}
+@media(max-width:860px){ .qrow{flex-direction:column} .qrow .inp,.qrow .btn{width:100%} }
+.mini{display:flex;justify-content:space-between;gap:9px;align-items:center;
+  padding:9px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.mini:last-of-type{border-bottom:0}
+.mini-t{color:#cbd5e5;min-width:0;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -487,7 +503,8 @@ const open_=()=>ALL.filter(t=>t.status!=='shipped');
 async function load(){
   const [items,briefs]=await Promise.all([
     q('tracker_items?select=number,title,status,priority,sprint,rank,origin,note,how_to_check,'+
-      'proposed_on,date_state,counter_on,counter_note,answered_by,answered_at,shipped_on,verified_note,updated_at'+
+      'proposed_on,date_state,counter_on,counter_note,answered_by,answered_at,shipped_on,verified_note,updated_at,'+
+      'question_note,question_by,question_at,reply_note,reply_by,reply_at'+
       '&order=number.asc'),
     q('briefs?select=brief_date,author,body&order=brief_date.desc&limit=1')
   ]);
@@ -544,6 +561,25 @@ function card(t,compact){
     ${!compact&&t.note?`<div class="qi-b">${esc(t.note)}</div>`:''}
     ${!compact&&t.how_to_check?`<div class="check"><span class="check-l">How to check it is done</span>${esc(t.how_to_check)}</div>`:''}
     ${dateBlock(t)}
+    ${askBlock(t)}
+  </div>`;
+}
+
+/* Blocking an item on Ignacio. While it is open the item shows as waiting;
+   his answer comes back with a proposed date, which lands in Dates to answer. */
+const waitingOnHim=t=>t.question_at&&!t.reply_at;
+function askBlock(t){
+  if(waitingOnHim(t))
+    return `<div class="agreed wt"><span class="ag-l">Waiting on Ignacio</span>${esc(t.question_note)}
+      ${t.question_by?`<span class="by"> &middot; asked by ${esc(t.question_by)}</span>`:''}</div>`;
+  if(t.reply_at)
+    return `<div class="agreed"><span class="ag-l">Answered by ${esc(t.reply_by||'Ignacio')}</span>${esc(t.reply_note)}</div>`;
+  return `<div class="askq">
+    <button class="btn btn-o lnkq" data-qopen="${t.number}">Need an answer from Ignacio</button>
+    <div class="qrow" id="qr-${t.number}" hidden>
+      <input class="inp" id="qt-${t.number}" placeholder="What do you need decided before this can move?">
+      <button class="btn btn-g" data-qsend="${t.number}">Send it</button>
+    </div>
   </div>`;
 }
 
@@ -591,14 +627,42 @@ function heroBlock(){
 
 function vToday(){
   const S=stats();
-  const next=S.rows.slice(0,5);
-  return `
-<div class="card">
-  <div class="card-h"><div class="ic warm">\u25B8</div>
-    <div><div class="card-t">Up next</div>
-    <div class="card-s">The top of the queue. Open The queue for everything.</div></div></div>
-  ${next.length?next.map(t=>card(t,true)).join(''):'<div class="p muted">Nothing outstanding.</div>'}
-  ${S.rows.length>5?`<div class="row" style="margin-top:4px"><button class="btn" data-go="queue">See all ${S.rows.length}</button></div>`:''}
+  const blocked=S.rows.filter(waitingOnHim);
+  const focus=S.rest.filter(t=>!waitingOnHim(t)).slice(0,4);
+  return heroBlock()+`
+<div class="cols">
+  <div class="col">
+    <div class="card">
+      <div class="card-h"><div class="ic warm">\u25B8</div>
+        <div><div class="card-t">What to pick up</div>
+        <div class="card-s">Top of the queue, dates already settled</div></div></div>
+      ${focus.length?focus.map(t=>card(t,true)).join('')
+        :'<div class="p muted">Nothing with a settled date. Answer the open dates and work appears here.</div>'}
+      ${S.rest.length>4?`<div class="row" style="margin-top:4px"><button class="btn" data-go="queue">Open the queue</button></div>`:''}
+    </div>
+  </div>
+  <div class="col standing">
+    ${S.waiting.length?`<div class="card">
+      <div class="card-h"><div class="ic warm">\u25F7</div>
+        <div><div class="card-t">Dates to answer</div>
+        <div class="card-s">${S.waiting.length} waiting</div></div></div>
+      ${S.waiting.slice(0,3).map(t=>`<div class="mini"><span class="mini-t">#${t.number} ${esc(t.title).slice(0,44)}</span>${datePill(t)}</div>`).join('')}
+      <div class="row" style="margin-top:10px"><button class="btn btn-g" data-go="dates">Answer them</button></div>
+    </div>`:''}
+    ${blocked.length?`<div class="card">
+      <div class="card-h"><div class="ic">\u23F8</div>
+        <div><div class="card-t">Waiting on Ignacio</div>
+        <div class="card-s">${blocked.length} sent for an answer</div></div></div>
+      ${blocked.map(t=>`<div class="mini"><span class="mini-t">#${t.number} ${esc(t.title).slice(0,44)}</span></div>`).join('')}
+    </div>`:''}
+    <div class="card">
+      <div class="card-h"><div class="ic">\u25CE</div><div><div class="card-t">Sprint S8</div></div></div>
+      ${(()=>{const done=S.sprint.filter(t=>t.status==='shipped').length;
+        return `<div class="goal"><div class="goal-h"><span>Shipped</span><b>${S.sprint.length?Math.round(done/S.sprint.length*100):0}%</b></div>
+        ${bar(S.sprint.length?done/S.sprint.length*100:0,'a')}
+        <div class="goal-m">${done} of ${S.sprint.length} items</div></div>`;})()}
+    </div>
+  </div>
 </div>`;
 }
 
@@ -631,11 +695,21 @@ function vDates(){
 
 function vQueue(){
   const S=stats();
-  return `<div class="card">
+  const blocked=S.rest.filter(waitingOnHim);
+  const live=S.rest.filter(t=>!waitingOnHim(t));
+  return `
+${blocked.length?`<div class="card">
+  <div class="card-h"><div class="ic warm">\u23F8</div>
+    <div><div class="card-t">Waiting on Ignacio</div>
+    <div class="card-s">Sent for an answer. They come back here with a date once he replies.</div></div></div>
+  ${blocked.map(t=>card(t,false)).join('')}
+</div>`:''}
+<div class="card">
   <div class="card-h"><div class="ic">\u25A4</div>
     <div><div class="card-t">The queue</div>
-    <div class="card-s">Ranked work first, then by date. Everything not yet shipped.</div></div></div>
-  ${S.rows.length?S.rows.map(t=>card(t,false)).join(''):'<div class="p muted">Nothing outstanding. Anything added to the tracker, pushed in, or carried from a brief appears here on refresh.</div>'}
+    <div class="card-s">Work in hand. Dates still to answer live on their own tab.</div></div></div>
+  ${live.length?live.map(t=>card(t,false)).join('')
+    :`<div class="p muted">Nothing in hand.${S.waiting.length?` ${S.waiting.length} item${S.waiting.length>1?'s are':' is'} waiting on a date &mdash; answer those first.`:''}</div>`}
 </div>`;
 }
 
@@ -728,7 +802,7 @@ const V={
   dates:   {icon:'\u25F7', label:'Dates to answer',    h:vDates,
             n:()=>open_().filter(t=>t.date_state==='pending').length},
   queue:   {icon:'\u25A4', label:'The queue',          h:vQueue,
-            n:()=>open_().length},
+            n:()=>open_().filter(t=>t.date_state!=='pending').length},
   standing:{icon:'\u25CE', label:'Where things stand', h:vStanding}
 };
 const KEYS=['brief','today','dates','queue','standing'];
@@ -769,6 +843,14 @@ document.addEventListener('click',e=>{
   const nv=e.target.closest('[data-k]'); if(nv) return go(nv.dataset.k);
   const gt=e.target.closest('[data-go]'); if(gt) return go(gt.dataset.go);
   if(e.target.closest('[data-brief]')){ briefOpen=!briefOpen; return draw(); }
+
+  const qo=e.target.closest('[data-qopen]');
+  if(qo){ const r=document.getElementById('qr-'+qo.dataset.qopen);
+    if(r){ r.hidden=!r.hidden; if(!r.hidden) r.querySelector('input').focus(); } return; }
+  const qs=e.target.closest('[data-qsend]');
+  if(qs){ const n=Number(qs.dataset.qsend), who=val('who'); if(who) localStorage.setItem(WHO,who);
+    return act(async()=>{ await rpc('ask_answer',{p_number:n,p_question:val('qt-'+n),p_who:who||null});
+      say(`Sent to Ignacio. #${n} shows as waiting until he answers.`); }); }
 
   const ok=e.target.closest('[data-ok]');
   if(ok){ const n=Number(ok.dataset.ok), who=val('who'); if(who) localStorage.setItem(WHO,who);
