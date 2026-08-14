@@ -8,20 +8,18 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--gold:#D49A00;--ink:#070d1f;--card:#0e1328;--line:#1c2646;--lift:#131b3a;
---txt:#e6ebf5;--dim:#94a3b8;--mut:#64748b;--red:#f0616d;--amb:#e0a132;--grn:#3fb984}
+--dim:#94a3b8;--mut:#64748b;--red:#f0616d;--amb:#e0a132;--grn:#3fb984}
 
 /* ── SIMVOLY / BAKND EMBED COLOR LOCK ─────────────────────────── */
 @layer host-reset{ #sbd-root, #sbd-root *{ box-sizing:border-box !important; } }
-#sbd-root, #sbd-root div, #sbd-root span, #sbd-root p, #sbd-root a, #sbd-root li,
-#sbd-root h1,#sbd-root h2,#sbd-root h3,#sbd-root h4,#sbd-root h5,#sbd-root h6,
-#sbd-root label,#sbd-root td,#sbd-root th,#sbd-root input,#sbd-root select,
-#sbd-root textarea,#sbd-root button{font-family:'Poppins',-apple-system,'Segoe UI',sans-serif !important;}
+#sbd-root, #sbd-root div,#sbd-root span,#sbd-root p,#sbd-root a,#sbd-root li,
+#sbd-root h1,#sbd-root h2,#sbd-root h3,#sbd-root label,#sbd-root td,#sbd-root th,
+#sbd-root input,#sbd-root textarea,#sbd-root button{font-family:'Poppins',-apple-system,'Segoe UI',sans-serif !important;}
 #sbd-root{background:#070d1f !important;color:#e6ebf5 !important;}
 #sbd-root .side,#sbd-root .brand{background:#0a1024 !important;}
 #sbd-root .bmark{background:#D49A00 !important;color:#000000 !important;}
 #sbd-root .bname{color:#ffffff !important;}
 #sbd-root .bsub{color:#94a3b8 !important;}
-#sbd-root .report{background:#D49A00 !important;color:#000000 !important;}
 #sbd-root .nav-l{color:#64748b !important;}
 #sbd-root .nav-i{color:#94a3b8 !important;background:#0a1024 !important;}
 #sbd-root .nav-i:hover{color:#ffffff !important;background:#131b3a !important;}
@@ -34,48 +32,36 @@
 #sbd-root .card{background:#0e1328 !important;border-color:#1c2646 !important;}
 #sbd-root .card-t{color:#ffffff !important;}
 #sbd-root .card-s{color:#94a3b8 !important;}
-#sbd-root .stat{background:#0e1328 !important;border-color:#1c2646 !important;}
-#sbd-root .stat:hover{border-color:#D49A00 !important;}
-#sbd-root .stat-v{color:#ffffff !important;}
-#sbd-root .stat-l{color:#94a3b8 !important;}
-#sbd-root .stat-d{color:#64748b !important;}
 #sbd-root .p{color:#cbd5e5 !important;}
 #sbd-root .lead{color:#ffffff !important;}
 #sbd-root .muted{color:#94a3b8 !important;}
 #sbd-root .sec{color:#D49A00 !important;}
+#sbd-root .note{color:#94a3b8 !important;background:#131b3a !important;}
 #sbd-root .pill{color:#e6ebf5 !important;}
 #sbd-root .p-red{background:rgba(240,97,109,.14) !important;color:#f0616d !important;}
 #sbd-root .p-amb{background:rgba(224,161,50,.14) !important;color:#e0a132 !important;}
 #sbd-root .p-grn{background:rgba(63,185,132,.14) !important;color:#3fb984 !important;}
 #sbd-root .p-gry{background:rgba(100,116,139,.18) !important;color:#94a3b8 !important;}
-#sbd-root .tbl th{color:#94a3b8 !important;background:#131b3a !important;}
-#sbd-root .tbl td{color:#cbd5e5 !important;}
 #sbd-root .item{background:#0e1328 !important;border-color:#1c2646 !important;}
-#sbd-root .item.done{background:#0a1024 !important;}
 #sbd-root .item-t{color:#ffffff !important;}
 #sbd-root .item-m{color:#64748b !important;}
 #sbd-root .item-b{color:#cbd5e5 !important;}
-#sbd-root .verdict{color:#ffffff !important;background:#131b3a !important;}
-#sbd-root .v-why{color:#94a3b8 !important;}
-#sbd-root .btn{color:#e6ebf5 !important;background:#1c2646 !important;}
+#sbd-root .due{color:#ffffff !important;background:#131b3a !important;}
+#sbd-root .due-d{color:#e0a132 !important;}
+#sbd-root .tbl th{color:#94a3b8 !important;background:#131b3a !important;}
+#sbd-root .tbl td{color:#cbd5e5 !important;}
+#sbd-root .btn{background:#1c2646 !important;color:#e6ebf5 !important;}
 #sbd-root .btn-g{background:#D49A00 !important;color:#000000 !important;}
 #sbd-root .btn-o{background:#1c2646 !important;color:#94a3b8 !important;}
-#sbd-root .btn-r{background:#1c2646 !important;color:#f0616d !important;}
-#sbd-root .age{color:#64748b !important;}
-#sbd-root .note{color:#94a3b8 !important;background:#131b3a !important;}
 #sbd-root .lbl{color:#ffffff !important;}
 #sbd-root .hint{color:#64748b !important;}
-#sbd-root .inp,#sbd-root .ta{background:#070d1f !important;color:#e6ebf5 !important;border-color:#1c2646 !important;}
-#sbd-root .inp::placeholder,#sbd-root .ta::placeholder{color:#64748b !important;}
-#sbd-root .chip{background:#131b3a !important;color:#94a3b8 !important;border-color:#1c2646 !important;}
-#sbd-root .chip.on{background:#D49A00 !important;color:#000000 !important;border-color:#D49A00 !important;}
-#sbd-root .file{background:#070d1f !important;color:#94a3b8 !important;border-color:#1c2646 !important;}
-#sbd-root .file:hover{color:#e6ebf5 !important;border-color:#D49A00 !important;}
-#sbd-root .mrep{background:#D49A00 !important;color:#000000 !important;}
+#sbd-root .ta{background:#070d1f !important;color:#e6ebf5 !important;border-color:#1c2646 !important;}
+#sbd-root .ta::placeholder{color:#64748b !important;}
+#sbd-root .inp{background:#070d1f !important;color:#e6ebf5 !important;border-color:#1c2646 !important;}
+#sbd-root .inp::placeholder{color:#64748b !important;}
+#sbd-root .st{background:#131b3a !important;color:#94a3b8 !important;border-color:#1c2646 !important;}
+#sbd-root .st.on{background:#3fb984 !important;color:#000000 !important;border-color:#3fb984 !important;}
 #sbd-root .toast{background:#D49A00 !important;color:#000000 !important;}
-#sbd-root .ok-m{color:#ffffff !important;}
-#sbd-root .ok-s{color:#94a3b8 !important;}
-#sbd-root .ok-i{background:#3fb984 !important;color:#000000 !important;}
 #sbd-root .clamp:not(.open)::after{background:linear-gradient(to bottom,rgba(14,19,40,0) 0%,#0e1328 92%) !important;}
 #sbd-root .morebar .rule{background:#1c2646 !important;}
 #sbd-root .bh1,#sbd-root .bh3{color:#ffffff !important;}
@@ -87,103 +73,126 @@
 #sbd-root .bp b,#sbd-root .bl b,#sbd-root .btbl b{color:#ffffff !important;}
 #sbd-root .mono{color:#D49A00 !important;}
 #sbd-root .bl li:before{background:#D49A00 !important;}
+#sbd-root .check{color:#94a3b8 !important;border-color:#1c2646 !important;}
+#sbd-root .check-l{color:#64748b !important;}
 #sbd-root .proof{color:#cbd5e5 !important;border-color:#3fb984 !important;}
 #sbd-root .proof-l{color:#3fb984 !important;}
-#sbd-root .noproof{color:#e0a132 !important;border-color:#e0a132 !important;}
+#sbd-root .qi{background:#0e1328 !important;border-color:#1c2646 !important;}
+#sbd-root .qi.top{border-left-color:#D49A00 !important;}
+#sbd-root .qi-t{color:#ffffff !important;} #sbd-root .qi-m{color:#64748b !important;}
+#sbd-root .qi-b,#sbd-root .ask-h,#sbd-root .agreed{color:#cbd5e5 !important;}
+#sbd-root .rk{background:#D49A00 !important;color:#000000 !important;}
+#sbd-root .stat{background:#0e1328 !important;border-color:#1c2646 !important;}
+#sbd-root .stat-v{color:#ffffff !important;} #sbd-root .stat-l{color:#94a3b8 !important;}
+#sbd-root .stat-v.amb{color:#e0a132 !important;} #sbd-root .stat-v.red{color:#f0616d !important;}
+#sbd-root .ask{background:#131b3a !important;}
+#sbd-root .agreed{border-color:#3fb984 !important;} #sbd-root .ag-l{color:#3fb984 !important;}
+#sbd-root .agreed.ct{border-color:#e0a132 !important;} #sbd-root .agreed.ct .ag-l{color:#e0a132 !important;}
+#sbd-root .check{color:#94a3b8 !important;border-color:#1c2646 !important;}
+#sbd-root .check-l{color:#64748b !important;}
+#sbd-root .hero-t{color:#ffffff !important;} #sbd-root .hero-s,#sbd-root .hero-d{color:#94a3b8 !important;}
+#sbd-root .stat{background:#0e1328 !important;border-color:#1c2646 !important;}
+#sbd-root .stat-v{color:#ffffff !important;} #sbd-root .stat-l{color:#94a3b8 !important;}
+#sbd-root .stat-v.amb{color:#e0a132 !important;} #sbd-root .stat-v.red{color:#f0616d !important;}
+#sbd-root .card{background:#0e1328 !important;border-color:#1c2646 !important;}
+#sbd-root .ic{background:#131b3a !important;color:#94a3b8 !important;}
+#sbd-root .ic.warm{background:linear-gradient(140deg,#D49A00,#8a6400) !important;color:#000000 !important;}
+#sbd-root .qi{background:#131b3a !important;border-color:#1c2646 !important;}
+#sbd-root .qi.ranked{border-color:rgba(212,154,0,.42) !important;}
+#sbd-root .qi-t{color:#ffffff !important;} #sbd-root .qi-m{color:#64748b !important;}
+#sbd-root .hash{color:#94a3b8 !important;}
+#sbd-root .qi-b,#sbd-root .ask-h,#sbd-root .agreed,#sbd-root .goal-h{color:#cbd5e5 !important;}
+#sbd-root .rk{background:#D49A00 !important;color:#000000 !important;}
+#sbd-root .ask{background:#0b1226 !important;border-color:#1c2646 !important;}
+#sbd-root .p-blu{background:rgba(120,150,235,.15) !important;color:#93a9ee !important;}
+#sbd-root .agreed{border-color:#3fb984 !important;} #sbd-root .ag-l{color:#3fb984 !important;}
+#sbd-root .agreed.ct{border-color:#e0a132 !important;} #sbd-root .agreed.ct .ag-l{color:#e0a132 !important;}
+#sbd-root .check{color:#94a3b8 !important;border-color:#1c2646 !important;}
+#sbd-root .check-l{color:#64748b !important;}
+#sbd-root .bar{background:#1c2646 !important;}
+#sbd-root .bar .g{background:#3fb984 !important;} #sbd-root .bar .a{background:#D49A00 !important;}
+#sbd-root .bar .r{background:#f0616d !important;}
+#sbd-root .goal-h b{color:#ffffff !important;} #sbd-root .goal-m{color:#64748b !important;}
+#sbd-root .side{background:#0a1024 !important;border-color:#1c2646 !important;}
+#sbd-root .bmark{background:#D49A00 !important;color:#000000 !important;}
+#sbd-root .bname{color:#ffffff !important;} #sbd-root .bsub{color:#94a3b8 !important;}
+#sbd-root .nav-l{color:#64748b !important;}
+#sbd-root .nav-i{color:#94a3b8 !important;background:transparent !important;}
+#sbd-root .nav-i:hover{color:#ffffff !important;background:#131b3a !important;}
+#sbd-root .nav-i.on{background:linear-gradient(120deg,rgba(212,154,0,.92),rgba(212,154,0,.55)) !important;color:#000000 !important;}
+#sbd-root .nav-n{color:#e6ebf5 !important;background:#1c2646 !important;}
+#sbd-root .nav-i.on .nav-n{background:rgba(0,0,0,.22) !important;color:#000000 !important;}
+#sbd-root .sidefoot{color:#64748b !important;border-color:#1c2646 !important;}
+#sbd-root .burger span{background:#e6ebf5 !important;}
+#sbd-root .agreed.wt{border-color:#D49A00 !important;}
+#sbd-root .agreed.wt .ag-l{color:#D49A00 !important;}
+#sbd-root .mini{border-color:#1c2646 !important;}
+#sbd-root .mini-t{color:#cbd5e5 !important;}
 /* ── END LOCK ──────────────────────────────────────────────────── */
 
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#070d1f}
 #sbd-root{min-height:100vh;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
 .wrap{display:flex;min-height:100vh}
-
-.side{width:222px;flex:0 0 222px;border-right:1px solid var(--line);display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;z-index:40;transform:translateX(-100%);transition:transform .22s}
+.side{width:216px;flex:0 0 216px;border-right:1px solid var(--line);display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;z-index:40;transform:translateX(-100%);transition:transform .22s}
 .side.open{transform:none}
 .brand{display:flex;align-items:center;gap:10px;padding:16px 14px 14px}
-.bmark{width:30px;height:30px;border-radius:7px;display:grid;place-items:center;font-weight:700;font-size:12px;flex:0 0 30px}
+.bmark{width:30px;height:30px;border-radius:7px;display:grid;place-items:center;font-weight:700;font-size:11px;flex:0 0 30px}
 .bname{font-weight:600;font-size:14px}
 .bsub{font-size:10px;letter-spacing:.1em;text-transform:uppercase}
-.report{display:block;width:calc(100% - 20px);margin:0 10px 12px;border:0;border-radius:9px;padding:11px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:inherit}
 .nav{padding:2px 10px 16px;overflow-y:auto;flex:1}
 .nav-l{font-size:10px;letter-spacing:.11em;text-transform:uppercase;font-weight:600;padding:10px 8px 6px}
 .nav-i{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;padding:10px 11px;border:0;border-radius:8px;font-size:13.5px;cursor:pointer;text-align:left;margin-bottom:2px;font-family:inherit}
 .nav-n{font-size:11px;font-weight:600;border-radius:20px;padding:1px 7px;min-width:21px;text-align:center}
-
 .main{flex:1;min-width:0;padding:14px 14px 40px}
 .top{display:flex;align-items:center;gap:12px;padding:2px 0 18px}
 .burger{width:36px;height:36px;border:1px solid var(--line);border-radius:9px;background:none;display:grid;place-content:center;gap:4px;cursor:pointer;flex:0 0 36px}
 .burger span{width:15px;height:2px;border-radius:2px;display:block}
 .top-t{font-size:20px;font-weight:600;line-height:1.2}
 .top-s{font-size:12.5px;margin-top:1px}
-.view{display:none}
-.view.on{display:block}
+.view{display:none}.view.on{display:block}
 .max{max-width:760px}
-
 .card{border:1px solid var(--line);border-radius:13px;padding:17px;margin-bottom:13px}
 .card-h{margin-bottom:14px}
 .card-t{font-size:15.5px;font-weight:600}
 .card-s{font-size:12.5px;margin-top:2px}
-
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:13px}
-.stat{border:1px solid var(--line);border-radius:12px;padding:14px;text-align:left;cursor:pointer;font-family:inherit;transition:border-color .15s}
-.stat-v{font-size:23px;font-weight:700;line-height:1.1}
-.stat-l{font-size:11px;letter-spacing:.05em;text-transform:uppercase;margin-top:5px}
-.stat-d{font-size:11px;margin-top:3px}
-
 .p{font-size:13.5px;margin-bottom:10px}
 .p:last-child{margin-bottom:0}
 .lead{font-weight:600}
 .muted{font-size:12.5px}
 .sec{font-size:10.5px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;margin:20px 0 9px}
 .sec:first-child{margin-top:0}
-
+.note{font-size:12.5px;border-radius:10px;padding:12px 14px;border-left:3px solid var(--gold);margin-bottom:16px}
 .pill{display:inline-block;font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
 .row{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
-
+.item{border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:10px}
+.item-h{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:5px}
+.item-t{font-size:14px;font-weight:600;line-height:1.4}
+.item-m{font-size:11px;margin-top:7px}
+.item-b{font-size:13px;margin-top:6px}
+.due{display:flex;justify-content:space-between;align-items:center;gap:12px;border-radius:10px;padding:12px 14px;margin-bottom:9px;font-size:13.5px;font-weight:600;flex-wrap:wrap}
+.due-d{font-size:12px;font-weight:600;letter-spacing:.03em}
 .tbl{width:100%;border-collapse:collapse;font-size:12.5px;display:block;overflow-x:auto}
 .tbl thead,.tbl tbody,.tbl tr{display:table;width:100%;table-layout:fixed}
 .tbl th{text-align:left;font-size:10px;letter-spacing:.07em;text-transform:uppercase;font-weight:600;padding:9px 11px}
 .tbl td{padding:10px 11px;border-top:1px solid var(--line);vertical-align:top;word-break:break-word}
-.tbl th:first-child,.tbl td:first-child{width:70px;white-space:nowrap}
-
-.item{border:1px solid var(--line);border-radius:12px;padding:15px;margin-bottom:10px}
-.item-h{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:6px}
-.item-t{font-size:14px;font-weight:600;line-height:1.4}
-.item-m{font-size:11px;margin-top:7px}
-.item-b{font-size:13px;margin-top:6px}
-.verdict{font-size:13px;font-weight:600;border-radius:9px;padding:11px 13px;margin-top:11px;border-left:3px solid var(--amb)}
-.v-why{font-size:12.5px;font-weight:400;margin-top:5px}
-.acts{margin-top:13px}
-
+.tbl th:first-child,.tbl td:first-child{width:66px;white-space:nowrap}
 .btn{border:0;border-radius:8px;padding:9px 16px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit}
-.age{font-size:11px;margin-top:5px}
-.note{font-size:12.5px;border-radius:10px;padding:12px 14px;border-left:3px solid var(--gold);margin-bottom:16px}
-
-.f{margin-bottom:18px}
 .lbl{display:block;font-size:13.5px;font-weight:600;margin-bottom:3px}
 .hint{display:block;font-size:12px;margin-bottom:9px}
-.inp,.ta{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px 13px;font-size:14px;font-family:inherit;line-height:1.5}
-.ta{min-height:88px;resize:vertical}
-.inp:focus,.ta:focus{outline:2px solid var(--gold);outline-offset:-1px}
-.chip{border:1px solid var(--line);border-radius:9px;padding:10px 14px;font-size:13px;cursor:pointer;font-family:inherit;font-weight:500}
-.file{display:block;width:100%;border:1px dashed var(--line);border-radius:10px;padding:14px;font-size:13px;text-align:center;cursor:pointer;transition:.15s}
-.file input{display:none}
-.mrep{margin-left:auto;border:0;border-radius:9px;padding:9px 14px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;flex:0 0 auto}
-.ok{text-align:center;padding:26px 10px}
-.ok-i{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;margin:0 auto 14px;font-size:22px;font-weight:700}
-.ok-m{font-size:17px;font-weight:600;margin-bottom:6px}
-.ok-s{font-size:13px;max-width:400px;margin:0 auto 18px}
-
+.ta{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px 13px;font-size:14px;font-family:inherit;line-height:1.5;min-height:90px;resize:vertical}
+.inp{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px 13px;font-size:14px;font-family:inherit;line-height:1.5}
+.ta:focus,.inp:focus{outline:2px solid var(--gold);outline-offset:-1px}
+.st{border:1px solid var(--line);border-radius:8px;padding:7px 13px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:600}
+.f{margin-bottom:18px}
 .toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,80px);padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:60;opacity:0;transition:.25s;pointer-events:none}
 .toast.on{transform:translate(-50%,0);opacity:1}
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:35;display:none}
 .scrim.on{display:block}
-
 @media(min-width:900px){
   .side{position:sticky;height:100vh;transform:none}
-  .scrim,.burger,.mrep{display:none!important}
+  .scrim,.burger{display:none!important}
   .main{padding:22px 30px 60px}
-  .grid{grid-template-columns:repeat(4,1fr)}
   .top-t{font-size:23px}
 }
 .clamp{position:relative;overflow:hidden;max-height:280px}
@@ -219,31 +228,234 @@ body{background:#070d1f}
 .bp b,.bl b,.btbl b{color:#fff;font-weight:600}
 .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:var(--gold)}
 
+.check{margin-top:7px;font-size:11.5px;line-height:1.5;color:#94a3b8;
+  border-left:2px solid var(--line);padding:3px 0 3px 9px}
+.check-l{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--mut);font-weight:600;margin-bottom:2px}
 .proof{margin-top:7px;font-size:11.5px;line-height:1.5;color:#cbd5e5;
   border-left:2px solid var(--grn);padding:3px 0 3px 9px}
 .proof-l{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
   color:var(--grn);font-weight:600;margin-bottom:2px}
-.noproof{margin-top:7px;font-size:11.5px;color:var(--amb);
-  border-left:2px solid var(--amb);padding:3px 0 3px 9px}
+
+.wrap{display:block}
+.main{max-width:860px;margin:0 auto}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:13px}
+.stat{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--card)}
+.stat-v{font-size:23px;font-weight:700;line-height:1.1;color:#fff}
+.stat-v.amb{color:var(--amb)} .stat-v.red{color:var(--red)}
+.stat-l{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;margin-top:5px;color:var(--dim)}
+.qi{border:1px solid var(--line);border-radius:12px;padding:14px 15px;margin-bottom:10px;background:var(--card)}
+.qi.top{border-left:3px solid var(--gold)}
+.qi-h{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.qi-t{font-size:14px;font-weight:600;line-height:1.4;color:#fff}
+.qi-p{display:flex;gap:5px;flex-wrap:wrap;flex:0 0 auto}
+.rk{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;
+  background:var(--gold);color:#000;font-size:11px;font-weight:700;margin-right:7px;vertical-align:1px}
+.qi-m{font-size:11px;color:var(--mut);margin-top:6px}
+.qi-b{font-size:12.5px;color:#cbd5e5;margin-top:8px;line-height:1.55}
+.check{margin-top:9px;font-size:11.5px;line-height:1.5;color:#94a3b8;
+  border-left:2px solid var(--line);padding:3px 0 3px 9px}
+.check-l{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--mut);font-weight:600;margin-bottom:2px}
+.ask{margin-top:11px;padding:11px 12px;border-radius:9px;background:var(--lift)}
+.ask-h{font-size:12px;color:#cbd5e5;margin-bottom:9px}
+.ask-h b{color:#fff}
+.ask .dt{width:148px;padding:8px 9px;font-size:12px}
+.ask .why{flex:1;min-width:170px;padding:8px 9px;font-size:12px}
+.agreed{margin-top:10px;font-size:12px;color:#cbd5e5;border-left:2px solid var(--grn);
+  padding:3px 0 3px 9px}
+.agreed.ct{border-color:var(--amb)}
+.ag-l{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--grn);font-weight:600;margin-bottom:2px}
+.agreed.ct .ag-l{color:var(--amb)}
+.agreed .by{color:var(--mut)}
+@media(max-width:700px){.grid3{grid-template-columns:1fr}.ask .why{min-width:100%}}
+
+/* ── queue layout, warm-bloom variant ───────────────────────────── */
+body{background:#070d1f}
+#sbd-root{position:relative;overflow-x:hidden}
+#sbd-root:before{content:'';position:fixed;top:-220px;right:-180px;width:760px;height:620px;
+  background:radial-gradient(closest-side,rgba(212,154,0,.30),rgba(212,154,0,.10) 55%,transparent 78%);
+  filter:blur(18px);pointer-events:none;z-index:0}
+.main{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:20px 18px 60px}
+.top{display:flex;align-items:center;gap:12px;padding:2px 0 14px}
+
+.hero{padding:8px 2px 22px}
+.hero-d{font-size:12px;color:var(--dim);letter-spacing:.02em}
+.hero-t{font-size:31px;font-weight:600;line-height:1.12;margin-top:7px;color:#fff;letter-spacing:-.02em}
+.hero-s{font-size:16px;color:var(--dim);margin-top:5px;font-weight:400}
+.hero-a{display:flex;gap:9px;flex-wrap:wrap;margin-top:17px}
+.hero-a .btn{padding:11px 20px;font-size:13.5px;border-radius:11px}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:15px}
+.stat{border:1px solid var(--line);border-radius:15px;padding:15px 16px;background:var(--card)}
+.stat-v{font-size:26px;font-weight:700;line-height:1;color:#fff;font-variant-numeric:tabular-nums}
+.stat-v.amb{color:var(--amb)} .stat-v.red{color:var(--red)}
+.stat-l{font-size:11px;letter-spacing:.03em;margin-top:7px;color:var(--dim)}
+
+.cols{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:15px;align-items:start}
+.col{display:flex;flex-direction:column;gap:15px;min-width:0}
+.card{border:1px solid var(--line);border-radius:17px;padding:18px;margin:0;background:var(--card)}
+.card-h{display:flex;align-items:flex-start;gap:11px;margin-bottom:15px}
+.ic{width:34px;height:34px;border-radius:11px;flex:0 0 34px;display:grid;place-items:center;
+  background:var(--lift);color:var(--dim);font-size:15px;line-height:1}
+.ic.warm{background:linear-gradient(140deg,#D49A00,#8a6400);color:#000}
+
+.qi{border:1px solid var(--line);border-radius:13px;padding:13px 14px;margin-bottom:9px;background:var(--lift);min-width:0;overflow-wrap:anywhere}
+.qi:last-child{margin-bottom:0}
+.qi.ranked{border-color:rgba(212,154,0,.42)}
+.qi-h{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.qi-t{font-size:13.5px;font-weight:600;line-height:1.42;color:#fff;min-width:0;flex:1 1 auto;overflow-wrap:anywhere}
+.qi-p{display:flex;gap:5px;flex-wrap:wrap;flex:0 0 auto}
+.rk{display:inline-grid;place-items:center;width:19px;height:19px;border-radius:6px;
+  background:var(--gold);color:#000;font-size:10.5px;font-weight:700;margin-right:7px;vertical-align:1px}
+.qi-m{font-size:11px;color:var(--mut);margin-top:6px}
+.hash{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--dim);margin-right:7px}
+.qi-b{font-size:12.5px;color:#cbd5e5;margin-top:8px;line-height:1.55}
+.p-blu{background:rgba(120,150,235,.15);color:#93a9ee}
+
+.check{margin-top:9px;font-size:11.5px;line-height:1.5;color:#94a3b8;
+  border-left:2px solid var(--line);padding:3px 0 3px 9px}
+.check-l{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--mut);font-weight:600;margin-bottom:2px}
+.ask{margin-top:11px;padding:11px 12px;border-radius:10px;background:#0b1226;border:1px solid var(--line)}
+.ask-h{font-size:12px;color:#cbd5e5;margin-bottom:9px;line-height:1.5}
+.ask-h b{color:#fff}
+.ask .dt{flex:0 0 146px;padding:8px 9px;font-size:12px}
+.ask .why{flex:1 1 220px;min-width:0;padding:8px 9px;font-size:12px}
+.agreed{margin-top:10px;font-size:12px;color:#cbd5e5;border-left:2px solid var(--grn);padding:3px 0 3px 9px}
+.agreed.ct{border-color:var(--amb)}
+.ag-l{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--grn);font-weight:600;margin-bottom:2px}
+.agreed.ct .ag-l{color:var(--amb)}
+.agreed .by{color:var(--mut)}
+
+.goal{margin-bottom:15px}.goal:last-child{margin-bottom:0}
+.goal-h{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;color:#cbd5e5}
+.goal-h b{color:#fff;font-size:13px;font-variant-numeric:tabular-nums}
+.bar{height:6px;border-radius:4px;background:var(--line);margin-top:8px;overflow:hidden}
+.bar span{display:block;height:100%;border-radius:4px}
+.bar .g{background:var(--grn)} .bar .a{background:var(--gold)} .bar .r{background:var(--red)}
+.goal-m{font-size:11px;color:var(--mut);margin-top:5px}
+
+@media(max-width:1000px){.cols{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.stats{grid-template-columns:1fr}.hero-t{font-size:25px}.ask .why{min-width:100%}}
+
+@media(max-width:860px){
+  .main{padding:16px 13px 50px}
+  .cols{grid-template-columns:1fr;gap:13px}
+  .card{padding:15px;border-radius:15px}
+  .qi-h{flex-direction:column;align-items:stretch;gap:7px}
+  .qi-p{order:2}
+  .ask .row{flex-direction:column;align-items:stretch;gap:8px}
+  .ask .dt,.ask .why,.ask .btn{width:100%;flex:1 1 auto}
+  .hero-a .btn{flex:1 1 auto;text-align:center}
+}
+@media(max-width:560px){
+  .hero-t{font-size:23px}
+  .hero-s{font-size:14.5px}
+  .stats{grid-template-columns:1fr 1fr;gap:9px}
+  .stat{padding:13px}
+  .stat-v{font-size:22px}
+  .card-h{gap:9px}
+  .ic{width:30px;height:30px;flex:0 0 30px;border-radius:9px;font-size:13px}
+  .tblwrap,.btbl{font-size:11.5px}
+  .meta{grid-template-columns:1fr;gap:2px 0;padding:12px 13px}
+  .meta dt{padding-top:7px}
+}
+@media(max-width:380px){ .stats{grid-template-columns:1fr} }
+
+/* the answer panel is the primary action: give it air */
+#dates .qi{padding:15px 16px;margin-bottom:11px}
+#dates .qi-h{margin-bottom:2px}
+#dates .qi-t{font-size:14px}
+#dates .ask{margin-top:12px;padding:13px 14px}
+#dates .ask-h{margin-bottom:11px}
+#dates .card-s{max-width:62ch}
+
+@media(max-width:860px){
+  #dates .qi{padding:14px}
+  #dates .ask{padding:12px}
+  .qi-p{gap:6px}
+  .pill{font-size:10px;padding:3px 8px}
+}
+@media(max-width:560px){
+  .stats{grid-template-columns:1fr 1fr}
+  .hero{padding:4px 2px 18px}
+  #dates .qi-t{font-size:13.5px;line-height:1.45}
+  #dates .ask-h{font-size:11.5px}
+  .ask .btn{padding:11px 14px;font-size:13px}
+  .ask .dt,.ask .why{padding:11px 12px;font-size:13px}
+  .rk{width:18px;height:18px;font-size:10px;margin-right:6px}
+}
+/* two stat columns even on the narrowest phones — one per row wastes the screen */
+@media(max-width:860px){ .btn{min-height:40px} }
+@media(max-width:380px){ .stats{grid-template-columns:1fr 1fr;gap:8px}
+  .stat{padding:12px 11px} .stat-v{font-size:20px} .stat-l{font-size:10px} }
+
+/* ── sidebar ─────────────────────────────────────────────────────── */
+.wrap{display:flex;min-height:100vh}
+.side{width:236px;flex:0 0 236px;border-right:1px solid var(--line);display:flex;
+  flex-direction:column;position:fixed;inset:0 auto 0 0;z-index:40;
+  transform:translateX(-100%);transition:transform .22s;background:#0a1024}
+.side.open{transform:none}
+.brand{display:flex;align-items:center;gap:10px;padding:18px 16px 16px}
+.bmark{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;
+  font-weight:700;font-size:11px;flex:0 0 32px}
+.bname{font-weight:600;font-size:14.5px}
+.bsub{font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+.nav{padding:4px 11px 16px;overflow-y:auto;flex:1}
+.nav-l{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;padding:10px 9px 7px}
+.nav-i{display:flex;align-items:center;gap:10px;width:100%;padding:11px 12px;border:0;
+  border-radius:11px;font-size:13.5px;cursor:pointer;text-align:left;margin-bottom:3px;
+  font-family:inherit;background:none;transition:background .15s,color .15s}
+.nav-i .ni{width:17px;flex:0 0 17px;text-align:center;font-size:13px;opacity:.85}
+.nav-i span.lbl{flex:1;min-width:0}
+.nav-n{font-size:11px;font-weight:700;border-radius:20px;padding:2px 8px;min-width:22px;text-align:center}
+.nav-i.on{background:linear-gradient(120deg,rgba(212,154,0,.92),rgba(212,154,0,.55));color:#000;font-weight:600}
+.nav-i.on .nav-n{background:rgba(0,0,0,.22);color:#000}
+.sidefoot{padding:14px 16px 18px;font-size:11px;line-height:1.55;color:var(--mut);
+  border-top:1px solid var(--line)}
+.main{flex:1;min-width:0;position:relative;z-index:1;max-width:none;margin:0;padding:20px 22px 60px}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:35;display:none}
+.scrim.on{display:block}
+.burger{width:38px;height:38px;border:1px solid var(--line);border-radius:10px;background:none;
+  display:grid;place-content:center;gap:4px;cursor:pointer;flex:0 0 38px}
+.burger span{width:15px;height:2px;border-radius:2px;display:block;background:var(--txt)}
+@media(min-width:1000px){
+  .side{position:sticky;height:100vh;transform:none}
+  .scrim,.burger{display:none!important}
+  .main{padding:22px 30px 70px}
+}
+
+.askq{margin-top:10px}
+.lnkq{font-size:11.5px;padding:7px 12px}
+.qrow{display:flex;gap:7px;margin-top:9px;flex-wrap:wrap}
+.qrow .inp{flex:1 1 240px;min-width:0;padding:9px 11px;font-size:12.5px}
+.agreed.wt{border-color:var(--gold)}
+.agreed.wt .ag-l{color:var(--gold)}
+@media(max-width:860px){ .qrow{flex-direction:column} .qrow .inp,.qrow .btn{width:100%} }
+.mini{display:flex;justify-content:space-between;gap:9px;align-items:center;
+  padding:9px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.mini:last-of-type{border-bottom:0}
+.mini-t{color:#cbd5e5;min-width:0;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
 <div id="sbd-root">
 <div class="wrap">
-
   <aside class="side" id="side">
-    <div class="brand">
-      <div class="bmark">SBD</div>
-      <div><div class="bname">SBD Ops</div><div class="bsub">Master admin</div></div>
-    </div>
+    <div class="brand"><div class="bmark">SBD</div>
+      <div><div class="bname">SBD Ops</div><div class="bsub">Master admin</div></div></div>
     <nav class="nav" id="nav"></nav>
+    <div class="sidefoot">The full record. Triage, ranking and answers write straight to it.</div>
   </aside>
   <div class="scrim" id="scrim"></div>
 
   <main class="main">
     <div class="top">
-      <button class="burger" id="burger" aria-label="Menu"><span></span><span></span><span></span></button>
-      <div><div class="top-t" id="ttl">Today</div><div class="top-s" id="sub">Thursday, August 13, 2026</div></div>
+      <button class="burger" id="burger" aria-label="Sections"><span></span><span></span><span></span></button>
+      <div><div class="top-t" id="ttl">SBD Ops</div><div class="top-s" id="sub">Master admin</div></div>
       <button class="btn" id="refresh" style="margin-left:auto" hidden>Refresh</button>
     </div>
     <div id="views"></div>
@@ -253,23 +465,16 @@ body{background:#070d1f}
 </div>
 
 <script>
-/* Backend: Supabase project SBD OPS. Same pattern as index.html: a hand-rolled
-   rpc() over fetch, no SDK, no build step. The publishable key lives in the page
-   by design. Every read and write here additionally requires a signed-in user
-   whose app_users row says master_admin; RLS and the functions enforce that in
-   the database, not in this page. */
+const ageD=d=>Math.max(0,Math.floor((Date.now()-new Date(d+"T12:00:00").getTime())/86400000));
 const SB_URL='https://uwgpjjbbfwqiumzfkwuy.supabase.co';
 const SB_KEY='sb_publishable_USi4uTOHHwrNjKXB3-bbDQ_Gzk7PN2q';
 
 const esc=t=>String(t??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
 const P=(c,t)=>`<span class="pill ${c}">${t}</span>`;
-const fmtD=d=>d?new Date(d+(String(d).length===10?'T12:00:00':'')).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
-const ageDays=d=>Math.max(0,Math.floor((Date.now()-new Date(d).getTime())/86400000));
-const agePill=n=>P(n>=30?'p-red':n>=10?'p-amb':'p-gry',`${n} day${n===1?'':'s'}`);
-const stPill=s=>({'shipped':P('p-grn','Shipped'),'in-progress':P('p-amb','In progress'),'blocked':P('p-red','Blocked'),'backlog':P('p-gry','Backlog'),'open':P('p-gry','Open')}[s]||P('p-gry',esc(s)));
-const impPill=i=>P(i==='Blocking me now'?'p-red':i==='Slowing me down'?'p-amb':'p-gry',esc(i));
+const D=d=>d?new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}):'';
+const short=d=>d?new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
 const today=()=>new Date().toISOString().slice(0,10);
-
+const days=d=>Math.round((new Date(d+'T12:00:00')-new Date(today()+'T12:00:00'))/86400000);
 const hdrs=()=>({'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`});
 
 async function rpc(fn,args){
@@ -281,8 +486,343 @@ async function rpc(fn,args){
 async function q(path){
   const r=await fetch(`${SB_URL}/rest/v1/${path}`,{headers:hdrs()});
   let d=null; try{ d=await r.json(); }catch(_){}
-  if(!r.ok) throw new Error((d&&(d.message||d.hint))||'Could not load data.');
+  if(!r.ok) throw new Error((d&&(d.message||d.hint))||'Could not load the queue.');
   return d||[];
+}
+
+let ALL=[], INTAKE=[], DEC=[], REL=[], REF=[], BRIEFS=[], ADD=[], SNAP=[], TIERS=[];
+const WHO='sbd_master_who';
+const me=()=>localStorage.getItem(WHO)||'Ignacio';
+const open_=()=>ALL.filter(t=>t.status!=='shipped');
+const BRIEF=()=>BRIEFS[0]||null;
+
+async function load(){
+  const [items,intake,dec,rel,ref,briefs,add,snap,tiers]=await Promise.all([
+    q('tracker_items?select=*&order=number.asc'),
+    q('intake?select=ref,who,sips_function,area,impact,what,expected,status,severity,verdict,analysis,decision,decided_at,submitted_at,tracker_item_id&order=submitted_at.asc'),
+    q('decisions?select=ref,question,blocks,raised_on,status,answer,reasoning,answered_on,review_on,verdict&order=raised_on.asc'),
+    q('releases?select=released_on,outcome,summary,detail,verification,item_numbers&order=released_on.desc&limit=20'),
+    q('reference_docs?select=slug,title,body'),
+    q('briefs?select=brief_date,author,body&order=brief_date.desc&limit=5'),
+    q('eod_addenda?select=addendum_date,author,author_role,body,created_at&order=created_at.desc&limit=30'),
+    q('tracker_snapshots?select=snap_date,number,title,status&order=snap_date.desc'),
+    q('severity_tiers?select=tier,name&order=tier.asc')
+  ]);
+  ALL=items; INTAKE=intake; DEC=dec; REL=rel; REF=ref; BRIEFS=briefs; ADD=add; SNAP=snap; TIERS=tiers;
+  rpc('snapshot_tracker').catch(()=>{});
+}
+
+const agreed=t=>t.date_state==='countered'?t.counter_on:t.proposed_on;
+function ordered(rows){
+  return [...rows].sort((a,b)=>{
+    if((a.rank==null)!==(b.rank==null)) return a.rank==null?1:-1;
+    if(a.rank!=null&&b.rank!=null&&a.rank!==b.rank) return a.rank-b.rank;
+    const da=agreed(a), db=agreed(b);
+    if(!!da!==!!db) return da?-1:1;
+    if(da&&db&&da!==db) return da<db?-1:1;
+    const pr={critical:0,high:1,medium:2,low:3};
+    return (pr[a.priority]??9)-(pr[b.priority]??9) || a.number-b.number;
+  });
+}
+
+const prioPill=p=>({critical:P('p-red','Critical'),high:P('p-amb','High'),
+                    medium:P('p-blu','Medium'),low:P('p-gry','Low')}[p]||'');
+function datePill(t){
+  const d=agreed(t); if(!d) return '';
+  const n=days(d);
+  const label=n<0?`${Math.abs(n)}d over`:n===0?'Today':n===1?'Tomorrow':short(d);
+  return P(n<0?'p-red':n<=1?'p-amb':n<=3?'p-amb':'p-gry',label);
+}
+
+function dateBlock(t){
+  if(!t.proposed_on) return '';
+  if(t.date_state==='confirmed')
+    return `<div class="agreed"><span class="ag-l">Confirmed</span>${D(t.proposed_on)}${t.answered_by?` &middot; ${esc(t.answered_by)}`:''}</div>`;
+  if(t.date_state==='countered')
+    return `<div class="agreed ct"><span class="ag-l">Moved to ${D(t.counter_on)}</span>${esc(t.counter_note||'')}${t.answered_by?`<span class="by"> &middot; ${esc(t.answered_by)}</span>`:''}</div>`;
+  return `<div class="ask">
+    <div class="ask-h">Proposed for <b>${D(t.proposed_on)}</b> &mdash; confirm it, or send a different date with the reason.</div>
+    <div class="row">
+      <button class="btn btn-g" data-ok="${t.number}">Confirm</button>
+      <input class="inp dt" id="nd-${t.number}" type="date" value="${t.proposed_on}">
+      <input class="inp why" id="wy-${t.number}" placeholder="Why it needs to move">
+      <button class="btn btn-o" data-no="${t.number}">Send this instead</button>
+    </div></div>`;
+}
+
+/* a queue row, in the reference's task-card idiom */
+function card(t,compact){
+  const st = t.status==='blocked'?P('p-red','Blocked'):t.status==='in-progress'?P('p-amb','In progress'):'';
+  return `<div class="qi${t.rank!=null?' ranked':''}">
+    <div class="qi-h">
+      <div class="qi-t">${t.rank!=null?`<span class="rk">${t.rank}</span>`:''}${esc(t.title)}</div>
+      <div class="qi-p">${prioPill(t.priority)}${datePill(t)}${st}</div>
+    </div>
+    <div class="qi-m"><span class="hash">#${t.number}</span>${esc(t.origin||'Tracker')}${t.sprint?` &middot; ${esc(t.sprint)}`:''}</div>
+    ${!compact&&t.note?`<div class="qi-b">${esc(t.note)}</div>`:''}
+    ${!compact&&t.how_to_check?`<div class="check"><span class="check-l">How to check it is done</span>${esc(t.how_to_check)}</div>`:''}
+    ${dateBlock(t)}
+    ${askBlock(t)}
+  </div>`;
+}
+
+/* Blocking an item on Ignacio. While it is open the item shows as waiting;
+   his answer comes back with a proposed date, which lands in Dates to answer. */
+const waitingOnHim=t=>t.question_at&&!t.reply_at;
+function askBlock(t){
+  if(waitingOnHim(t))
+    return `<div class="agreed wt"><span class="ag-l">Waiting on Ignacio</span>${esc(t.question_note)}
+      ${t.question_by?`<span class="by"> &middot; asked by ${esc(t.question_by)}</span>`:''}</div>`;
+  if(t.reply_at)
+    return `<div class="agreed"><span class="ag-l">Answered by ${esc(t.reply_by||'Ignacio')}</span>${esc(t.reply_note)}</div>`;
+  return `<div class="askq">
+    <button class="btn btn-o lnkq" data-qopen="${t.number}">Need an answer from Ignacio</button>
+    <div class="qrow" id="qr-${t.number}" hidden>
+      <input class="inp" id="qt-${t.number}" placeholder="What do you need decided before this can move?">
+      <button class="btn btn-g" data-qsend="${t.number}">Send it</button>
+    </div>
+  </div>`;
+}
+
+function bar(pct,tone){ return `<div class="bar"><span class="${tone}" style="width:${Math.max(2,Math.min(100,pct))}%"></span></div>`; }
+
+/* Each nav item is its own view. Shared stats are computed once per draw. */
+
+const needsYou=()=>ALL.filter(waitingOnHim);
+
+
+/* ---------- views ---------- */
+function heroBlock(){
+  const need=INTAKE.filter(i=>i.status==='new').length;
+  const ny=needsYou().length;
+  const openDec=DEC.filter(d=>d.status==='open').length;
+  const countered=ALL.filter(t=>t.date_state==='countered').length;
+  const hr=new Date().getHours();
+  const greet=hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
+  const lead = ny? `${ny} item${ny>1?'s are':' is'} blocked on your answer.`
+    : need? `${need} intake item${need>1?'s':''} waiting on triage.`
+    : countered? `${countered} date${countered>1?'s were':' was'} sent back to you.`
+    : 'Nothing is blocked on you.';
+  return `
+<div class="hero">
+  <div class="hero-d">${new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</div>
+  <h1 class="hero-t">${greet}, Ignacio</h1>
+  <div class="hero-s">${lead}</div>
+  <div class="hero-a">
+    <button class="btn btn-g" data-go="needs">Needs you${ny?` (${ny})`:''}</button>
+    <button class="btn btn-o" id="rf2">Refresh</button>
+  </div>
+</div>
+<div class="stats">
+  <button class="stat" data-go="needs"><div class="stat-v${ny?' amb':''}">${ny}</div><div class="stat-l">Blocked on you</div></button>
+  <button class="stat" data-go="intake"><div class="stat-v${need?' amb':''}">${need}</div><div class="stat-l">Intake to triage</div></button>
+  <button class="stat" data-go="decisions"><div class="stat-v${openDec?' amb':''}">${openDec}</div><div class="stat-l">Open decisions</div></button>
+  <button class="stat" data-go="tracker"><div class="stat-v${countered?' red':''}">${countered}</div><div class="stat-l">Dates sent back</div></button>
+</div>`;
+}
+
+function vNeeds(){
+  const rows=needsYou();
+  const answered=ALL.filter(t=>t.reply_at).sort((a,b)=>new Date(b.reply_at)-new Date(a.reply_at)).slice(0,8);
+  return heroBlock()+`
+<div class="card">
+  <div class="card-h"><div class="ic warm">\u2691</div>
+    <div><div class="card-t">Needs you</div>
+    <div class="card-s">The dev team is blocked until you answer. Your answer carries a date, which goes straight to their Dates to answer tab.</div></div></div>
+  ${rows.length?rows.map(t=>`
+  <div class="qi ranked">
+    <div class="qi-h"><div class="qi-t">${esc(t.title)}</div><div class="qi-p">${prioPill(t.priority)}</div></div>
+    <div class="qi-m"><span class="hash">#${t.number}</span>asked by ${esc(t.question_by||'Dev team')} &middot; ${D(String(t.question_at).slice(0,10))}</div>
+    <div class="agreed wt"><span class="ag-l">Their question</span>${esc(t.question_note)}</div>
+    <div class="ask">
+      <div class="ask-h">Answer it, and set the date you expect it done by.</div>
+      <input class="inp" id="an-${t.number}" placeholder="Your answer" style="width:100%;margin-bottom:8px;padding:10px 11px;font-size:12.5px">
+      <div class="row">
+        <input class="inp dt" id="ad-${t.number}" type="date">
+        <button class="btn btn-g" data-ans="${t.number}">Answer and propose the date</button>
+      </div>
+    </div>
+  </div>`).join(''):'<div class="p muted">Nothing is blocked on you. When the dev team sends a question from their queue it lands here.</div>'}
+</div>
+${answered.length?`<div class="card">
+  <div class="card-h"><div class="ic">\u2713</div><div><div class="card-t">Answered</div>
+  <div class="card-s">Most recent first</div></div></div>
+  ${answered.map(t=>`<div class="qi">
+    <div class="qi-h"><div class="qi-t">${esc(t.title)}</div><div class="qi-p">${datePill(t)}</div></div>
+    <div class="qi-m"><span class="hash">#${t.number}</span>answered ${D(String(t.reply_at).slice(0,10))}</div>
+    <div class="agreed"><span class="ag-l">You said</span>${esc(t.reply_note)}</div>
+  </div>`).join('')}
+</div>`:''}`;
+}
+
+function vIntake(){
+  const open=INTAKE.filter(i=>i.status==='new');
+  const done=INTAKE.filter(i=>i.status!=='new').sort((a,b)=>new Date(b.decided_at||0)-new Date(a.decided_at||0));
+  const sev=TIERS.map(t=>`<option value="${t.tier}">${t.tier} &middot; ${esc(t.name)}</option>`).join('');
+  return `<div class="card">
+  <div class="card-h"><div class="ic warm">\u2709</div>
+    <div><div class="card-t">Needs a decision</div>
+    <div class="card-s">Nothing here has changed anything yet</div></div></div>
+  ${open.length?open.map(i=>`<div class="qi">
+    <div class="qi-h"><div class="qi-t">${esc(i.what).slice(0,150)}</div>
+      <div class="qi-p">${P(i.impact==='Blocking me now'?'p-red':i.impact==='Slowing me down'?'p-amb':'p-gry',esc(i.impact))}</div></div>
+    <div class="qi-m"><span class="hash">${esc(i.ref)}</span>${esc(i.who)} &middot; ${esc(i.area)}</div>
+    ${i.expected?`<div class="qi-b">Expected: ${esc(i.expected)}</div>`:''}
+    <div class="ask">
+      <div class="row" style="margin-bottom:8px">
+        <select class="inp dt" id="sev-${esc(i.ref)}"><option value="">Severity</option>${sev}</select>
+        <input class="inp why" id="ver-${esc(i.ref)}" placeholder="Verdict">
+      </div>
+      <input class="inp" id="ana-${esc(i.ref)}" placeholder="What was verified" style="width:100%;margin-bottom:8px;padding:10px 11px;font-size:12.5px">
+      <div class="row">
+        <button class="btn btn-g" data-tr="approved" data-ref="${esc(i.ref)}">Approve</button>
+        <button class="btn btn-o" data-tr="tabled" data-ref="${esc(i.ref)}">Table</button>
+        <button class="btn btn-o" data-tr="closed" data-ref="${esc(i.ref)}">Deny</button>
+      </div>
+    </div>
+  </div>`).join(''):'<div class="p muted">Nothing waiting. Everything submitted has been decided.</div>'}
+</div>
+<div class="card">
+  <div class="card-h"><div class="ic">\u2713</div><div><div class="card-t">Decided</div></div></div>
+  ${done.length?done.map(i=>{const t=ALL.find(b=>b.intake_ref===i.ref);
+    return `<div class="qi"><div class="qi-h"><div class="qi-t">${esc(i.what).slice(0,120)}</div>
+    <div class="qi-p">${i.status==='approved'||i.status==='shipped'?P('p-grn',esc(i.status)):P('p-gry',esc(i.status))}</div></div>
+    <div class="qi-m"><span class="hash">${esc(i.ref)}</span>${i.decided_at?D(String(i.decided_at).slice(0,10)):''}${t?` &middot; tracker #${t.number}`:''}</div>
+    ${i.verdict?`<div class="agreed"><span class="ag-l">Verdict</span>${esc(i.verdict)}</div>`:''}
+    ${i.status==='approved'&&!i.tracker_item_id?`<div class="ask"><div class="row">
+      <input class="inp why" id="pt-${esc(i.ref)}" value="${esc(i.what).slice(0,110)}">
+      <button class="btn btn-g" data-pm="${esc(i.ref)}">Put on the tracker</button></div></div>`:''}
+    </div>`;}).join(''):'<div class="p muted">Nothing decided yet.</div>'}
+</div>`;
+}
+
+function vTracker(){
+  const rows=[...ALL].sort((a,b)=>a.number-b.number);
+  const ranked=ALL.filter(t=>t.rank!=null).sort((a,b)=>a.rank-b.rank);
+  const unranked=ALL.filter(t=>t.rank==null&&t.status!=='shipped');
+  const sent=ALL.filter(t=>t.date_state==='countered');
+  return `
+${sent.length?`<div class="card">
+  <div class="card-h"><div class="ic warm">\u21BA</div><div><div class="card-t">Dates sent back to you</div>
+  <div class="card-s">The dev team proposed a different date. Taken as given unless you say otherwise.</div></div></div>
+  ${sent.map(t=>`<div class="qi"><div class="qi-h"><div class="qi-t">${esc(t.title)}</div>
+    <div class="qi-p">${P('p-amb',short(t.counter_on))}</div></div>
+    <div class="qi-m"><span class="hash">#${t.number}</span>you proposed ${short(t.proposed_on)} &middot; ${esc(t.answered_by||'Dev team')} sent back ${short(t.counter_on)}</div>
+    <div class="agreed ct"><span class="ag-l">Their reason</span>${esc(t.counter_note||'')}</div>
+    <div class="ask">
+      <div class="ask-h">Take their date, or propose another and send it back.</div>
+      <div class="row">
+        <button class="btn btn-g" data-take="${t.number}">Accept ${short(t.counter_on)}</button>
+        <input class="inp dt" id="rp-${t.number}" type="date" value="${t.counter_on||''}">
+        <button class="btn btn-o" data-repro="${t.number}">Propose this instead</button>
+      </div>
+    </div></div>`).join('')}
+</div>`:''}
+<div class="card">
+  <div class="card-h"><div class="ic warm">\u2191</div>
+    <div><div class="card-t">Priority order</div>
+    <div class="card-s">Rank 1 is done first. The dev team sees this order on refresh.</div></div></div>
+  ${ranked.length?ranked.map(t=>`<div class="qi ranked">
+    <div class="qi-h"><div class="qi-t"><span class="rk">${t.rank}</span>${esc(t.title)}</div></div>
+    <div class="qi-m"><span class="hash">#${t.number}</span>${esc(t.status)}</div>
+    <div class="row" style="margin-top:9px">
+      <input class="inp dt" id="rk-${t.number}" type="number" min="1" value="${t.rank}" style="width:84px">
+      <button class="btn" data-rank="${t.number}">Move</button>
+      <button class="btn btn-o" data-unrank="${t.number}">Remove</button>
+    </div></div>`).join(''):'<div class="p muted">Nothing ranked. Rank 1 means do this first.</div>'}
+  <div class="ask" style="margin-top:12px">
+    <div class="ask-h">Add something to the order, or push a new task straight in.</div>
+    <div class="row" style="margin-bottom:9px">
+      <select class="inp why" id="rkPick">${unranked.map(t=>`<option value="${t.number}">#${t.number} ${esc(t.title).slice(0,52)}</option>`).join('')}</select>
+      <input class="inp dt" id="rkNew" type="number" min="1" placeholder="Rank" style="width:92px">
+      <button class="btn" data-act="rankPick">Set</button>
+    </div>
+    <div class="row">
+      <input class="inp why" id="ptTitle" placeholder="New task">
+      <input class="inp dt" id="ptDate" type="date" title="Propose a date">
+      <button class="btn btn-g" data-act="pushTask">Push it in</button>
+    </div>
+  </div>
+</div>
+<div class="card">
+  <div class="card-h"><div class="ic">\u25A4</div><div><div class="card-t">The ledger</div>
+  <div class="card-s">${rows.length} items</div></div></div>
+  ${rows.map(t=>card(t,false)).join('')}
+</div>`;
+}
+
+function vDecisions(){
+  const open=DEC.filter(d=>d.status==='open').sort((a,b)=>new Date(a.raised_on)-new Date(b.raised_on));
+  const closed=DEC.filter(d=>d.status!=='open');
+  return `<div class="card">
+  <div class="card-h"><div class="ic warm">\u2047</div><div><div class="card-t">Open decisions</div>
+  <div class="card-s">Age is the thing to watch</div></div></div>
+  ${open.length?open.map(d=>`<div class="qi">
+    <div class="qi-h"><div class="qi-t">${esc(d.question)}</div>
+      <div class="qi-p">${P(ageD(d.raised_on)>=30?'p-red':ageD(d.raised_on)>=10?'p-amb':'p-gry',ageD(d.raised_on)+'d')}</div></div>
+    <div class="qi-m"><span class="hash">${esc(d.ref)}</span>${d.blocks?esc(d.blocks):'raised '+D(d.raised_on)}</div>
+    <div class="ask">
+      <input class="inp" id="ans-${esc(d.ref)}" placeholder="Your answer" style="width:100%;margin-bottom:8px;padding:10px 11px;font-size:12.5px">
+      <div class="row">
+        <button class="btn btn-g" data-answer="${esc(d.ref)}">Answer it</button>
+        <input class="inp dt" id="rev-${esc(d.ref)}" type="date">
+        <button class="btn btn-o" data-table="${esc(d.ref)}">Table until</button>
+      </div>
+    </div></div>`).join(''):'<div class="p muted">Nothing open.</div>'}
+</div>
+<div class="card">
+  <div class="card-h"><div class="ic">\u2713</div><div><div class="card-t">Decided</div></div></div>
+  ${closed.length?closed.map(d=>`<div class="qi"><div class="qi-h"><div class="qi-t">${esc(d.question)}</div>
+    <div class="qi-p">${d.status==='answered'?P('p-grn','Answered'):P('p-gry','Tabled')}</div></div>
+    <div class="qi-m"><span class="hash">${esc(d.ref)}</span>${d.answered_on?D(d.answered_on):''}${d.review_on?' &middot; review '+D(d.review_on):''}</div>
+    ${d.answer?`<div class="agreed"><span class="ag-l">Answer</span>${esc(d.answer)}</div>`:''}</div>`).join(''):'<div class="p muted">Nothing decided yet.</div>'}
+</div>`;
+}
+
+function vBrief(){
+  const b=BRIEF();
+  return `<div class="card">
+  <div class="card-h"><div class="ic warm">\u2726</div><div><div class="card-t">Send today's brief</div>
+  <div class="card-s">It appears on the dev team's first tab</div></div></div>
+  <div class="f"><textarea class="ta" id="briefBody" placeholder="Priorities, in order. 1. ..." style="min-height:120px"></textarea></div>
+  <div class="row"><button class="btn btn-g" data-act="sendBrief">Send it</button></div>
+</div>
+<div class="card">
+  <div class="card-h"><div class="ic warm">\u25CB</div><div><div class="card-t">Forgot to mention</div>
+  <div class="card-s">Dated, and visible on both boards</div></div></div>
+  <div class="f"><input class="inp" id="addBody" placeholder="One thing, in plain words" style="width:100%"></div>
+  <div class="row" style="margin-bottom:13px"><button class="btn btn-g" data-act="addendum">Push it through</button></div>
+  ${ADD.length?ADD.slice(0,8).map(a=>`<div class="mini"><span class="mini-t">${esc(a.body)}</span>
+    <span class="qi-m" style="margin:0;white-space:nowrap">${D(a.addendum_date)}</span></div>`).join(''):''}
+</div>
+${b?`<div class="card">
+  <div class="card-h"><div class="ic">\u25A4</div><div><div class="card-t">Latest sent</div>
+  <div class="card-s">${D(b.brief_date)}</div></div></div>${md(b.body)}
+</div>`:''}`;
+}
+
+function vRecord(){
+  const dates=[...new Set(SNAP.map(s=>s.snap_date))].sort().reverse();
+  const t=new Date().toISOString().slice(0,10);
+  const prevDate=dates.find(d=>d<t);
+  const prev=prevDate?SNAP.filter(s=>s.snap_date===prevDate):[];
+  const now=Object.fromEntries(ALL.map(b=>[b.number,b]));
+  const rolled=prev.filter(s=>s.status!=='shipped'&&now[s.number]&&now[s.number].status!=='shipped');
+  return `<div class="card">
+  <div class="card-h"><div class="ic">\u21BB</div><div><div class="card-t">${prevDate?'Since '+D(prevDate):'Rollover'}</div>
+  <div class="card-s">What carried over</div></div></div>
+  ${!prevDate?'<div class="p muted">History starts collecting today. A snapshot is taken every time a surface loads, so from tomorrow this shows exactly what rolled over.</div>'
+   :rolled.length?rolled.map(s=>`<div class="mini"><span class="mini-t">#${s.number} ${esc(s.title)}</span>${P('p-amb','Rolled over')}</div>`).join('')
+   :'<div class="p muted">Nothing rolled over.</div>'}
+</div>
+<div class="card">
+  <div class="card-h"><div class="ic">\u25CE</div><div><div class="card-t">Releases</div></div></div>
+  ${REL.length?REL.map(r=>`<div class="qi"><div class="qi-h"><div class="qi-t">${D(r.released_on)} &middot; ${esc(r.summary)}</div>
+    <div class="qi-p">${r.outcome==='live'?P('p-grn','Live'):P('p-red','Rolled back')}</div></div>
+    ${r.verification?`<div class="agreed"><span class="ag-l">Verified</span>${esc(r.verification)}</div>`:''}</div>`).join(''):'<div class="p muted">No releases logged yet.</div>'}
+</div>
+${REF.map(r=>`<div class="card"><div class="card-h"><div class="ic">\u25A4</div>
+  <div><div class="card-t">${esc(r.title)}</div></div></div>${md(r.body)||'<div class="p muted">Empty.</div>'}</div>`).join('')}`;
 }
 
 /* Renders the brief the way the document reads: section headings, sub-headings,
@@ -329,410 +869,111 @@ function md(src){
   return out;
 }
 
-/* ---------- state ---------- */
-const D={intake:[],board:[],decisions:[],releases:[],refdocs:[],briefs:[],eods:[],addenda:[],snaps:[],tiers:[],fns:[]};
-const fnLabel=s=>(D.fns.find(f=>f.slug===s)||{}).label||s||'';
-const trackerByRef=r=>D.board.find(t=>t.intake_ref===r);
-const sprintNow=()=>{const c=[...D.board].filter(t=>t.sprint&&t.status!=='shipped').sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));return c.length?c[0].sprint:null;};
-const isStale=t=>(t.status==='shipped'&&!t.shipped_on)||(['open','in-progress','blocked'].includes(t.status)&&ageDays(t.updated_at)>=14);
 
-async function loadAll(){
-  rpc('snapshot_tracker').catch(()=>{});
-  const [intake,board,decisions,releases,refdocs,briefs,eods,addenda,snaps,tiers,fns]=await Promise.all([
-    q('intake?select=ref,who,sips_function,area,impact,what,expected,status,severity,verdict,analysis,decision,decided_at,submitted_at,tracker_item_id&order=submitted_at.asc'),
-    q('tracker_items?select=number,title,status,priority,sprint,owner,source,intake_ref,note,shipped_on,review_on,rank,how_to_check,verified_note,verified_at,created_at,updated_at&order=number.asc'),
-    q('decisions?select=ref,question,blocks,raised_on,status,answer,reasoning,answered_on,review_on,verdict&order=raised_on.asc'),
-    q('releases?select=released_on,outcome,summary,detail,verification,item_numbers&order=released_on.desc&limit=25'),
-    q('reference_docs?select=slug,title,body'),
-    q('briefs?select=brief_date,author,body&order=brief_date.desc&limit=5'),
-    q('eod_reports?select=report_date,author,completed,qa,still_working,needs_ignacio&order=report_date.desc&limit=14'),
-    q('eod_addenda?select=addendum_date,author,author_role,body,created_at&order=created_at.desc&limit=40'),
-    q('tracker_snapshots?select=snap_date,number,title,status,rank,sprint&order=snap_date.desc,number.asc'),
-    q('severity_tiers?select=tier,name,escalates&order=tier.asc'),
-    q('sips_functions?select=slug,label&order=sort.asc')
-  ]);
-  Object.assign(D,{intake,board,decisions,releases,refdocs,briefs,eods,addenda,snaps,tiers,fns});
-}
-
-/* ---------- views ---------- */
-function todayHTML(){
-  const need=D.intake.filter(i=>i.status==='new');
-  const open=D.decisions.filter(d=>d.status==='open').sort((a,b)=>new Date(a.raised_on)-new Date(b.raised_on));
-  const oldest=open.length?ageDays(open[0].raised_on):0;
-  const stale=D.board.filter(isStale);
-  const sp=sprintNow();
-  const spItems=D.board.filter(t=>t.sprint===sp);
-  const spDone=spItems.filter(t=>t.status==='shipped').length;
-  const brief=D.briefs[0];
-  return `
-<div class="grid">
-  <button class="stat" data-go="intake"><div class="stat-v">${need.length}</div><div class="stat-l">Need a decision</div><div class="stat-d">from the admin team</div></button>
-  <button class="stat" data-go="decisions"><div class="stat-v">${open.length}</div><div class="stat-l">Open decisions</div><div class="stat-d">${open.length?`oldest ${oldest} days`:'nothing waiting'}</div></button>
-  <button class="stat" data-go="tracker"><div class="stat-v">${stale.length}</div><div class="stat-l">Stale rows</div><div class="stat-d">flagged automatically</div></button>
-  <button class="stat" data-go="tracker"><div class="stat-v">${sp?`${spDone}/${spItems.length}`:'&ndash;'}</div><div class="stat-l">${sp?esc(sp):'Sprint'}</div><div class="stat-d">${sp?'shipped vs committed':'no sprint set'}</div></button>
-</div>
-
-<div class="card max">
-  <div class="card-h"><div class="card-t">Blocking someone right now</div></div>
-  ${open.filter(d=>d.blocks).slice(0,4).map(d=>`
-  <div class="item"><div class="item-h"><div class="item-t">${esc(d.question)}</div>${agePill(ageDays(d.raised_on))}</div>
-  <div class="item-m">${esc(d.blocks)}</div></div>`).join('')||'<div class="p muted">Nothing is flagged as blocking anyone. Open decisions live under Decisions.</div>'}
-</div>
-
-<div class="card max">
-  <div class="card-h"><div class="card-t">Daily brief</div><div class="card-s">${brief?`Latest sent ${fmtD(brief.brief_date)}`:'Nothing sent yet'}</div></div>
-  ${brief?briefBlock(brief.body):'<div class="p muted">No brief has been posted yet. The first one you send from here appears on the dev team’s board the moment they refresh.</div>'}
-  <div class="sec">Send ${brief?'a new one':'the first one'}</div>
-  <div class="f"><textarea class="ta" id="briefBody" placeholder="Priorities, in order. 1. ..."></textarea></div>
-  <div class="row"><button class="btn btn-g" data-act="sendBrief">Send brief for today</button></div>
-</div>
-
-<div class="card max">
-  <div class="card-h"><div class="card-t">Forgot to mention</div>
-  <div class="card-s">Things that should have been in a daily report but were not. Pushed through here, dated, and visible to both sides.</div></div>
-  <div class="f"><textarea class="ta" id="addBody" style="min-height:64px" placeholder="One thing, in plain words."></textarea></div>
-  <div class="row" style="margin-bottom:14px"><button class="btn btn-g" data-act="addendum">Push it through</button></div>
-  ${D.addenda.length?D.addenda.slice(0,10).map(a=>`
-  <div class="item"><div class="item-b" style="margin-top:0">${esc(a.body)}</div>
-  <div class="item-m">${fmtD(a.addendum_date)} &middot; ${esc(a.author)} &middot; ${a.author_role==='master_admin'?'master admin':'dev team'}</div></div>`).join('')
-  :'<div class="p muted">Nothing yet. Anything pushed through shows up here with a date on it.</div>'}
-</div>`;
-}
-
-function intakeHTML(){
-  const open=D.intake.filter(i=>i.status==='new');
-  const done=D.intake.filter(i=>i.status!=='new').sort((a,b)=>new Date(b.decided_at||0)-new Date(a.decided_at||0));
-  const sevOpts=D.tiers.map(t=>`<option value="${t.tier}">${t.tier} &middot; ${esc(t.name)}</option>`).join('');
-  return `
-<div class="card max">
-  <div class="card-h"><div class="card-t">Needs a decision</div>
-  <div class="card-s">Nothing here has changed anything yet</div></div>
-  ${open.length?open.map(i=>`
-  <div class="item">
-    <div class="item-h"><div class="item-t">${esc(i.what).slice(0,140)}</div>${impPill(i.impact)}</div>
-    ${i.expected?`<div class="item-b">Expected: ${esc(i.expected)}</div>`:''}
-    <div class="item-m">${esc(i.ref)} &middot; ${esc(i.who)} &middot; ${esc(fnLabel(i.sips_function))} &middot; ${esc(i.area)} &middot; ${ageDays(i.submitted_at)} day${ageDays(i.submitted_at)===1?'':'s'} old</div>
-    <div class="f" style="margin:12px 0 10px"><label class="lbl">Severity</label>
-      <select class="inp" id="sev-${esc(i.ref)}" style="max-width:280px"><option value="">Not set</option>${sevOpts}</select></div>
-    <div class="f" style="margin-bottom:10px"><label class="lbl">Verdict</label>
-      <input class="inp" id="ver-${esc(i.ref)}" placeholder="Already built, not reachable / Confirmed / Not a defect ..."></div>
-    <div class="f" style="margin-bottom:10px"><label class="lbl">What was verified</label>
-      <textarea class="ta" id="ana-${esc(i.ref)}" style="min-height:60px" placeholder="Evidence separately from inference. Name the query, commit or record."></textarea></div>
-    <div class="f" style="margin-bottom:12px"><label class="lbl">Note to the submitter</label>
-      <input class="inp" id="dec-${esc(i.ref)}" placeholder="What they hear back."></div>
-    <div class="row acts" style="margin-top:0">
-      <button class="btn btn-g" data-triage="approved" data-ref="${esc(i.ref)}">Approve</button>
-      <button class="btn btn-o" data-triage="tabled" data-ref="${esc(i.ref)}">Table</button>
-      <button class="btn btn-r" data-triage="closed" data-ref="${esc(i.ref)}">Deny</button>
-    </div>
-  </div>`).join(''):'<div class="p muted">Nothing waiting. Everything submitted has been decided.</div>'}
-</div>
-
-<div class="card max">
-  <div class="card-h"><div class="card-t">Decided</div><div class="card-s">The submitter reads the outcome from their own page</div></div>
-  ${done.length?done.map(i=>{
-    const t=i.tracker_item_id?D.board.find(b=>b.intake_ref===i.ref):null;
-    const pill=i.status==='approved'||i.status==='shipped'?P('p-grn',esc(i.status)):P('p-gry',esc(i.status));
-    return `<div class="item done">
-    <div class="item-h"><div class="item-t">${esc(i.what).slice(0,120)}</div>${pill}</div>
-    ${i.verdict?`<div class="verdict">${esc(i.verdict)}${i.analysis?`<div class="v-why">${esc(i.analysis)}</div>`:''}</div>`:''}
-    <div class="item-m">${esc(i.ref)} &middot; decided ${fmtD(i.decided_at)}${t?` &middot; tracker #${t.number}`:''}</div>
-    ${i.status==='approved'&&!i.tracker_item_id?`
-    <div class="row" style="margin-top:11px">
-      <input class="inp" id="pt-${esc(i.ref)}" style="flex:1;min-width:180px" value="${esc(i.what).slice(0,120).replace(/"/g,'')}" placeholder="Tracker title">
-      <select class="inp" id="pp-${esc(i.ref)}" style="width:110px"><option>medium</option><option>high</option><option>critical</option><option>low</option></select>
-      <button class="btn btn-g" data-promote="${esc(i.ref)}">To tracker</button>
-    </div>`:''}
-    </div>`;}).join(''):'<div class="p muted">Nothing decided yet. Decisions made above land here with their outcome.</div>'}
-</div>`;
-}
-
-function trackerHTML(){
-  const ranked=D.board.filter(t=>t.rank!=null).sort((a,b)=>a.rank-b.rank||a.number-b.number);
-  const unranked=D.board.filter(t=>t.rank==null&&t.status!=='shipped');
-  const stale=D.board.filter(isStale).sort((a,b)=>ageDays(b.updated_at)-ageDays(a.updated_at));
-  const sp=sprintNow();
-  const rows=[...D.board].sort((a,b)=>a.number-b.number);
-  const stOpts=s=>['open','in-progress','shipped','blocked','backlog'].map(x=>`<option${x===s?' selected':''}>${x}</option>`).join('');
-  return `
-<div class="card max">
-  <div class="card-h"><div class="card-t">Priority order</div>
-  <div class="card-s">Set from here. The dev team sees this order the next time they refresh.</div></div>
-  ${ranked.length?ranked.map(t=>`
-  <div class="item"><div class="item-h"><div class="item-t">${t.rank}. &nbsp;#${t.number} &middot; ${esc(t.title)}</div>${stPill(t.status)}</div>
-  <div class="row" style="margin-top:9px">
-    <input class="inp" id="rk-${t.number}" type="number" min="1" value="${t.rank}" style="width:76px">
-    <button class="btn" data-rank="${t.number}">Move</button>
-    <button class="btn btn-o" data-unrank="${t.number}">Remove from queue</button>
-  </div></div>`).join(''):'<div class="p muted">Nothing is ranked yet. Rank 1 means do this first.</div>'}
-  ${unranked.length?`
-  <div class="sec">Add to the queue</div>
-  <div class="row">
-    <select class="inp" id="rkPick" style="flex:1;min-width:200px">${unranked.map(t=>`<option value="${t.number}">#${t.number} &middot; ${esc(t.title).slice(0,70)}</option>`).join('')}</select>
-    <input class="inp" id="rkNew" type="number" min="1" placeholder="Rank" style="width:86px">
-    <button class="btn btn-g" data-act="rankPick">Set</button>
-  </div>`:''}
-  <div class="sec">Push a new priority in</div>
-  <div class="f" style="margin-bottom:10px"><input class="inp" id="ptTitle" placeholder="What needs doing"></div>
-  <div class="row">
-    <select class="inp" id="ptPrio" style="width:110px"><option>high</option><option>critical</option><option>medium</option><option>low</option></select>
-    <input class="inp" id="ptRank" type="number" min="1" placeholder="Rank" style="width:86px">
-    <button class="btn btn-g" data-act="pushTask">Push it</button>
-  </div>
-</div>
-
-<div class="card max">
-  <div class="card-h"><div class="card-t">Flagged automatically</div>
-  <div class="card-s">Marked shipped with no date, or untouched for 14 days while open</div></div>
-  ${stale.length?`<table class="tbl"><thead><tr><th>#</th><th>Item</th><th>Status</th></tr></thead><tbody>
-  ${stale.map(t=>`<tr><td>${t.number}</td><td>${esc(t.title)}<div class="age">${t.status==='shipped'&&!t.shipped_on?'Marked shipped with no date':`Untouched ${ageDays(t.updated_at)} days`}</div></td><td>${P('p-amb','Stale')}</td></tr>`).join('')}
-  </tbody></table>`:'<div class="p muted">Nothing is stale. Every open row has been touched inside two weeks.</div>'}
-</div>
-
-<div class="card max">
-  <div class="card-h"><div class="card-t">The ledger</div><div class="card-s">${sp?`Current sprint ${esc(sp)} &middot; `:''}${rows.length} items &middot; status changes write straight to the record</div></div>
-  <table class="tbl"><thead><tr><th>#</th><th>Item</th><th>Change</th></tr></thead><tbody>
-  ${rows.map(t=>`<tr><td>${t.number}</td>
-  <td>${esc(t.title)}<div class="age">${[t.sprint?esc(t.sprint):'',t.intake_ref?'from '+esc(t.intake_ref):'',t.shipped_on?'shipped '+fmtD(t.shipped_on):'',t.review_on?'review '+fmtD(t.review_on):''].filter(Boolean).join(' &middot; ')||'&nbsp;'}</div>
-  ${t.status==='shipped'?(t.verified_note?`<div class="proof"><span class="proof-l">Verified${t.verified_at?' '+fmtD(t.verified_at):''}</span>${esc(t.verified_note)}</div>`:'<div class="noproof">Shipped with no evidence recorded</div>'):''}</td>
-  <td><div class="row" style="gap:5px">
-    <select class="inp" id="st-${t.number}" style="width:118px;padding:8px 9px;font-size:12px">${stOpts(t.status)}</select>
-    <input class="inp" id="dt-${t.number}" type="date" style="width:132px;padding:8px 9px;font-size:12px">
-    <button class="btn" data-upd="${t.number}">Apply</button>
-    <input class="inp" id="vf-${t.number}" placeholder="How you checked it is live${t.status==='shipped'?'':' (needed to ship)'}" style="width:100%;padding:8px 9px;font-size:12px">
-  </div></td></tr>`).join('')}
-  </tbody></table>
-  <div class="p muted" style="margin-top:10px">Shipped needs a ship date <em>and</em> a line on how it was checked against the running system. Backlog needs a review date.</div>
-</div>`;
-}
-
-function historyHTML(){
-  const dates=[...new Set(D.snaps.map(s=>s.snap_date))].sort().reverse();
-  const t=today();
-  const prevDate=dates.find(d=>d<t);
-  const prev=prevDate?D.snaps.filter(s=>s.snap_date===prevDate):[];
-  const nowBy=Object.fromEntries(D.board.map(b=>[b.number,b]));
-  const rolled=prev.filter(s=>s.status!=='shipped'&&nowBy[s.number]&&nowBy[s.number].status!=='shipped');
-  const cleared=prev.filter(s=>s.status!=='shipped'&&nowBy[s.number]&&nowBy[s.number].status==='shipped');
-  const newSince=prevDate?D.board.filter(b=>!prev.some(s=>s.number===b.number)):[];
-  const pending=D.board.filter(b=>['open','in-progress','blocked'].includes(b.status)).sort((a,b)=>(a.rank??999)-(b.rank??999)||a.number-b.number);
-  const review=D.decisions.filter(d=>d.status==='tabled'&&d.review_on);
-  return `
-<div class="card max">
-  <div class="card-h"><div class="card-t">${prevDate?`Since ${fmtD(prevDate)}`:'Yesterday'}</div>
-  <div class="card-s">What carried over, what cleared, what is new</div></div>
-  ${!prevDate?'<div class="p muted">History starts collecting from today. A snapshot of the tracker is taken every time a surface loads; from tomorrow this shows exactly what rolled over overnight and what got cleared.</div>':`
-  ${rolled.length?`<div class="sec">Rolled over &middot; ${rolled.length}</div>`+rolled.map(s=>`
-    <div class="item"><div class="item-h"><div class="item-t">#${s.number} &middot; ${esc(s.title)}</div>${P('p-amb','Rolled over')}</div>
-    <div class="item-m">${esc(s.status)} on ${fmtD(prevDate)} &middot; ${esc(nowBy[s.number].status)} now</div></div>`).join(''):'<div class="p muted">Nothing rolled over.</div>'}
-  ${cleared.length?`<div class="sec">Cleared &middot; ${cleared.length}</div>`+cleared.map(s=>`
-    <div class="item"><div class="item-h"><div class="item-t">#${s.number} &middot; ${esc(s.title)}</div>${P('p-grn','Cleared')}</div>
-    <div class="item-m">was ${esc(s.status)} on ${fmtD(prevDate)} &middot; shipped ${nowBy[s.number].shipped_on?fmtD(nowBy[s.number].shipped_on):''}</div></div>`).join(''):''}
-  ${newSince.length?`<div class="sec">New since &middot; ${newSince.length}</div>`+newSince.map(b=>`
-    <div class="item"><div class="item-h"><div class="item-t">#${b.number} &middot; ${esc(b.title)}</div>${stPill(b.status)}</div></div>`).join(''):''}`}
-</div>
-
-<div class="card max">
-  <div class="card-h"><div class="card-t">Pending now</div><div class="card-s">Everything open, in priority order where one is set</div></div>
-  ${pending.length?pending.map(b=>`
-  <div class="item"><div class="item-h"><div class="item-t">${b.rank!=null?b.rank+'. &nbsp;':''}#${b.number} &middot; ${esc(b.title)}</div>${stPill(b.status)}</div>
-  <div class="item-m">${[b.sprint?esc(b.sprint):'',`untouched ${ageDays(b.updated_at)} days`].filter(Boolean).join(' &middot; ')}</div></div>`).join(''):'<div class="p muted">Nothing pending. The board is clear.</div>'}
-</div>
-
-<div class="card max">
-  <div class="card-h"><div class="card-t">Parked for review</div><div class="card-s">Tabled decisions with a date to come back on</div></div>
-  ${review.length?review.map(d=>`
-  <div class="item"><div class="item-h"><div class="item-t">${esc(d.question)}</div>${P('p-gry','Review '+fmtD(d.review_on))}</div>
-  ${d.reasoning?`<div class="item-b">${esc(d.reasoning)}</div>`:''}
-  <div class="item-m">${esc(d.ref)} &middot; raised ${fmtD(d.raised_on)}</div></div>`).join(''):'<div class="p muted">Nothing is parked. Tabled decisions with a review date appear here.</div>'}
-</div>
-
-<div class="card max">
-  <div class="card-h"><div class="card-t">The record</div><div class="card-s">One line per day the tracker was photographed</div></div>
-  ${dates.length?`<table class="tbl"><thead><tr><th>Date</th><th>Items</th><th>Shipped</th><th>Open</th></tr></thead><tbody>
-  ${dates.slice(0,30).map(d=>{const rows=D.snaps.filter(s=>s.snap_date===d);
-    return `<tr><td>${fmtD(d)}</td><td>${rows.length}</td><td>${rows.filter(r=>r.status==='shipped').length}</td><td>${rows.filter(r=>r.status!=='shipped').length}</td></tr>`;}).join('')}
-  </tbody></table>`:'<div class="p muted">No snapshots yet. The first one was taken when this page loaded; the table starts tomorrow.</div>'}
-</div>`;
-}
-
-function decisionsHTML(){
-  const open=D.decisions.filter(d=>d.status==='open').sort((a,b)=>new Date(a.raised_on)-new Date(b.raised_on));
-  const closed=D.decisions.filter(d=>d.status!=='open').sort((a,b)=>new Date(b.answered_on||b.raised_on)-new Date(a.answered_on||a.raised_on));
-  return `
-<div class="card max">
-  <div class="card-h"><div class="card-t">Open</div><div class="card-s">Age is the thing to watch</div></div>
-  ${open.length?open.map(d=>`
-  <div class="item">
-    <div class="item-h"><div class="item-t">${esc(d.question)}</div>${agePill(ageDays(d.raised_on))}</div>
-    ${d.blocks?`<div class="item-m">Blocks: ${esc(d.blocks)}</div>`:''}
-    <div class="f" style="margin:11px 0 9px"><label class="lbl">Answer</label>
-      <textarea class="ta" id="ans-${esc(d.ref)}" style="min-height:58px" placeholder="The decision, in a sentence or two."></textarea></div>
-    <div class="f" style="margin-bottom:11px"><label class="lbl">Reasoning</label>
-      <input class="inp" id="rsn-${esc(d.ref)}" placeholder="Why, so it stays decided."></div>
-    <div class="row">
-      <button class="btn btn-g" data-answer="${esc(d.ref)}">Answer it</button>
-      <input class="inp" id="rev-${esc(d.ref)}" type="date" style="width:150px">
-      <button class="btn btn-o" data-table="${esc(d.ref)}">Table until date</button>
-    </div>
-  </div>`).join(''):'<div class="p muted">Nothing open. Questions the dev team raises land here with their age.</div>'}
-</div>
-<div class="card max">
-  <div class="card-h"><div class="card-t">Decided</div><div class="card-s">Answered once, stays answered</div></div>
-  ${closed.length?closed.map(d=>`
-  <div class="item"><div class="item-h"><div class="item-t">${esc(d.question)}</div>${d.status==='answered'?P('p-grn',esc(d.verdict||'Answered')):P('p-gry','Tabled')}</div>
-  ${d.answer?`<div class="item-b">${esc(d.answer)}${d.reasoning?' &mdash; '+esc(d.reasoning):''}</div>`:d.reasoning?`<div class="item-b">${esc(d.reasoning)}</div>`:''}
-  <div class="item-m">${esc(d.ref)} &middot; ${d.answered_on?fmtD(d.answered_on):'raised '+fmtD(d.raised_on)}${d.review_on?' &middot; review '+fmtD(d.review_on):''}</div></div>`).join(''):'<div class="p muted">Nothing decided yet.</div>'}
-</div>`;
-}
-
-function capHTML(){
-  const order=['capability','limitations','standards','severity','glossary','surfaces'];
-  const docs=[...D.refdocs].sort((a,b)=>order.indexOf(a.slug)-order.indexOf(b.slug));
-  if(!docs.length) return '<div class="card max"><div class="card-h"><div class="card-t">Reference</div></div><div class="p muted">No reference documents are in the database yet. Once capability, limitations and standards are loaded they render here.</div></div>';
-  return docs.map(r=>`<div class="card max"><div class="card-h"><div class="card-t">${esc(r.title)}</div></div>${md(r.body)||'<div class="p muted">Empty.</div>'}</div>`).join('');
-}
-
-function releasesHTML(){
-  const byNum=Object.fromEntries(D.board.map(b=>[b.number,b.title]));
-  return `
-<div class="card max">
-  <div class="card-h"><div class="card-t">Recent</div><div class="card-s">Merged, deployed and confirmed are three separate facts</div></div>
-  ${D.releases.length?D.releases.map(r=>`
-  <div class="item"><div class="item-h"><div class="item-t">${fmtD(r.released_on)} &middot; ${esc(r.summary)}</div>${r.outcome==='live'?P('p-grn','Live'):P('p-red','Rolled back')}</div>
-  ${r.detail?`<div class="item-b">${esc(r.detail)}</div>`:''}
-  <div class="item-m">${[r.verification?'Verified: '+esc(r.verification):'',(r.item_numbers||[]).length?(r.item_numbers||[]).map(n=>byNum[n]?`#${n} ${esc(byNum[n]).slice(0,40)}`:`#${n}`).join(', '):''].filter(Boolean).join(' &middot; ')||'No verification recorded'}</div></div>`).join('')
-  :'<div class="p muted">No releases logged yet. The dev team posts them from their page; each lands here with its verification.</div>'}
-</div>`;
-}
-
-
-/* The brief runs to thousands of words. Show the opening, let it be opened. */
-let briefOpen=false;
-function briefBlock(body){
-  if(!body) return '';
-  const short = body.length < 700;
-  if(short) return md(body);
-  return `<div class="clamp${briefOpen?' open':''}">${md(body)}</div>
-  <div class="morebar"><div class="rule"></div>
-    <button class="btn" data-brief="1">${briefOpen?'See less':'See more'}</button>
-    <div class="rule"></div></div>`;
-}
-
-/* ---------- registry, nav, draw ---------- */
+/* ---------- router ---------- */
 const V={
-  today:{n:'Today',s:new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}),h:todayHTML},
-  intake:{n:'Intake',s:'From the SIPS admin team',b:()=>D.intake.filter(i=>i.status==='new').length,h:intakeHTML},
-  tracker:{n:'Tracker',s:'The ledger',b:()=>D.board.filter(isStale).length,h:trackerHTML},
-  history:{n:'History',s:'Rollover, pending, the record',h:historyHTML},
-  decisions:{n:'Decisions',s:'Open queue and the log',b:()=>D.decisions.filter(d=>d.status==='open').length,h:decisionsHTML},
-  cap:{n:'What it does',s:'Present tense only',h:capHTML},
-  releases:{n:'Releases',s:'What is actually live',h:releasesHTML}
+  needs:    {icon:'\u2691', label:'Needs you',  h:vNeeds,     n:()=>needsYou().length},
+  intake:   {icon:'\u2709', label:'Intake',     h:vIntake,    n:()=>INTAKE.filter(i=>i.status==='new').length},
+  tracker:  {icon:'\u25A4', label:'Tracker',    h:vTracker,   n:()=>ALL.filter(t=>t.date_state==='countered').length},
+  decisions:{icon:'\u2047', label:'Decisions',  h:vDecisions, n:()=>DEC.filter(d=>d.status==='open').length},
+  brief:    {icon:'\u2726', label:'Brief',      h:vBrief},
+  record:   {icon:'\u21BB', label:'The record', h:vRecord}
 };
-const REVIEW=['today','intake','tracker','history','decisions','cap','releases'];
-const nav=document.getElementById('nav'), views=document.getElementById('views');
-const side=document.getElementById('side'), scrim=document.getElementById('scrim'), toast=document.getElementById('toast');
-const refreshBtn=document.getElementById('refresh');
-let cur='today';
-
+const KEYS=['needs','intake','tracker','decisions','brief','record'];
+let cur='needs';
 function drawNav(){
-  nav.innerHTML='<div class="nav-l">Review</div>'+REVIEW.map(k=>{
-    const b=V[k].b?V[k].b():0;
-    return `<button class="nav-i${k===cur?' on':''}" data-k="${k}"><span>${V[k].n}</span>${b?`<span class="nav-n">${b}</span>`:''}</button>`;
-  }).join('');
+  const nav=document.getElementById('nav'); if(!nav) return;
+  nav.innerHTML='<div class="nav-l">Review</div>'+KEYS.map(k=>{
+    const n=V[k].n?V[k].n():0;
+    return `<button class="nav-i${k===cur?' on':''}" data-k="${k}">
+      <span class="ni">${V[k].icon}</span><span class="lbl">${V[k].label}</span>
+      ${n?`<span class="nav-n">${n}</span>`:''}</button>`;}).join('');
 }
+function shut(){ document.getElementById('side').classList.remove('open');
+                 document.getElementById('scrim').classList.remove('on'); }
+function go(k){ cur=k; draw(); shut(); window.scrollTo(0,0); }
+
+const views=document.getElementById('views'), toast=document.getElementById('toast');
+const refreshBtn=document.getElementById('refresh');
+function say(m){ toast.textContent=m; toast.classList.add('on'); setTimeout(()=>toast.classList.remove('on'),2800); }
 function draw(){
   views.innerHTML=`<div class="view on">${V[cur].h()}</div>`;
-  document.getElementById('ttl').textContent=V[cur].n;
-  document.getElementById('sub').textContent=V[cur].s;
-  drawNav(); window.scrollTo(0,0);
+  document.getElementById('ttl').textContent=V[cur].label;
+  document.getElementById('sub').textContent='Master admin';
+  drawNav();
 }
-function go(k){ cur=k; draw(); shut(); }
-function shut(){ side.classList.remove('open'); scrim.classList.remove('on'); }
-function say(m){ toast.textContent=m; toast.classList.add('on'); setTimeout(()=>toast.classList.remove('on'),2600); }
-
-/* ---------- auth ---------- */
-
-
-async function boot(){
-  try{
-    views.innerHTML='<div class="view on"><div class="p muted">Loading the record...</div></div>';
-    await loadAll();
-    refreshBtn.hidden=false;
-    draw();
-  }catch(e){
-    views.innerHTML=`<div class="view on"><div class="card max"><div class="card-t">Could not load</div><div class="p" style="margin-top:8px">${esc(e.message)}</div><div class="row" style="margin-top:12px"><button class="btn" onclick="location.reload()">Try again</button></div></div></div>`;
-  }
-}
-
-async function refresh(quiet){
-  try{ await loadAll(); draw(); if(!quiet) say('Refreshed. This is the record as of right now.'); }
-  catch(e){ say(e.message); }
-}
-
-/* ---------- actions ---------- */
-async function act(fn){
-  try{ await fn(); await refresh(true); }
-  catch(e){ say(e.message); }
-}
+async function refresh(quiet){ try{ await load(); draw(); if(!quiet) say('Refreshed.'); }catch(e){ say(e.message); } }
+async function act(fn){ try{ await fn(); await refresh(true); }catch(e){ say(e.message); } }
 const val=id=>{const n=document.getElementById(id);return n?n.value.trim():'';};
 
-document.addEventListener('click',e=>{
-  const n=e.target.closest('.nav-i'); if(n) return go(n.dataset.k);
-  const s=e.target.closest('.stat[data-go]'); if(s) return go(s.dataset.go);
-  if(e.target===refreshBtn) return refresh();
-  if(e.target.closest('[data-brief]')){ briefOpen=!briefOpen; return draw(); }
+document.getElementById('burger').onclick=()=>{document.getElementById('side').classList.add('open');
+  document.getElementById('scrim').classList.add('on');};
+document.getElementById('scrim').onclick=shut;
 
-  const tr=e.target.closest('[data-triage]');
-  if(tr){ const ref=tr.dataset.ref, st=tr.dataset.triage;
+document.addEventListener('click',e=>{
+  if(e.target===refreshBtn||e.target.id==='rf2') return refresh();
+  const nv=e.target.closest('[data-k]'); if(nv) return go(nv.dataset.k);
+  const gt=e.target.closest('[data-go]'); if(gt) return go(gt.dataset.go);
+
+  const an=e.target.closest('[data-ans]');
+  if(an){ const n=Number(an.dataset.ans);
+    return act(async()=>{ await rpc('give_answer',{p_number:n,p_answer:val('an-'+n),
+      p_date:val('ad-'+n)||null,p_who:me()});
+      say(`Answered. ${val('ad-'+n)?'The date is now with the dev team.':'No date set, so nothing was proposed.'}`); }); }
+
+  const tr=e.target.closest('[data-tr]');
+  if(tr){ const ref=tr.dataset.ref, st=tr.dataset.tr;
     return act(async()=>{ await rpc('triage_intake',{p_ref:ref,
       p_severity:val('sev-'+ref)?Number(val('sev-'+ref)):null,
-      p_verdict:val('ver-'+ref)||null, p_analysis:val('ana-'+ref)||null,
-      p_decision:val('dec-'+ref)||null, p_status:st});
-      say(st==='approved'?'Approved. Promote it to the tracker below when ready.':st==='tabled'?'Tabled. The submitter sees it as tabled.':'Closed on our side. The submitter sees it as tabled.'); }); }
+      p_verdict:val('ver-'+ref)||null,p_analysis:val('ana-'+ref)||null,
+      p_decision:null,p_status:st}); say(`${esc(ref)} ${st}.`); }); }
 
-  const pm=e.target.closest('[data-promote]');
-  if(pm){ const ref=pm.dataset.promote;
-    return act(async()=>{ const num=await rpc('promote_intake',{p_ref:ref,p_title:val('pt-'+ref),p_priority:val('pp-'+ref)||'medium',p_sprint:sprintNow()});
-      say(`On the tracker as #${num}.`); }); }
+  const pm=e.target.closest('[data-pm]');
+  if(pm){ const ref=pm.dataset.pm;
+    return act(async()=>{ const n=await rpc('promote_intake',{p_ref:ref,p_title:val('pt-'+ref),p_priority:'medium'});
+      say(`On the tracker as #${n}.`); }); }
+
+  const tk=e.target.closest('[data-take]');
+  if(tk){ const n=Number(tk.dataset.take);
+    return act(async()=>{ const r=await rpc('settle_date',{p_number:n,p_action:'accept'});
+      say(`#${n} agreed for ${short(r.agreed_on)}.`); }); }
+  const rp=e.target.closest('[data-repro]');
+  if(rp){ const n=Number(rp.dataset.repro);
+    return act(async()=>{ await rpc('settle_date',{p_number:n,p_action:'repropose',p_date:val('rp-'+n)||null});
+      say(`#${n} sent back to the dev team for ${short(val('rp-'+n))}.`); }); }
 
   const rk=e.target.closest('[data-rank]');
-  if(rk){ const num=Number(rk.dataset.rank);
-    return act(async()=>{ await rpc('set_rank',{p_number:num,p_rank:Number(val('rk-'+num))||1}); say('Order updated. Devs see it on their next refresh.'); }); }
+  if(rk){ const n=Number(rk.dataset.rank);
+    return act(async()=>{ await rpc('set_rank',{p_number:n,p_rank:Number(val('rk-'+n))||1}); say('Order updated.'); }); }
   const ur=e.target.closest('[data-unrank]');
-  if(ur) return act(async()=>{ await rpc('set_rank',{p_number:Number(ur.dataset.unrank),p_rank:null}); say('Removed from the priority queue.'); });
+  if(ur) return act(async()=>{ await rpc('set_rank',{p_number:Number(ur.dataset.unrank),p_rank:null}); say('Removed from the order.'); });
 
-  const up=e.target.closest('[data-upd]');
-  if(up){ const num=Number(up.dataset.upd);
-    return act(async()=>{ const st=val('st-'+num), dt=val('dt-'+num)||null;
-      await rpc('update_tracker',{p_number:num,p_status:st,
-        p_shipped_on:st==='shipped'?(dt||today()):null,
-        p_review_on:st==='backlog'?dt:null,
-        p_verified:val('vf-'+num)||null});
-      say(`#${num} is now ${st}.`); }); }
-
-  const an=e.target.closest('[data-answer]');
-  if(an){ const ref=an.dataset.answer;
-    return act(async()=>{ await rpc('answer_decision',{p_ref:ref,p_verdict:null,p_answer:val('ans-'+ref),p_reasoning:val('rsn-'+ref)||null,p_review_on:null});
-      say('Answered. It stays answered.'); }); }
+  const aw=e.target.closest('[data-answer]');
+  if(aw){ const r=aw.dataset.answer;
+    return act(async()=>{ await rpc('answer_decision',{p_ref:r,p_verdict:null,p_answer:val('ans-'+r),p_reasoning:null,p_review_on:null});
+      say('Answered.'); }); }
   const tb=e.target.closest('[data-table]');
-  if(tb){ const ref=tb.dataset.table;
-    return act(async()=>{ const d=val('rev-'+ref); if(!d) throw new Error('Tabling needs a review date.');
-      await rpc('answer_decision',{p_ref:ref,p_verdict:null,p_answer:val('ans-'+ref)||null,p_reasoning:val('rsn-'+ref)||null,p_review_on:d});
-      say('Tabled with a date to come back on.'); }); }
+  if(tb){ const r=tb.dataset.table;
+    return act(async()=>{ const d=val('rev-'+r); if(!d) throw new Error('Tabling needs a review date.');
+      await rpc('answer_decision',{p_ref:r,p_verdict:null,p_answer:val('ans-'+r)||null,p_reasoning:null,p_review_on:d});
+      say('Tabled with a review date.'); }); }
 
   const a=e.target.closest('[data-act]');
-  if(a){
-    if(a.dataset.act==='sendBrief') return act(async()=>{ await rpc('send_brief',{p_date:today(),p_body:val('briefBody')}); say('Brief sent. The dev team sees it on refresh.'); });
-    if(a.dataset.act==='addendum')  return act(async()=>{ await rpc('post_addendum',{p_body:val('addBody'),p_author:'Ignacio'}); say('Pushed through, with a date on it.'); });
-    if(a.dataset.act==='rankPick')  return act(async()=>{ await rpc('set_rank',{p_number:Number(val('rkPick')),p_rank:Number(val('rkNew'))||1}); say('Added to the priority queue.'); });
-    if(a.dataset.act==='pushTask')  return act(async()=>{ const n=await rpc('add_task',{p_title:val('ptTitle'),p_priority:val('ptPrio')||'high',p_rank:Number(val('ptRank'))||null,p_sprint:sprintNow(),p_note:'Pushed in from the master surface'});
-      say(`On the tracker as #${n}${val('ptRank')?', rank '+val('ptRank'):''}.`); });
-  }
+  if(!a) return;
+  if(a.dataset.act==='sendBrief') return act(async()=>{ await rpc('send_brief',{p_date:today(),p_body:val('briefBody')}); say('Brief sent.'); });
+  if(a.dataset.act==='addendum')  return act(async()=>{ await rpc('post_addendum',{p_body:val('addBody'),p_author:me()}); say('Pushed through.'); });
+  if(a.dataset.act==='rankPick')  return act(async()=>{ await rpc('set_rank',{p_number:Number(val('rkPick')),p_rank:Number(val('rkNew'))||1}); say('Added to the order.'); });
+  if(a.dataset.act==='pushTask')  return act(async()=>{ const n=await rpc('add_task',{p_title:val('ptTitle'),p_priority:'high',
+      p_rank:null,p_sprint:'S8',p_note:'Pushed in from the master board',p_origin:'Pushed in',p_proposed_on:val('ptDate')||null});
+      say(`On the tracker as #${n}${val('ptDate')?', date proposed':''}.`); });
 });
-document.getElementById('burger').onclick=()=>{side.classList.add('open');scrim.classList.add('on');};
-scrim.onclick=shut;
-boot();
+
+(async()=>{
+  views.innerHTML='<div class="view on"><div class="p muted">Loading the record...</div></div>';
+  try{ await load(); refreshBtn.hidden=false; draw(); }
+  catch(e){ views.innerHTML=`<div class="view on"><div class="card"><div class="card-t">Could not load</div>
+    <div class="p" style="margin-top:8px">${esc(e.message)}</div></div></div>`; }
+})();
 </script>
 </body>
 </html>
