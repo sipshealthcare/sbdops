@@ -113,6 +113,17 @@
 #sbd-root .bar .g{background:#3fb984 !important;} #sbd-root .bar .a{background:#D49A00 !important;}
 #sbd-root .bar .r{background:#f0616d !important;}
 #sbd-root .goal-h b{color:#ffffff !important;} #sbd-root .goal-m{color:#64748b !important;}
+#sbd-root .side{background:#0a1024 !important;border-color:#1c2646 !important;}
+#sbd-root .bmark{background:#004789 !important;color:#ffffff !important;}
+#sbd-root .bname{color:#ffffff !important;} #sbd-root .bsub{color:#94a3b8 !important;}
+#sbd-root .nav-l{color:#64748b !important;}
+#sbd-root .nav-i{color:#94a3b8 !important;background:transparent !important;}
+#sbd-root .nav-i:hover{color:#ffffff !important;background:#131b3a !important;}
+#sbd-root .nav-i.on{background:linear-gradient(120deg,rgba(212,154,0,.92),rgba(212,154,0,.55)) !important;color:#000000 !important;}
+#sbd-root .nav-n{color:#e6ebf5 !important;background:#1c2646 !important;}
+#sbd-root .nav-i.on .nav-n{background:rgba(0,0,0,.22) !important;color:#000000 !important;}
+#sbd-root .sidefoot{color:#64748b !important;border-color:#1c2646 !important;}
+#sbd-root .burger span{background:#e6ebf5 !important;}
 /* ── END LOCK ──────────────────────────────────────────────────── */
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -377,13 +388,59 @@ body{background:#070d1f}
 @media(max-width:860px){ .btn{min-height:40px} }
 @media(max-width:380px){ .stats{grid-template-columns:1fr 1fr;gap:8px}
   .stat{padding:12px 11px} .stat-v{font-size:20px} .stat-l{font-size:10px} }
+
+/* ── sidebar ─────────────────────────────────────────────────────── */
+.wrap{display:flex;min-height:100vh}
+.side{width:236px;flex:0 0 236px;border-right:1px solid var(--line);display:flex;
+  flex-direction:column;position:fixed;inset:0 auto 0 0;z-index:40;
+  transform:translateX(-100%);transition:transform .22s;background:#0a1024}
+.side.open{transform:none}
+.brand{display:flex;align-items:center;gap:10px;padding:18px 16px 16px}
+.bmark{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;
+  font-weight:700;font-size:11px;flex:0 0 32px}
+.bname{font-weight:600;font-size:14.5px}
+.bsub{font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+.nav{padding:4px 11px 16px;overflow-y:auto;flex:1}
+.nav-l{font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;padding:10px 9px 7px}
+.nav-i{display:flex;align-items:center;gap:10px;width:100%;padding:11px 12px;border:0;
+  border-radius:11px;font-size:13.5px;cursor:pointer;text-align:left;margin-bottom:3px;
+  font-family:inherit;background:none;transition:background .15s,color .15s}
+.nav-i .ni{width:17px;flex:0 0 17px;text-align:center;font-size:13px;opacity:.85}
+.nav-i span.lbl{flex:1;min-width:0}
+.nav-n{font-size:11px;font-weight:700;border-radius:20px;padding:2px 8px;min-width:22px;text-align:center}
+.nav-i.on{background:linear-gradient(120deg,rgba(212,154,0,.92),rgba(212,154,0,.55));color:#000;font-weight:600}
+.nav-i.on .nav-n{background:rgba(0,0,0,.22);color:#000}
+.sidefoot{padding:14px 16px 18px;font-size:11px;line-height:1.55;color:var(--mut);
+  border-top:1px solid var(--line)}
+.main{flex:1;min-width:0;position:relative;z-index:1;max-width:none;margin:0;padding:20px 22px 60px}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:35;display:none}
+.scrim.on{display:block}
+.burger{width:38px;height:38px;border:1px solid var(--line);border-radius:10px;background:none;
+  display:grid;place-content:center;gap:4px;cursor:pointer;flex:0 0 38px}
+.burger span{width:15px;height:2px;border-radius:2px;display:block;background:var(--txt)}
+@media(min-width:1000px){
+  .side{position:sticky;height:100vh;transform:none}
+  .scrim,.burger{display:none!important}
+  .main{padding:22px 30px 70px}
+}
 </style>
 </head>
 <body>
 <div id="sbd-root">
 <div class="wrap">
+  <aside class="side" id="side">
+    <div class="brand"><div class="bmark">DEV</div>
+      <div><div class="bname">SBD Build</div><div class="bsub">Dev team</div></div></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="sidefoot">
+      Everything here comes from Ignacio or the tracker. Send EODs the way you always have.
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
   <main class="main">
     <div class="top">
+      <button class="burger" id="burger" aria-label="Sections"><span></span><span></span><span></span></button>
       <div><div class="top-t" id="ttl">SBD Build</div><div class="top-s" id="sub">Dev queue</div></div>
       <button class="btn" id="refresh" style="margin-left:auto" hidden>Refresh</button>
     </div>
@@ -512,7 +569,7 @@ function view(){
              : 'Nothing overdue and no dates outstanding.';
 
   return `
-<div class="hero">
+<div class="hero" id="s-top">
   <div class="hero-d">${new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</div>
   <h1 class="hero-t">${greet}, dev team</h1>
   <div class="hero-s">${lead}</div>
@@ -529,7 +586,7 @@ function view(){
   <div class="stat"><div class="stat-v${dueSoon.length?' amb':''}">${dueSoon.length}</div><div class="stat-l">Due today or tomorrow</div></div>
 </div>
 
-${BRIEF?`<div class="card">
+${BRIEF?`<div class="card" id="s-brief">
   <div class="card-h"><div class="ic warm">✦</div>
     <div><div class="card-t">This morning's brief</div>
     <div class="card-s">From ${esc(BRIEF.author)} &middot; ${D(BRIEF.brief_date)}</div></div></div>
@@ -546,7 +603,7 @@ ${waiting.length?`
   ${waiting.map(t=>card(t,true)).join('')}
 </div>`:''}
 
-<div class="cols">
+<div class="cols" id="s-queue">
   <div class="col">
     <div class="card">
       <div class="card-h"><div class="ic">▤</div>
@@ -556,7 +613,7 @@ ${waiting.length?`
     </div>
   </div>
 
-  <div class="col side">
+  <div class="col standing" id="s-standing">
     <div class="card">
       <div class="card-h"><div class="ic">◎</div>
         <div><div class="card-t">Where things stand</div></div></div>
@@ -636,18 +693,54 @@ function briefBlock(body){
     <div class="rule"></div></div>`;
 }
 
+
+/* Section nav. One page, so these scroll rather than route. Counts come from
+   the same data the sections render, so the badge can never disagree. */
+const SECTIONS=[
+  {id:'s-top',     icon:'\u25C6', label:'Today'},
+  {id:'s-brief',   icon:'\u2726', label:'Morning brief'},
+  {id:'dates',     icon:'\u25F7', label:'Dates to answer', n:()=>open_().filter(t=>t.date_state==='pending').length},
+  {id:'s-queue',   icon:'\u25A4', label:'The queue',       n:()=>open_().filter(t=>t.date_state!=='pending').length},
+  {id:'s-standing',icon:'\u25CE', label:'Where things stand'}
+];
+let curSec='s-top';
+function drawNav(){
+  const nav=document.getElementById('nav'); if(!nav) return;
+  nav.innerHTML='<div class="nav-l">Queue</div>'+SECTIONS.filter(x=>document.getElementById(x.id)||x.id==='s-top')
+    .map(x=>{const n=x.n?x.n():0;
+      return `<button class="nav-i${x.id===curSec?' on':''}" data-sec="${x.id}">
+        <span class="ni">${x.icon}</span><span class="lbl">${x.label}</span>
+        ${n?`<span class="nav-n">${n}</span>`:''}</button>`;}).join('');
+}
+function shut(){ document.getElementById('side').classList.remove('open');
+                 document.getElementById('scrim').classList.remove('on'); }
+function spy(){
+  const obs=new IntersectionObserver(es=>{
+    es.forEach(e=>{ if(e.isIntersecting){ curSec=e.target.id; drawNav(); } });
+  },{rootMargin:'-15% 0px -70% 0px',threshold:0});
+  SECTIONS.forEach(x=>{const el=document.getElementById(x.id); if(el) obs.observe(el);});
+}
+
 const views=document.getElementById('views'), toast=document.getElementById('toast');
 const refreshBtn=document.getElementById('refresh');
 function say(m){ toast.textContent=m; toast.classList.add('on'); setTimeout(()=>toast.classList.remove('on'),2800); }
-function draw(){ views.innerHTML=`<div class="view on">${view()}</div>`; }
+function draw(){ views.innerHTML=`<div class="view on">${view()}</div>`; drawNav(); spy(); }
 async function refresh(quiet){
   try{ await load(); draw(); if(!quiet) say('Refreshed.'); }catch(e){ say(e.message); }
 }
 async function act(fn){ try{ await fn(); await refresh(true); }catch(e){ say(e.message); } }
 const val=id=>{const n=document.getElementById(id);return n?n.value.trim():'';};
 
+document.getElementById('burger').onclick=()=>{document.getElementById('side').classList.add('open');
+  document.getElementById('scrim').classList.add('on');};
+document.getElementById('scrim').onclick=shut;
+
 document.addEventListener('click',e=>{
   if(e.target===refreshBtn||e.target.id==='rf2') return refresh();
+  const sec=e.target.closest('[data-sec]');
+  if(sec){ const el=document.getElementById(sec.dataset.sec);
+    if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+    curSec=sec.dataset.sec; drawNav(); shut(); return; }
   if(e.target.id==='jump'){ const d=document.getElementById('dates');
     if(d) d.scrollIntoView({behavior:'smooth',block:'start'}); return; }
   if(e.target.closest('[data-brief]')){ briefOpen=!briefOpen; return draw(); }
