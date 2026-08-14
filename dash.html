@@ -233,7 +233,14 @@ body{background:#070d1f}
 
 /* daily brief typography */
 .bwrap{position:relative;max-height:280px;overflow:hidden}
-.bwrap.open{max-height:none}
+.bwrap.open{max-height:min(62vh,560px);overflow-y:auto;padding-right:14px;
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+  padding-top:14px;padding-bottom:14px;
+  scrollbar-width:thin;scrollbar-color:var(--line) transparent;overscroll-behavior:contain}
+.bwrap.open::-webkit-scrollbar{width:9px}
+.bwrap.open::-webkit-scrollbar-track{background:transparent}
+.bwrap.open::-webkit-scrollbar-thumb{background:var(--line);border-radius:5px}
+.bwrap.open::-webkit-scrollbar-thumb:hover{background:var(--gold)}
 .bwrap:not(.open):after{content:'';position:absolute;left:0;right:0;bottom:0;height:80px;
   background:linear-gradient(to bottom,rgba(14,19,40,0),var(--card));pointer-events:none}
 .bmore{margin-top:12px;background:none;border:0;font-family:inherit;font-size:12.5px;
