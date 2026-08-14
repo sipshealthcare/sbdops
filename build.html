@@ -128,6 +128,9 @@
 #sbd-root .agreed.wt .ag-l{color:#D49A00 !important;}
 #sbd-root .mini{border-color:#1c2646 !important;}
 #sbd-root .mini-t{color:#cbd5e5 !important;}
+#sbd-root .orbar{color:#64748b !important;}
+#sbd-root .orbar:before,#sbd-root .orbar:after{background:#1c2646 !important;}
+#sbd-root .counter .flab{color:#94a3b8 !important;}
 /* ── END LOCK ──────────────────────────────────────────────────── */
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -439,6 +442,29 @@ body{background:#070d1f}
   padding:9px 0;border-bottom:1px solid var(--line);font-size:12.5px}
 .mini:last-of-type{border-bottom:0}
 .mini-t{color:#cbd5e5;min-width:0;overflow-wrap:anywhere}
+
+/* the counter path is its own labelled action, not a date lost between buttons */
+.orbar{display:flex;align-items:center;gap:10px;margin:13px 0 11px;
+  font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut)}
+.orbar:before,.orbar:after{content:'';flex:1;height:1px;background:var(--line)}
+.counter{display:grid;grid-template-columns:auto 160px 1fr auto;gap:8px 10px;align-items:center}
+.counter .flab{font-size:11px;color:var(--dim);white-space:nowrap}
+.counter .flab[for^=wy]{grid-column:3;justify-self:start}
+.counter .inp{padding:9px 11px;font-size:12.5px;width:100%}
+.counter .btn{grid-column:4;grid-row:1/3;align-self:center}
+.counter .dt{grid-column:2}
+.counter .why{grid-column:3}
+.counter .flab[for^=nd]{grid-column:1}
+/* the date field must read as editable */
+.inp[type=date]{cursor:pointer}
+.inp[type=date]:hover{border-color:var(--gold)}
+/* hidden must beat display:flex */
+.qrow[hidden]{display:none!important}
+@media(max-width:860px){
+  .counter{grid-template-columns:1fr}
+  .counter .flab,.counter .inp,.counter .btn{grid-column:1!important;grid-row:auto!important;width:100%}
+  .counter .flab{margin-top:4px}
+}
 </style>
 </head>
 <body>
@@ -540,12 +566,15 @@ function dateBlock(t){
   if(t.date_state==='countered')
     return `<div class="agreed ct"><span class="ag-l">Moved to ${D(t.counter_on)}</span>${esc(t.counter_note||'')}${t.answered_by?`<span class="by"> &middot; ${esc(t.answered_by)}</span>`:''}</div>`;
   return `<div class="ask">
-    <div class="ask-h">Proposed for <b>${D(t.proposed_on)}</b> &mdash; confirm it, or send a different date with the reason.</div>
-    <div class="row">
-      <button class="btn btn-g" data-ok="${t.number}">Confirm</button>
+    <div class="ask-h">Ignacio proposed <b>${D(t.proposed_on)}</b> for this.</div>
+    <div class="row"><button class="btn btn-g" data-ok="${t.number}">Confirm ${short(t.proposed_on)}</button></div>
+    <div class="orbar"><span>or propose a different date</span></div>
+    <div class="counter">
+      <label class="flab" for="nd-${t.number}">New date</label>
       <input class="inp dt" id="nd-${t.number}" type="date" value="${t.proposed_on}">
-      <input class="inp why" id="wy-${t.number}" placeholder="Why it needs to move">
-      <button class="btn btn-o" data-no="${t.number}">Send this instead</button>
+      <label class="flab" for="wy-${t.number}">Why it needs to move</label>
+      <input class="inp why" id="wy-${t.number}" placeholder="It gets taken as given, so say why">
+      <button class="btn btn-o" data-no="${t.number}">Send this date back</button>
     </div></div>`;
 }
 
