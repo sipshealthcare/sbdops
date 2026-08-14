@@ -151,6 +151,7 @@
 #sbd-root .tp{background:#131b3a !important;}
 #sbd-root .tp-l{color:#64748b !important;}
 #sbd-root .tp-v{color:#ffffff !important;}
+#sbd-root .pubwait{color:#64748b !important;}
 /* ── END LOCK ──────────────────────────────────────────────────── */
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -521,6 +522,10 @@ body{background:#070d1f}
 .tp-l{display:block;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--mut);font-weight:600}
 .tp-v{display:block;font-size:20px;font-weight:700;color:#fff;margin-top:5px;font-variant-numeric:tabular-nums}
 @media(max-width:900px){.tpr{grid-template-columns:repeat(2,1fr)}}
+
+.srchwrap{margin-bottom:13px}
+.srch{width:100%;padding:12px 15px;font-size:13.5px;border-radius:12px}
+.pubwait{font-size:11px;color:var(--mut);font-weight:600;padding:6px 0}
 </style>
 </head>
 <body>
@@ -685,6 +690,9 @@ function noDate(t){
 
 
 function pubRow(t){
+  const eligible = t.status==='shipped' || t.date_state==='confirmed';
+  if(!eligible)
+    return `<div class="pubrow"><span class="pubwait">\u25CB Waiting on an agreed date &mdash; can\u2019t be shown to leaders yet</span></div>`;
   return `<div class="pubrow">
     <button class="pubtog${t.public_visible?' on':''}" data-pub="${t.number}" data-v="${t.public_visible?0:1}">
       ${t.public_visible?'\u25CF Shown to leaders':'\u25CB Not shared'}</button>
@@ -831,12 +839,15 @@ function vIntake(){
 }
 
 function vTracker(){
+  /* search is a DOM filter, not a re-render, so typing never loses focus */
   const rows=[...ALL].sort((a,b)=>a.number-b.number);
   const undated=ALL.filter(t=>t.status!=='shipped'&&t.status!=='backlog'&&!t.proposed_on);
   const ranked=ALL.filter(t=>t.rank!=null).sort((a,b)=>a.rank-b.rank);
   const unranked=ALL.filter(t=>t.rank==null&&t.status!=='shipped');
   const sent=ALL.filter(t=>t.date_state==='countered');
   return `
+<div class="srchwrap"><input class="inp srch" id="trksearch"
+  placeholder="Search the tracker &mdash; a number like 115, or words from the task"></div>
 ${TPUT?`<div class="card">
   <div class="card-h"><div class="ic">\u25F4</div><div><div class="card-t">What the date suggestions are based on</div>
   <div class="card-s">Measured from the record, and it sharpens as more agreed dates come due</div></div></div>
@@ -1066,6 +1077,13 @@ document.addEventListener('click',e=>{
   const w=e.target.closest('.dtwrap'); if(!w) return;
   const f=w.querySelector('input[type=date]');
   if(f&&f.showPicker){ try{ f.showPicker(); }catch(_){} }
+});
+document.addEventListener('input',e=>{
+  if(e.target.id!=='trksearch') return;
+  const q=e.target.value.trim().toLowerCase();
+  document.querySelectorAll('#views .qi').forEach(c=>{
+    c.style.display = !q || c.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
 });
 document.getElementById('burger').onclick=()=>{document.getElementById('side').classList.add('open');
   document.getElementById('scrim').classList.add('on');};

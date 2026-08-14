@@ -40,6 +40,8 @@
 #sbd-root .when.soft .when-l{color:#64748b !important;}
 #sbd-root .when.late{border-left-color:#f0616d !important;}
 #sbd-root .when.late .when-l{color:#f0616d !important;}
+#sbd-root .srch{background:#0e1328 !important;color:#e6ebf5 !important;border-color:#1c2646 !important;}
+#sbd-root .srch::placeholder{color:#64748b !important;}
 /* ── END LOCK ──────────────────────────────────────────────────── */
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -102,6 +104,11 @@ body{background:#070d1f}
 .when.soft{border-left-color:var(--line);color:var(--dim)}
 .when.soft .when-l{color:var(--mut)}
 .when.late{border-left-color:var(--red)} .when.late .when-l{color:var(--red)}
+.srchwrap{margin:-6px 0 18px}
+.srch{width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;
+  color:var(--txt);padding:12px 15px;font-size:13.5px;font-family:inherit}
+.srch::placeholder{color:var(--mut)}
+.srch:focus{outline:2px solid var(--gold);outline-offset:-1px}
 </style>
 </head>
 <body>
@@ -112,6 +119,8 @@ body{background:#070d1f}
       <div><div class="bname">SBD Platform</div><div class="bsub">Delivery</div></div>
       <button class="btn" id="refresh">Refresh</button>
     </div>
+    <div class="srchwrap"><input class="srch" id="search"
+      placeholder="Search &mdash; a number, or words from a task"></div>
     <div id="view"><div class="empty">Loading…</div></div>
   </div>
 </div>
@@ -176,53 +185,53 @@ function item(t){
 
 function draw(){
   const live=ROWS.filter(t=>t.status==='shipped');
-  const hand=ROWS.filter(t=>t.status!=='shipped'&&t.date_status!=='agreed');
-  const soon=ROWS.filter(t=>t.status!=='shipped'&&t.date_status==='agreed')
+  const soon=ROWS.filter(t=>t.status!=='shipped')
                  .sort((a,b)=>String(a.due_on).localeCompare(String(b.due_on)));
-  const last30=live.filter(t=>t.shipped_on&&days(t.shipped_on)>=-30).length;
+  const week=soon.filter(t=>t.due_on&&days(t.due_on)<=7).length;
   const withProof=live.filter(t=>t.confirmed_by).length;
 
   document.getElementById('view').innerHTML=`
 <div class="hero">
   <div class="hero-d">${DL(today())}</div>
   <h1 class="hero-t">Where the platform build stands</h1>
-  <div class="hero-s">Read straight from the delivery record. Every item marked live has been
-    checked against the running system, not against a report of it.</div>
+  <div class="hero-s">Read straight from the delivery record. Everything here is either live,
+    or carries a completion date agreed with the development team.</div>
 </div>
 
 <div class="stats">
   <div class="stat"><div class="stat-v">${live.length}</div><div class="stat-l">Live</div></div>
-  <div class="stat"><div class="stat-v">${hand.length}</div><div class="stat-l">In hand</div></div>
-  <div class="stat"><div class="stat-v">${soon.length}</div><div class="stat-l">Dated</div></div>
+  <div class="stat"><div class="stat-v">${soon.length}</div><div class="stat-l">Scheduled</div></div>
+  <div class="stat"><div class="stat-v">${week}</div><div class="stat-l">Due within a week</div></div>
 </div>
 
 <div class="card">
   <div class="card-h"><div class="ic warm">&#10003;</div>
     <div><div class="card-t">Live</div>
-    <div class="card-s">${withProof} of ${live.length} carry a recorded check against the running system</div></div></div>
+    <div class="card-s">${live.length?`${withProof} of ${live.length} carry a recorded check against the running system`:'What ships appears here with how it was confirmed'}</div></div></div>
   ${live.length?live.map(item).join(''):'<div class="empty">Nothing recorded as live yet.</div>'}
-</div>
-
-<div class="card">
-  <div class="card-h"><div class="ic">&#9654;</div>
-    <div><div class="card-t">In hand</div>
-    <div class="card-s">Underway. Completion dates still being agreed with the development team.</div></div></div>
-  ${hand.length?hand.map(item).join(''):'<div class="empty">Nothing in hand right now.</div>'}
 </div>
 
 <div class="card">
   <div class="card-h"><div class="ic">&#9673;</div>
     <div><div class="card-t">Scheduled</div>
     <div class="card-s">Completion dates agreed by both sides</div></div></div>
-  ${soon.length?soon.map(item).join(''):'<div class="empty">Nothing scheduled beyond the current week.</div>'}
+  ${soon.length?soon.map(item).join(''):'<div class="empty">Nothing scheduled to show yet. Work appears here once its completion date is agreed.</div>'}
 </div>
 
 <div class="foot">
   Showing ${ROWS.length} item${ROWS.length===1?'':'s'} selected for this view.<br>
-  A completion date appears only once the development team has agreed it.
-  Anything still being settled is shown as such rather than given a date that might move.
+  Nothing appears here without an agreed completion date. A date being renegotiated
+  comes off the page until it is agreed again.
 </div>`;
 }
+
+document.addEventListener('input',e=>{
+  if(e.target.id!=='search') return;
+  const q=e.target.value.trim().toLowerCase();
+  document.querySelectorAll('#view .it').forEach(c=>{
+    c.style.display = !q || c.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+});
 
 async function go(quiet){
   const b=document.getElementById('refresh');
