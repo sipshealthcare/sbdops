@@ -152,6 +152,11 @@
 #sbd-root .tp-l{color:#64748b !important;}
 #sbd-root .tp-v{color:#ffffff !important;}
 #sbd-root .pubwait{color:#64748b !important;}
+#sbd-root .tl{border-color:#1c2646 !important;}
+#sbd-root .tl-d{color:#94a3b8 !important;}
+#sbd-root .tl-tag{color:#D49A00 !important;}
+#sbd-root .tl-t{color:#cbd5e5 !important;}
+#sbd-root .tl-note{color:#64748b !important;}
 /* ── END LOCK ──────────────────────────────────────────────────── */
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -526,6 +531,18 @@ body{background:#070d1f}
 .srchwrap{margin-bottom:13px}
 .srch{width:100%;padding:12px 15px;font-size:13.5px;border-radius:12px}
 .pubwait{font-size:11px;color:var(--mut);font-weight:600;padding:6px 0}
+
+.histrow{margin-top:10px}
+.histbtn{font-size:11px;padding:6px 11px}
+.histbox{margin-top:10px}
+.histbox[hidden]{display:none!important}
+.tl{border-left:2px solid var(--line);padding-left:13px;display:flex;flex-direction:column;gap:8px}
+.tl-r{display:grid;grid-template-columns:58px 74px 1fr;gap:10px;font-size:12px;align-items:baseline}
+.tl-d{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--dim);white-space:nowrap}
+.tl-tag{font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;font-weight:700;color:var(--gold)}
+.tl-t{color:#cbd5e5;line-height:1.5;min-width:0;overflow-wrap:anywhere}
+.tl-note{font-size:10.5px;color:var(--mut);margin-top:6px;line-height:1.5}
+@media(max-width:700px){.tl-r{grid-template-columns:52px 1fr}.tl-tag{grid-column:2}.tl-t{grid-column:1/3}}
 </style>
 </head>
 <body>
@@ -660,6 +677,34 @@ function card(t,compact){
       <input class="inp why" id="dn-${t.number}" placeholder="How you know it is done">
       <button class="btn btn-o" data-done="${t.number}">Mark complete</button></div>`:''}
     ${pubRow(t)}
+    <div class="histrow"><button class="btn btn-o histbtn" data-hist="${t.number}">Full history</button></div>
+    <div class="histbox" id="hist-${t.number}" hidden></div>
+  </div>`;
+}
+
+/* One item's whole story, from every source, in one sorted timeline. */
+function renderHist(h){
+  const ev=[];
+  (h.claims||[]).forEach(c=>ev.push({on:c.on||'', tag:'Sheet '+(c.sheet||''),
+    txt:[c.as_number?('as #'+c.as_number):'', c.lane, c.status, c.expected].filter(Boolean).join(' \u00b7 ')}));
+  (h.eods||[]).forEach(x=>ev.push({on:x.on, tag:'EOD', txt:'\u201c\u2026'+(x.snippet||'').trim()+'\u2026\u201d'}));
+  (h.releases||[]).forEach(r=>ev.push({on:r.on, tag:r.outcome==='live'?'Release':'Rolled back', txt:r.summary}));
+  let prev=null;
+  (h.snapshots||[]).forEach(sn=>{ const k=sn.status+'|'+(sn.rank??'');
+    if(k!==prev) ev.push({on:sn.on, tag:'Board', txt:sn.status+(sn.rank!=null?' \u00b7 rank '+sn.rank:'')});
+    prev=k; });
+  const L=h.ledger||{};
+  if(L.created)     ev.push({on:L.created,     tag:'Ledger', txt:'Row created'+(L.origin?' \u00b7 '+L.origin:'')});
+  if(L.question_at) ev.push({on:L.question_at, tag:'Ledger', txt:'Dev team asked for an answer'});
+  if(L.reply_at)    ev.push({on:L.reply_at,    tag:'Ledger', txt:'Answered'});
+  if(L.shipped_on)  ev.push({on:L.shipped_on,  tag:'Ledger', txt:'Shipped'});
+  if(L.verified_at) ev.push({on:L.verified_at, tag:'Ledger', txt:'Evidence recorded'});
+  ev.sort((a,b)=>String(a.on).localeCompare(String(b.on)));
+  return `<div class="tl">
+    ${ev.length?ev.map(e=>`<div class="tl-r"><span class="tl-d">${e.on?short(e.on):'\u2014'}</span><span class="tl-tag">${esc(e.tag)}</span><span class="tl-t">${esc(e.txt||'')}</span></div>`).join('')
+      :'<div class="p muted">No recorded history before the ledger row.</div>'}
+    <div class="tl-note">Matched across sheets and EOD reports on: ${(h.match_words||[]).filter(Boolean).map(esc).join(', ')||'item number only'}.
+      Sheet lines show the number the sheet used at the time, since numbering changed between eras.</div>
   </div>`;
 }
 
@@ -1156,6 +1201,19 @@ document.addEventListener('click',e=>{
   const us=e.target.closest('[data-usesugg]');
   if(us){ const f=document.getElementById('pd-'+us.dataset.usesugg);
     if(f){ f.value=us.dataset.d; us.classList.add('on'); } return; }
+
+  const hb=e.target.closest('[data-hist]');
+  if(hb){ const n=Number(hb.dataset.hist), box=document.getElementById('hist-'+n);
+    if(!box) return;
+    if(box.dataset.done){ box.hidden=!box.hidden;
+      hb.textContent=box.hidden?'Full history':'Hide history'; return; }
+    hb.disabled=true; hb.textContent='Reading the record\u2026';
+    rpc('item_history',{p_number:n}).then(h=>{
+      box.innerHTML=renderHist(h); box.dataset.done='1'; box.hidden=false;
+      hb.textContent='Hide history';
+    }).catch(err=>{ say(err.message); hb.textContent='Full history'; })
+      .finally(()=>{ hb.disabled=false; });
+    return; }
 
   const pd=e.target.closest('[data-propose]');
   if(pd){ const n=Number(pd.dataset.propose);
