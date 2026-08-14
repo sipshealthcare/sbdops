@@ -232,6 +232,13 @@ body{background:#070d1f}
 .morebar .rule{flex:1;height:1px;background:var(--line)}
 
 /* daily brief typography */
+.bwrap{position:relative;max-height:280px;overflow:hidden}
+.bwrap.open{max-height:none}
+.bwrap:not(.open):after{content:'';position:absolute;left:0;right:0;bottom:0;height:80px;
+  background:linear-gradient(to bottom,rgba(14,19,40,0),var(--card));pointer-events:none}
+.bmore{margin-top:12px;background:none;border:0;font-family:inherit;font-size:12.5px;
+  font-weight:600;color:var(--gold);cursor:pointer;padding:0;text-decoration:underline}
+.bmore:hover{opacity:.8}
 .bh1{font-size:17px;font-weight:600;color:#fff;margin:22px 0 8px;letter-spacing:-.01em}
 .bh2{font-size:13px;font-weight:600;color:var(--gold);margin:26px 0 10px;
   letter-spacing:.08em;text-transform:uppercase;padding-bottom:7px;border-bottom:1px solid var(--line)}
@@ -1042,7 +1049,9 @@ function vBrief(){
 </div>
 ${b?`<div class="card">
   <div class="card-h"><div class="ic">\u25A4</div><div><div class="card-t">Latest sent</div>
-  <div class="card-s">${D(b.brief_date)}</div></div></div>${md(b.body)}
+  <div class="card-s">${D(b.brief_date)}</div></div></div>
+  <div class="bwrap" id="bwrap">${md(b.body)}</div>
+  <button class="bmore" onclick="var w=document.getElementById('bwrap');this.textContent=w.classList.toggle('open')?'See less':'See more'">See more</button>
 </div>`:''}`;
 }
 
