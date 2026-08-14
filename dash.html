@@ -751,8 +751,8 @@ function heroBlock(){
   <button class="stat" data-go="needs"><div class="stat-v${ny?' amb':''}">${ny}</div><div class="stat-l">Blocked on you</div></button>
   <button class="stat" data-go="intake"><div class="stat-v${need?' amb':''}">${need}</div><div class="stat-l">Intake to triage</div></button>
   <button class="stat" data-go="decisions"><div class="stat-v${openDec?' amb':''}">${openDec}</div><div class="stat-l">Open decisions</div></button>
-  <button class="stat" data-go="tracker"><div class="stat-v${countered?' red':''}">${countered}</div><div class="stat-l">Dates sent back</div></button>
-  <button class="stat" data-go="tracker"><div class="stat-v${undated?' amb':''}">${undated}</div><div class="stat-l">No date set</div></button>
+  <button class="stat" data-go="trkwait"><div class="stat-v${countered?' red':''}">${countered}</div><div class="stat-l">Dates sent back</div></button>
+  <button class="stat" data-go="trkwait"><div class="stat-v${undated?' amb':''}">${undated}</div><div class="stat-l">No date set</div></button>
 </div>`;
 }
 
@@ -838,17 +838,12 @@ function vIntake(){
 </div>`;
 }
 
-function vTracker(){
-  /* search is a DOM filter, not a re-render, so typing never loses focus */
-  const rows=[...ALL].sort((a,b)=>a.number-b.number);
-  const undated=ALL.filter(t=>t.status!=='shipped'&&t.status!=='backlog'&&!t.proposed_on);
-  const ranked=ALL.filter(t=>t.rank!=null).sort((a,b)=>a.rank-b.rank);
-  const unranked=ALL.filter(t=>t.rank==null&&t.status!=='shipped');
-  const sent=ALL.filter(t=>t.date_state==='countered');
-  return `
-<div class="srchwrap"><input class="inp srch" id="trksearch"
-  placeholder="Search the tracker &mdash; a number like 115, or words from the task"></div>
-${TPUT?`<div class="card">
+const searchBar=()=>`<div class="srchwrap"><input class="inp srch" id="trksearch"
+  placeholder="Search &mdash; a number like 115, or words from the task"></div>`;
+
+function tputCard(){
+  if(!TPUT) return '';
+  return `<div class="card">
   <div class="card-h"><div class="ic">\u25F4</div><div><div class="card-t">What the date suggestions are based on</div>
   <div class="card-s">Measured from the record, and it sharpens as more agreed dates come due</div></div></div>
   <div class="tpr">
@@ -858,34 +853,13 @@ ${TPUT?`<div class="card">
     <div class="tp"><span class="tp-l">Met on time</span><span class="tp-v">${TPUT.hit_rate==null?'&mdash;':TPUT.hit_rate+'%'}</span></div>
   </div>
   <div class="nd-say" style="margin:12px 0 0">${esc(TPUT.basis)}</div>
-</div>`:''}
-${undated.length?`<div class="card">
-  <div class="card-h"><div class="ic warm">\u25F7</div><div><div class="card-t">No date set</div>
-  <div class="card-s">In hand, but with nothing to slip against. Propose a date and it goes to the dev team to confirm.</div></div></div>
-  ${undated.map(t=>card(t,false)).join('')}
-</div>`:''}
-${sent.length?`<div class="card">
-  <div class="card-h"><div class="ic warm">\u21A9</div><div><div class="card-t">Dates sent back to you</div>
-  <div class="card-s">The dev team proposed a different date. Taken as given unless you say otherwise.</div></div></div>
-  ${sent.map(t=>`<div class="qi"><div class="qi-h"><div class="qi-t">${esc(t.title)}</div>
-    <div class="qi-p">${P('p-amb',short(t.counter_on))}</div></div>
-    <div class="qi-m"><span class="hash">#${t.number}</span>${esc(t.answered_by||'Dev team')}</div>
-    <div class="dpair" style="margin:10px 0">
-      <div class="dp"><span class="dp-l">You proposed</span><span class="dp-v old">${D(t.proposed_on)}</span></div>
-      <div class="dp-ar">&rarr;</div>
-      <div class="dp"><span class="dp-l">They sent back</span><span class="dp-v new">${D(t.counter_on)}</span></div>
-    </div>
-    <div class="agreed ct"><span class="ag-l">Their reason</span>${esc(t.counter_note||'')}</div>
-    <div class="ask">
-      <div class="ask-h">Take their date, or propose another and send it back.</div>
-      <div class="row">
-        <button class="btn btn-g" data-take="${t.number}">Accept ${short(t.counter_on)}</button>
-        <input class="inp dt" id="rp-${t.number}" type="date" value="${t.counter_on||''}">
-        <button class="btn btn-o" data-repro="${t.number}">Propose this instead</button>
-      </div>
-    </div></div>`).join('')}
-</div>`:''}
-<div class="card">
+</div>`;
+}
+
+function priorityCard(){
+  const ranked=ALL.filter(t=>t.rank!=null&&t.status!=='shipped').sort((a,b)=>a.rank-b.rank);
+  const unranked=ALL.filter(t=>t.rank==null&&t.status!=='shipped');
+  return `<div class="card">
   <div class="card-h"><div class="ic warm">\u25B4</div>
     <div><div class="card-t">Priority order</div>
     <div class="card-s">Rank 1 is done first. The dev team sees this order on refresh.</div></div></div>
@@ -910,12 +884,71 @@ ${sent.length?`<div class="card">
       <button class="btn btn-g" data-act="pushTask">Push it in</button>
     </div>
   </div>
-</div>
-<div class="card">
-  <div class="card-h"><div class="ic">\u25A4</div><div><div class="card-t">The ledger</div>
-  <div class="card-s">${rows.length} items</div></div></div>
-  ${rows.map(t=>card(t,false)).join('')}
 </div>`;
+}
+
+/* ---- Tracker, split by state: what is live, what is scheduled, what is
+        still being negotiated. Same cards, three lenses. ---- */
+function vTrkLive(){
+  const rows=ALL.filter(t=>t.status==='shipped')
+    .sort((a,b)=>String(b.shipped_on||'').localeCompare(String(a.shipped_on||''))||a.number-b.number);
+  return searchBar()+`<div class="card">
+  <div class="card-h"><div class="ic warm">\u2713</div>
+    <div><div class="card-t">Live</div>
+    <div class="card-s">${rows.length} shipped &middot; the evidence sits on each item</div></div></div>
+  ${rows.length?rows.map(t=>card(t,false)).join(''):'<div class="p muted">Nothing shipped yet.</div>'}
+</div>`;
+}
+
+function vTrkSched(){
+  const rows=ALL.filter(t=>t.status!=='shipped'&&t.date_state==='confirmed')
+    .sort((a,b)=>String(a.proposed_on).localeCompare(String(b.proposed_on)));
+  return searchBar()+`<div class="card">
+  <div class="card-h"><div class="ic">\u25CE</div>
+    <div><div class="card-t">Scheduled</div>
+    <div class="card-s">Completion dates agreed with the dev team, soonest first</div></div></div>
+  ${rows.length?rows.map(t=>card(t,false)).join(''):'<div class="p muted">Nothing scheduled yet. Once the dev team confirms a date, the item lands here.</div>'}
+</div>`;
+}
+
+function vTrkWait(){
+  const undated=ALL.filter(t=>t.status!=='shipped'&&t.status!=='backlog'&&!t.proposed_on);
+  const sent=ALL.filter(t=>t.status!=='shipped'&&t.date_state==='countered');
+  const pending=ALL.filter(t=>t.status!=='shipped'&&t.date_state==='pending');
+  return searchBar()+tputCard()+`
+${sent.length?`<div class="card">
+  <div class="card-h"><div class="ic warm">\u21A9</div><div><div class="card-t">Dates sent back to you</div>
+  <div class="card-s">The dev team proposed a different date. Taken as given unless you say otherwise.</div></div></div>
+  ${sent.map(t=>`<div class="qi"><div class="qi-h"><div class="qi-t">${esc(t.title)}</div>
+    <div class="qi-p">${P('p-amb',short(t.counter_on))}</div></div>
+    <div class="qi-m"><span class="hash">#${t.number}</span>${esc(t.answered_by||'Dev team')}</div>
+    <div class="dpair" style="margin:10px 0">
+      <div class="dp"><span class="dp-l">You proposed</span><span class="dp-v old">${D(t.proposed_on)}</span></div>
+      <div class="dp-ar">&rarr;</div>
+      <div class="dp"><span class="dp-l">They sent back</span><span class="dp-v new">${D(t.counter_on)}</span></div>
+    </div>
+    <div class="agreed ct"><span class="ag-l">Their reason</span>${esc(t.counter_note||'')}</div>
+    <div class="ask">
+      <div class="ask-h">Take their date, or propose another and send it back.</div>
+      <div class="row">
+        <button class="btn btn-g" data-take="${t.number}">Accept ${short(t.counter_on)}</button>
+        <input class="inp dt" id="rp-${t.number}" type="date" value="${t.counter_on||''}">
+        <button class="btn btn-o" data-repro="${t.number}">Propose this instead</button>
+      </div>
+    </div></div>`).join('')}
+</div>`:''}
+${undated.length?`<div class="card">
+  <div class="card-h"><div class="ic warm">\u25F7</div><div><div class="card-t">No date set</div>
+  <div class="card-s">In hand, but with nothing to slip against. Propose a date and it goes to the dev team to confirm.</div></div></div>
+  ${undated.map(t=>card(t,false)).join('')}
+</div>`:''}
+${pending.length?`<div class="card">
+  <div class="card-h"><div class="ic">\u25F7</div><div><div class="card-t">Waiting on the dev team</div>
+  <div class="card-s">Dates you proposed that they have not answered yet</div></div></div>
+  ${pending.map(t=>card(t,false)).join('')}
+</div>`:''}
+${!sent.length&&!undated.length&&!pending.length?'<div class="card"><div class="p muted">Nothing is waiting. Every open item has an agreed date.</div></div>':''}
+`+priorityCard();
 }
 
 function vDecisions(){
@@ -1041,20 +1074,28 @@ function md(src){
 const V={
   needs:    {icon:'\u25B2', label:'Needs you',  h:vNeeds,     n:()=>needsYou().length},
   intake:   {icon:'\u25CB', label:'Intake',     h:vIntake,    n:()=>INTAKE.filter(i=>i.status==='new').length},
-  tracker:  {icon:'\u25A4', label:'Tracker',    h:vTracker,   n:()=>ALL.filter(t=>t.date_state==='countered').length},
+  trklive: {icon:'\u2713', label:'Live',             h:vTrkLive},
+  trksched:{icon:'\u25CE', label:'Scheduled',        h:vTrkSched,
+            n:()=>ALL.filter(t=>t.status!=='shipped'&&t.date_state==='confirmed').length},
+  trkwait: {icon:'\u25F7', label:'Waiting on dates', h:vTrkWait,
+            n:()=>ALL.filter(t=>t.status!=='shipped'&&t.date_state!=='confirmed').length},
   decisions:{icon:'\u25C7', label:'Decisions',  h:vDecisions, n:()=>DEC.filter(d=>d.status==='open').length},
   brief:    {icon:'\u2726', label:'Brief',      h:vBrief},
   record:   {icon:'\u21BB', label:'The record', h:vRecord}
 };
-const KEYS=['needs','intake','tracker','decisions','brief','record'];
+const NAVGROUPS=[
+  {label:'Review',  keys:['needs','intake']},
+  {label:'Tracker', keys:['trklive','trksched','trkwait']},
+  {label:'Board',   keys:['decisions','brief','record']}];
+const KEYS=NAVGROUPS.flatMap(g=>g.keys);
 let cur='needs';
 function drawNav(){
   const nav=document.getElementById('nav'); if(!nav) return;
-  nav.innerHTML='<div class="nav-l">Review</div>'+KEYS.map(k=>{
+  nav.innerHTML=NAVGROUPS.map(g=>'<div class="nav-l">'+g.label+'</div>'+g.keys.map(k=>{
     const n=V[k].n?V[k].n():0;
     return `<button class="nav-i${k===cur?' on':''}" data-k="${k}">
       <span class="ni">${V[k].icon}</span><span class="lbl">${V[k].label}</span>
-      ${n?`<span class="nav-n">${n}</span>`:''}</button>`;}).join('');
+      ${n?`<span class="nav-n">${n}</span>`:''}</button>`;}).join('')).join('');
 }
 function shut(){ document.getElementById('side').classList.remove('open');
                  document.getElementById('scrim').classList.remove('on'); }

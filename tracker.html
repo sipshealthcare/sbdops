@@ -42,6 +42,13 @@
 #sbd-root .when.late .when-l{color:#f0616d !important;}
 #sbd-root .srch{background:#0e1328 !important;color:#e6ebf5 !important;border-color:#1c2646 !important;}
 #sbd-root .srch::placeholder{color:#64748b !important;}
+#sbd-root .lside{background:#0a1024 !important;border-color:#1c2646 !important;}
+#sbd-root .lnav .ni{color:#94a3b8 !important;background:transparent !important;}
+#sbd-root .lnav .ni:hover{color:#e6ebf5 !important;background:#131b3a !important;}
+#sbd-root .lnav .ni.on{background:linear-gradient(120deg,rgba(212,154,0,.92),rgba(212,154,0,.55)) !important;color:#000000 !important;}
+#sbd-root .lnav .nn{background:#1c2646 !important;color:#e6ebf5 !important;}
+#sbd-root .lnav .ni.on .nn{background:rgba(0,0,0,.22) !important;color:#000000 !important;}
+#sbd-root .top-t{color:#ffffff !important;}
 /* ── END LOCK ──────────────────────────────────────────────────── */
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -109,19 +116,52 @@ body{background:#070d1f}
   color:var(--txt);padding:12px 15px;font-size:13.5px;font-family:inherit}
 .srch::placeholder{color:var(--mut)}
 .srch:focus{outline:2px solid var(--gold);outline-offset:-1px}
+
+.wrap{display:flex;min-height:100vh;position:relative;z-index:1}
+.lside{width:212px;flex:0 0 212px;border-right:1px solid var(--line);background:#0a1024;
+  position:sticky;top:0;height:100vh;padding:20px 12px}
+.lbrand{display:flex;align-items:center;gap:10px;padding:0 4px 18px}
+.lnav{display:flex;flex-direction:column;gap:4px}
+.lnav .ni{display:flex;align-items:center;gap:10px;width:100%;padding:11px 12px;border:0;
+  border-radius:11px;font-size:13.5px;cursor:pointer;text-align:left;font-family:inherit;
+  background:none;color:var(--dim);font-weight:500}
+.lnav .ni:hover{background:var(--lift);color:var(--txt)}
+.lnav .ni.on{background:linear-gradient(120deg,rgba(212,154,0,.92),rgba(212,154,0,.55));
+  color:#000;font-weight:600}
+.lnav .nn{margin-left:auto;font-size:11px;font-weight:700;border-radius:20px;padding:2px 8px;
+  min-width:22px;text-align:center;background:var(--line);color:var(--txt)}
+.lnav .ni.on .nn{background:rgba(0,0,0,.22);color:#000}
+.top-t{font-size:20px;font-weight:600;color:#fff}
+.main{flex:1;min-width:0;max-width:none;margin:0;padding:24px 24px 70px}
+@media(min-width:821px){.main{max-width:820px}}
+@media(max-width:820px){
+  .wrap{display:block}
+  .lside{position:static;width:auto;height:auto;display:flex;align-items:center;gap:12px;
+    padding:14px;border-right:0;border-bottom:1px solid var(--line)}
+  .lbrand{padding:0}
+  .lnav{flex-direction:row;flex:1;justify-content:flex-end}
+  .lnav .ni{width:auto;padding:9px 13px}
+  .main{padding:18px 14px 60px}
+}
 </style>
 </head>
 <body>
 <div id="sbd-root">
-  <div class="main">
-    <div class="top">
-      <div class="bmark">SBD</div>
-      <div><div class="bname">SBD Platform</div><div class="bsub">Delivery</div></div>
-      <button class="btn" id="refresh">Refresh</button>
+  <div class="wrap">
+    <aside class="lside">
+      <div class="lbrand"><div class="bmark">SBD</div>
+        <div><div class="bname">SBD Platform</div><div class="bsub">Delivery</div></div></div>
+      <nav class="lnav" id="lnav"></nav>
+    </aside>
+    <div class="main">
+      <div class="top">
+        <div class="top-t" id="ttl">Live</div>
+        <button class="btn" id="refresh">Refresh</button>
+      </div>
+      <div class="srchwrap"><input class="srch" id="search"
+        placeholder="Search &mdash; a number, or words from a task"></div>
+      <div id="view"><div class="empty">Loading…</div></div>
     </div>
-    <div class="srchwrap"><input class="srch" id="search"
-      placeholder="Search &mdash; a number, or words from a task"></div>
-    <div id="view"><div class="empty">Loading…</div></div>
   </div>
 </div>
 
@@ -183,47 +223,53 @@ function item(t){
   </div>`;
 }
 
+let LTAB='live';
+function drawNav(){
+  const live=ROWS.filter(t=>t.status==='shipped').length;
+  const sched=ROWS.filter(t=>t.status!=='shipped').length;
+  document.getElementById('lnav').innerHTML=
+    `<button class="ni${LTAB==='live'?' on':''}" data-t="live">&#10003;&nbsp; Live<span class="nn">${live}</span></button>
+     <button class="ni${LTAB==='sched'?' on':''}" data-t="sched">&#9673;&nbsp; Scheduled<span class="nn">${sched}</span></button>`;
+}
+
 function draw(){
   const live=ROWS.filter(t=>t.status==='shipped');
   const soon=ROWS.filter(t=>t.status!=='shipped')
                  .sort((a,b)=>String(a.due_on).localeCompare(String(b.due_on)));
   const week=soon.filter(t=>t.due_on&&days(t.due_on)<=7).length;
   const withProof=live.filter(t=>t.confirmed_by).length;
+  drawNav();
+  document.getElementById('ttl').textContent = LTAB==='live'?'Live':'Scheduled';
 
-  document.getElementById('view').innerHTML=`
-<div class="hero">
-  <div class="hero-d">${DL(today())}</div>
-  <h1 class="hero-t">Where the platform build stands</h1>
-  <div class="hero-s">Read straight from the delivery record. Everything here is either live,
-    or carries a completion date agreed with the development team.</div>
-</div>
+  const body = LTAB==='live'
+    ? `<div class="card">
+        <div class="card-h"><div class="ic warm">&#10003;</div>
+          <div><div class="card-t">Live</div>
+          <div class="card-s">${live.length?`${withProof} of ${live.length} carry a recorded check against the running system`:'What ships appears here with how it was confirmed'}</div></div></div>
+        ${live.length?live.map(item).join(''):'<div class="empty">Nothing recorded as live yet.</div>'}
+      </div>`
+    : `<div class="card">
+        <div class="card-h"><div class="ic">&#9673;</div>
+          <div><div class="card-t">Scheduled</div>
+          <div class="card-s">Completion dates agreed by both sides &middot; ${week} due within a week</div></div></div>
+        ${soon.length?soon.map(item).join(''):'<div class="empty">Nothing scheduled to show yet. Work appears here once its completion date is agreed.</div>'}
+      </div>`;
 
-<div class="stats">
-  <div class="stat"><div class="stat-v">${live.length}</div><div class="stat-l">Live</div></div>
-  <div class="stat"><div class="stat-v">${soon.length}</div><div class="stat-l">Scheduled</div></div>
-  <div class="stat"><div class="stat-v">${week}</div><div class="stat-l">Due within a week</div></div>
-</div>
-
-<div class="card">
-  <div class="card-h"><div class="ic warm">&#10003;</div>
-    <div><div class="card-t">Live</div>
-    <div class="card-s">${live.length?`${withProof} of ${live.length} carry a recorded check against the running system`:'What ships appears here with how it was confirmed'}</div></div></div>
-  ${live.length?live.map(item).join(''):'<div class="empty">Nothing recorded as live yet.</div>'}
-</div>
-
-<div class="card">
-  <div class="card-h"><div class="ic">&#9673;</div>
-    <div><div class="card-t">Scheduled</div>
-    <div class="card-s">Completion dates agreed by both sides</div></div></div>
-  ${soon.length?soon.map(item).join(''):'<div class="empty">Nothing scheduled to show yet. Work appears here once its completion date is agreed.</div>'}
-</div>
-
+  document.getElementById('view').innerHTML = body + `
 <div class="foot">
   Showing ${ROWS.length} item${ROWS.length===1?'':'s'} selected for this view.<br>
   Nothing appears here without an agreed completion date. A date being renegotiated
   comes off the page until it is agreed again.
 </div>`;
+  const q=document.getElementById('search').value.trim().toLowerCase();
+  if(q) document.querySelectorAll('#view .it').forEach(c=>{
+    c.style.display = c.textContent.toLowerCase().includes(q)?'':'none';});
 }
+
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-t]'); if(!t) return;
+  LTAB=t.dataset.t; draw(); window.scrollTo(0,0);
+});
 
 document.addEventListener('input',e=>{
   if(e.target.id!=='search') return;
