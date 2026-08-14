@@ -584,20 +584,18 @@ function datePill(t){
   return P(n<0?'p-red':n<=1?'p-amb':n<=3?'p-amb':'p-gry',label);
 }
 
+/* Master board: the date conversation is shown, not driven. Confirming and
+   countering are the dev team's moves and live on /build. Accepting a date
+   they sent back is Ignacio's move and lives in the Tracker view. */
 function dateBlock(t){
   if(!t.proposed_on) return '';
   if(t.date_state==='confirmed')
-    return `<div class="agreed"><span class="ag-l">Confirmed</span>${D(t.proposed_on)}${t.answered_by?` &middot; ${esc(t.answered_by)}`:''}</div>`;
+    return `<div class="agreed"><span class="ag-l">Date agreed</span>${D(t.proposed_on)}${t.answered_by?` &middot; confirmed by ${esc(t.answered_by)}`:''}</div>`;
   if(t.date_state==='countered')
-    return `<div class="agreed ct"><span class="ag-l">Moved to ${D(t.counter_on)}</span>${esc(t.counter_note||'')}${t.answered_by?`<span class="by"> &middot; ${esc(t.answered_by)}</span>`:''}</div>`;
-  return `<div class="ask">
-    <div class="ask-h">Proposed for <b>${D(t.proposed_on)}</b> &mdash; confirm it, or send a different date with the reason.</div>
-    <div class="row">
-      <button class="btn btn-g" data-ok="${t.number}">Confirm</button>
-      <input class="inp dt" id="nd-${t.number}" type="date" value="${t.proposed_on}">
-      <input class="inp why" id="wy-${t.number}" placeholder="Why it needs to move">
-      <button class="btn btn-o" data-no="${t.number}">Send this instead</button>
-    </div></div>`;
+    return `<div class="agreed ct"><span class="ag-l">They sent a different date back</span>
+      ${D(t.proposed_on)} &rarr; ${D(t.counter_on)}${t.counter_note?` &mdash; ${esc(t.counter_note)}`:''}
+      <span class="by"> &middot; see Dates sent back above</span></div>`;
+  return `<div class="agreed wt"><span class="ag-l">Waiting on the dev team</span>You proposed ${D(t.proposed_on)}</div>`;
 }
 
 /* a queue row, in the reference's task-card idiom */
@@ -650,19 +648,15 @@ function pubRow(t){
 /* Blocking an item on Ignacio. While it is open the item shows as waiting;
    his answer comes back with a proposed date, which lands in Dates to answer. */
 const waitingOnHim=t=>t.question_at&&!t.reply_at;
+/* The question thread, read-only here. Asking is the dev team's move;
+   answering happens on the Needs you tab. */
 function askBlock(t){
-  if(waitingOnHim(t))
-    return `<div class="agreed wt"><span class="ag-l">Waiting on Ignacio</span>${esc(t.question_note)}
-      ${t.question_by?`<span class="by"> &middot; asked by ${esc(t.question_by)}</span>`:''}</div>`;
+  if(t.question_at && !t.reply_at)
+    return `<div class="agreed wt"><span class="ag-l">Blocked on you</span>${esc(t.question_note)}
+      <span class="by"> &middot; asked by ${esc(t.question_by||'Dev team')}, answer it on Needs you</span></div>`;
   if(t.reply_at)
-    return `<div class="agreed"><span class="ag-l">Answered by ${esc(t.reply_by||'Ignacio')}</span>${esc(t.reply_note)}</div>`;
-  return `<div class="askq">
-    <button class="btn btn-o lnkq" data-qopen="${t.number}">Need an answer from Ignacio</button>
-    <div class="qrow" id="qr-${t.number}" hidden>
-      <input class="inp" id="qt-${t.number}" placeholder="What do you need decided before this can move?">
-      <button class="btn btn-g" data-qsend="${t.number}">Send it</button>
-    </div>
-  </div>`;
+    return `<div class="agreed"><span class="ag-l">You answered</span>${esc(t.reply_note)}</div>`;
+  return '';
 }
 
 function bar(pct,tone){ return `<div class="bar"><span class="${tone}" style="width:${Math.max(2,Math.min(100,pct))}%"></span></div>`; }
