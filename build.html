@@ -453,23 +453,22 @@ body{background:#070d1f}
 .orbar{display:flex;align-items:center;gap:10px;margin:13px 0 11px;
   font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut)}
 .orbar:before,.orbar:after{content:'';flex:1;height:1px;background:var(--line)}
-.counter{display:grid;grid-template-columns:auto 160px 1fr auto;gap:8px 10px;align-items:center}
+.counter{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.fld{display:flex;flex-direction:column;gap:6px;min-width:0}
+.fld-d{flex:0 0 190px}
+.fld-w{flex:1 1 260px}
 .counter .flab{font-size:11px;color:var(--dim);white-space:nowrap}
-.counter .flab[for^=wy]{grid-column:3;justify-self:start}
 .counter .inp{padding:9px 11px;font-size:12.5px;width:100%}
-.counter .btn{grid-column:4;grid-row:1/3;align-self:center}
-.counter .dt{grid-column:2}
-.counter .why{grid-column:3}
-.counter .flab[for^=nd]{grid-column:1}
+.counter .send{flex:0 0 auto;margin-top:23px}
 /* the date field must read as editable */
 .inp[type=date]{cursor:pointer}
 .inp[type=date]:hover{border-color:var(--gold)}
 /* hidden must beat display:flex */
 .qrow[hidden]{display:none!important}
 @media(max-width:860px){
-  .counter{grid-template-columns:1fr}
-  .counter .flab,.counter .inp,.counter .btn{grid-column:1!important;grid-row:auto!important;width:100%}
-  .counter .flab{margin-top:4px}
+  .counter{flex-direction:column;gap:11px}
+  .fld-d,.fld-w{flex:1 1 auto;width:100%}
+  .counter .send{margin-top:0;width:100%}
 }
 
 /* original and new dates read side by side, never in the same field */
@@ -490,9 +489,9 @@ body{background:#070d1f}
 .dtwrap:hover .dtico{color:var(--gold)}
 .inp[type=date]::-webkit-calendar-picker-indicator{opacity:0;position:absolute;right:0;
   width:100%;height:100%;cursor:pointer}
-.quick{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.qd{border:1px solid var(--line);background:var(--lift);color:var(--dim);border-radius:8px;
-  padding:6px 11px;font-size:11.5px;font-family:inherit;cursor:pointer;font-weight:500}
+.quick{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}
+.qd{border:1px solid var(--line);background:var(--lift);color:var(--dim);border-radius:7px;
+  padding:5px 9px;font-size:11px;font-family:inherit;cursor:pointer;font-weight:500;white-space:nowrap}
 .qd:hover{border-color:var(--gold);color:var(--txt)}
 .qd.on{background:var(--gold);color:#000;border-color:var(--gold);font-weight:600}
 </style>
@@ -623,16 +622,19 @@ function dateBlock(t){
     <div class="row"><button class="btn btn-g" data-ok="${t.number}">Confirm ${short(t.proposed_on)}</button></div>
     <div class="orbar"><span>or propose a different date</span></div>
     <div class="counter">
-      <label class="flab" for="nd-${t.number}">New proposed date</label>
-      <div class="dtwrap"><input class="inp dt" id="nd-${t.number}" type="date" min="${today()}">
-        <span class="dtico">\u25BE</span></div>
-      <label class="flab" for="wy-${t.number}">Why it needs to move</label>
-      <input class="inp why" id="wy-${t.number}" placeholder="It gets taken as given, so say why">
-      <button class="btn btn-o" data-no="${t.number}">Send this date back</button>
-    </div>
-    <div class="quick">${quickDates(t.proposed_on).map(x=>
-      `<button class="qd" data-qd="${t.number}" data-d="${x.iso}">${x.label}</button>`).join('')}</div>
-    </div>`;
+      <div class="fld fld-d">
+        <label class="flab" for="nd-${t.number}">New proposed date</label>
+        <div class="dtwrap"><input class="inp dt" id="nd-${t.number}" type="date" min="${today()}">
+          <span class="dtico">\u25BE</span></div>
+        <div class="quick">${quickDates(t.proposed_on).map(x=>
+          `<button class="qd" data-qd="${t.number}" data-d="${x.iso}">${x.label}</button>`).join('')}</div>
+      </div>
+      <div class="fld fld-w">
+        <label class="flab" for="wy-${t.number}">Why it needs to move</label>
+        <input class="inp why" id="wy-${t.number}" placeholder="It gets taken as given, so say why">
+      </div>
+      <button class="btn btn-o send" data-no="${t.number}">Send this date back</button>
+    </div></div>`;
 }
 
 /* a queue row, in the reference's task-card idiom */
