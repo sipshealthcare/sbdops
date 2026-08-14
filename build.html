@@ -134,6 +134,9 @@
 #sbd-root .dp-l,#sbd-root .dp-ar{color:#64748b !important;}
 #sbd-root .dp-v.old{color:#94a3b8 !important;} #sbd-root .dp-v.new{color:#e0a132 !important;}
 #sbd-root .dp-why{color:#cbd5e5 !important;}
+#sbd-root .qd{background:#131b3a !important;color:#94a3b8 !important;border-color:#1c2646 !important;}
+#sbd-root .qd.on{background:#D49A00 !important;color:#000000 !important;border-color:#D49A00 !important;}
+#sbd-root .dtwrap .dtico{color:#94a3b8 !important;}
 /* ── END LOCK ──────────────────────────────────────────────────── */
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -478,6 +481,20 @@ body{background:#070d1f}
 .dp-v.new{color:var(--amb)}
 .dp-ar{color:var(--mut);font-size:14px;padding-bottom:2px}
 .dp-why{font-size:12px;color:#cbd5e5;margin-top:9px;line-height:1.5}
+
+.dtwrap{position:relative;display:block}
+.dtwrap .inp{width:100%;padding-right:30px;cursor:pointer}
+.dtwrap .dtico{position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  color:var(--dim);font-size:11px;pointer-events:none}
+.dtwrap:hover .inp{border-color:var(--gold)}
+.dtwrap:hover .dtico{color:var(--gold)}
+.inp[type=date]::-webkit-calendar-picker-indicator{opacity:0;position:absolute;right:0;
+  width:100%;height:100%;cursor:pointer}
+.quick{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.qd{border:1px solid var(--line);background:var(--lift);color:var(--dim);border-radius:8px;
+  padding:6px 11px;font-size:11.5px;font-family:inherit;cursor:pointer;font-weight:500}
+.qd:hover{border-color:var(--gold);color:var(--txt)}
+.qd.on{background:var(--gold);color:#000;border-color:var(--gold);font-weight:600}
 </style>
 </head>
 <body>
@@ -572,6 +589,19 @@ function datePill(t){
   return P(n<0?'p-red':n<=1?'p-amb':n<=3?'p-amb':'p-gry',label);
 }
 
+
+/* Faster than a calendar for the dates people actually pick. */
+function quickDates(from){
+  const d0=new Date(today()+'T12:00:00');
+  const mk=n=>{const d=new Date(d0); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10);};
+  const nextDow=dow=>{const d=new Date(d0); const add=((dow-d.getDay())+7)||7; d.setDate(d.getDate()+add); return d.toISOString().slice(0,10);};
+  const out=[{label:'Tomorrow',iso:mk(1)},{label:'In 3 days',iso:mk(3)},
+             {label:'Next Fri',iso:nextDow(5)},{label:'Next Mon',iso:nextDow(1)},
+             {label:'In 2 weeks',iso:mk(14)}];
+  const seen=new Set([from]);
+  return out.filter(x=>!seen.has(x.iso)&&(seen.add(x.iso),true));
+}
+
 function dateBlock(t){
   if(!t.proposed_on) return '';
   if(t.date_state==='confirmed')
@@ -594,11 +624,15 @@ function dateBlock(t){
     <div class="orbar"><span>or propose a different date</span></div>
     <div class="counter">
       <label class="flab" for="nd-${t.number}">New proposed date</label>
-      <input class="inp dt" id="nd-${t.number}" type="date">
+      <div class="dtwrap"><input class="inp dt" id="nd-${t.number}" type="date" min="${today()}">
+        <span class="dtico">\u25BE</span></div>
       <label class="flab" for="wy-${t.number}">Why it needs to move</label>
       <input class="inp why" id="wy-${t.number}" placeholder="It gets taken as given, so say why">
       <button class="btn btn-o" data-no="${t.number}">Send this date back</button>
-    </div></div>`;
+    </div>
+    <div class="quick">${quickDates(t.proposed_on).map(x=>
+      `<button class="qd" data-qd="${t.number}" data-d="${x.iso}">${x.label}</button>`).join('')}</div>
+    </div>`;
 }
 
 /* a queue row, in the reference's task-card idiom */
@@ -886,6 +920,12 @@ async function refresh(quiet){
 async function act(fn){ try{ await fn(); await refresh(true); }catch(e){ say(e.message); } }
 const val=id=>{const n=document.getElementById(id);return n?n.value.trim():'';};
 
+/* the whole control opens the picker, not just the native icon */
+document.addEventListener('click',e=>{
+  const w=e.target.closest('.dtwrap'); if(!w) return;
+  const f=w.querySelector('input[type=date]');
+  if(f&&f.showPicker){ try{ f.showPicker(); }catch(_){} }
+});
 document.getElementById('burger').onclick=()=>{document.getElementById('side').classList.add('open');
   document.getElementById('scrim').classList.add('on');};
 document.getElementById('scrim').onclick=shut;
@@ -903,6 +943,12 @@ document.addEventListener('click',e=>{
   if(qs){ const n=Number(qs.dataset.qsend), who=val('who'); if(who) localStorage.setItem(WHO,who);
     return act(async()=>{ await rpc('ask_answer',{p_number:n,p_question:val('qt-'+n),p_who:who||null});
       say(`Sent to Ignacio. #${n} shows as waiting until he answers.`); }); }
+
+  const qd=e.target.closest('[data-qd]');
+  if(qd){ const f=document.getElementById('nd-'+qd.dataset.qd);
+    if(f){ f.value=qd.dataset.d;
+      qd.parentElement.querySelectorAll('.qd').forEach(x=>x.classList.remove('on'));
+      qd.classList.add('on'); } return; }
 
   const ok=e.target.closest('[data-ok]');
   if(ok){ const n=Number(ok.dataset.ok), who=val('who'); if(who) localStorage.setItem(WHO,who);
