@@ -131,6 +131,10 @@
 #sbd-root .dp-l,#sbd-root .dp-ar{color:#64748b !important;}
 #sbd-root .dp-v.old{color:#94a3b8 !important;}
 #sbd-root .dp-v.new{color:#e0a132 !important;}
+#sbd-root .pubtog{color:#64748b !important;background:transparent !important;border-color:#1c2646 !important;}
+#sbd-root .pubtog.on{color:#3fb984 !important;border-color:rgba(63,185,132,.5) !important;}
+#sbd-root .pubrow{border-color:#1c2646 !important;}
+#sbd-root .plink{color:#D49A00 !important;}
 /* ── END LOCK ──────────────────────────────────────────────────── */
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -448,6 +452,16 @@ body{background:#070d1f}
 .dp-v{font-size:13.5px;font-weight:600}
 .dp-v.old{color:var(--dim)} .dp-v.new{color:var(--amb)}
 .dp-ar{color:var(--mut);font-size:14px;padding-bottom:2px}
+
+.pubrow{display:flex;gap:8px;align-items:center;margin-top:11px;padding-top:11px;
+  border-top:1px solid var(--line);flex-wrap:wrap}
+.pubtog{border:1px solid var(--line);background:transparent;color:var(--mut);border-radius:8px;
+  padding:6px 11px;font-size:11px;font-family:inherit;cursor:pointer;font-weight:600;white-space:nowrap}
+.pubtog:hover{border-color:var(--gold);color:var(--dim)}
+.pubtog.on{border-color:rgba(63,185,132,.5);color:var(--grn)}
+.pubsum{flex:1 1 200px;min-width:0;padding:7px 10px;font-size:12px}
+.pubsave{padding:7px 12px;font-size:11.5px}
+.plink{display:block;margin-top:9px;color:var(--gold);font-size:11px;text-decoration:none;font-weight:600}
 </style>
 </head>
 <body>
@@ -457,7 +471,7 @@ body{background:#070d1f}
     <div class="brand"><div class="bmark">SBD</div>
       <div><div class="bname">SBD Ops</div><div class="bsub">Master admin</div></div></div>
     <nav class="nav" id="nav"></nav>
-    <div class="sidefoot">The full record. Triage, ranking and answers write straight to it.</div>
+    <div class="sidefoot">The full record. Triage, ranking and answers write straight to it.<a class="plink" href="/tracker" target="_blank" rel="noopener">Open the leader page &rarr;</a></div>
   </aside>
   <div class="scrim" id="scrim"></div>
 
@@ -572,6 +586,18 @@ function card(t,compact){
     ${!compact&&t.how_to_check?`<div class="check"><span class="check-l">How to check it is done</span>${esc(t.how_to_check)}</div>`:''}
     ${dateBlock(t)}
     ${askBlock(t)}
+    ${pubRow(t)}
+  </div>`;
+}
+
+/* Leadership visibility, decided item by item. Off by default. */
+function pubRow(t){
+  return `<div class="pubrow">
+    <button class="pubtog${t.public_visible?' on':''}" data-pub="${t.number}" data-v="${t.public_visible?0:1}">
+      ${t.public_visible?'\u25CF Shown to leaders':'\u25CB Not shared'}</button>
+    ${t.public_visible?`<input class="inp pubsum" id="ps-${t.number}"
+      value="${esc(t.public_summary||'')}" placeholder="Optional plainer wording for leaders">
+      <button class="btn pubsave" data-pubsum="${t.number}">Save wording</button>`:''}
   </div>`;
 }
 
@@ -946,6 +972,15 @@ document.addEventListener('click',e=>{
   if(pm){ const ref=pm.dataset.pm;
     return act(async()=>{ const n=await rpc('promote_intake',{p_ref:ref,p_title:val('pt-'+ref),p_priority:'medium'});
       say(`On the tracker as #${n}.`); }); }
+
+  const pb=e.target.closest('[data-pub]');
+  if(pb){ const n=Number(pb.dataset.pub), v=pb.dataset.v==='1';
+    return act(async()=>{ await rpc('set_public',{p_number:n,p_visible:v});
+      say(v?`#${n} now shows on the leader page.`:`#${n} removed from the leader page.`); }); }
+  const ps=e.target.closest('[data-pubsum]');
+  if(ps){ const n=Number(ps.dataset.pubsum);
+    return act(async()=>{ await rpc('set_public',{p_number:n,p_visible:true,p_summary:val('ps-'+n)});
+      say('Leader wording saved.'); }); }
 
   const tk=e.target.closest('[data-take]');
   if(tk){ const n=Number(tk.dataset.take);
