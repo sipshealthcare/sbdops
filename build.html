@@ -592,7 +592,7 @@ function heroBlock(){
 function vToday(){
   const S=stats();
   const next=S.rows.slice(0,5);
-  return heroBlock()+`
+  return `
 <div class="card">
   <div class="card-h"><div class="ic warm">\u25B8</div>
     <div><div class="card-t">Up next</div>
@@ -603,10 +603,10 @@ function vToday(){
 }
 
 function vBrief(){
-  if(!BRIEF) return `<div class="card"><div class="card-h"><div class="ic warm">\u2726</div>
+  if(!BRIEF) return heroBlock()+`<div class="card"><div class="card-h"><div class="ic warm">\u2726</div>
     <div><div class="card-t">Morning brief</div></div></div>
     <div class="p muted">No brief has been sent yet. When Ignacio posts one it appears here, dated, with priorities in order.</div></div>`;
-  return `<div class="card">
+  return heroBlock()+`<div class="card">
   <div class="card-h"><div class="ic warm">\u2726</div>
     <div><div class="card-t">This morning's brief</div>
     <div class="card-s">From ${esc(BRIEF.author)} &middot; ${D(BRIEF.brief_date)}</div></div></div>
@@ -731,8 +731,8 @@ const V={
             n:()=>open_().length},
   standing:{icon:'\u25CE', label:'Where things stand', h:vStanding}
 };
-const KEYS=['today','brief','dates','queue','standing'];
-let cur='today';
+const KEYS=['brief','today','dates','queue','standing'];
+let cur='brief';
 function drawNav(){
   const nav=document.getElementById('nav'); if(!nav) return;
   nav.innerHTML='<div class="nav-l">Queue</div>'+KEYS.map(k=>{
@@ -751,7 +751,7 @@ function say(m){ toast.textContent=m; toast.classList.add('on'); setTimeout(()=>
 function draw(){
   views.innerHTML=`<div class="view on">${V[cur].h()}</div>`;
   document.getElementById('ttl').textContent=V[cur].label;
-  document.getElementById('sub').textContent=cur==='today'?'Dev queue':V[cur].label;
+  document.getElementById('sub').textContent=cur==='brief'?'Dev queue':V[cur].label;
   drawNav();
 }
 async function refresh(quiet){
