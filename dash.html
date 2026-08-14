@@ -148,6 +148,9 @@
 #sbd-root .qd{background:#131b3a !important;color:#94a3b8 !important;border-color:#1c2646 !important;}
 #sbd-root .qd:hover,#sbd-root .qd.on{background:#D49A00 !important;color:#000000 !important;}
 #sbd-root .dtwrap .dtico{color:#94a3b8 !important;}
+#sbd-root .tp{background:#131b3a !important;}
+#sbd-root .tp-l{color:#64748b !important;}
+#sbd-root .tp-v{color:#ffffff !important;}
 /* ── END LOCK ──────────────────────────────────────────────────── */
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -512,6 +515,12 @@ body{background:#070d1f}
 .qd{border:1px solid var(--line);background:var(--lift);color:var(--dim);border-radius:7px;
   padding:6px 10px;font-size:11.5px;font-family:inherit;cursor:pointer;font-weight:600}
 .qd:hover,.qd.on{background:var(--gold);color:#000;border-color:var(--gold)}
+
+.tpr{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.tp{background:var(--lift);border-radius:10px;padding:12px 13px}
+.tp-l{display:block;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--mut);font-weight:600}
+.tp-v{display:block;font-size:20px;font-weight:700;color:#fff;margin-top:5px;font-variant-numeric:tabular-nums}
+@media(max-width:900px){.tpr{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
@@ -563,7 +572,7 @@ async function q(path){
   return d||[];
 }
 
-let SUGG={};
+let SUGG={}, TPUT=null;
 let ALL=[], INTAKE=[], DEC=[], REL=[], REF=[], BRIEFS=[], ADD=[], SNAP=[], TIERS=[];
 const WHO='sbd_master_who';
 const me=()=>localStorage.getItem(WHO)||'Ignacio';
@@ -585,6 +594,7 @@ async function load(){
   ALL=items; INTAKE=intake; DEC=dec; REL=rel; REF=ref; BRIEFS=briefs; ADD=add; SNAP=snap; TIERS=tiers;
   // a recommendation for anything in hand without a date, from measured throughput
   SUGG={};
+  TPUT=await rpc('throughput_stats').catch(()=>null);
   await Promise.all(ALL.filter(t=>t.status!=='shipped'&&t.status!=='backlog'&&!t.proposed_on)
     .map(t=>rpc('suggest_date',{p_number:t.number}).then(r=>{SUGG[t.number]=r;}).catch(()=>{})));
   rpc('snapshot_tracker').catch(()=>{});
@@ -826,6 +836,17 @@ function vTracker(){
   const unranked=ALL.filter(t=>t.rank==null&&t.status!=='shipped');
   const sent=ALL.filter(t=>t.date_state==='countered');
   return `
+${TPUT?`<div class="card">
+  <div class="card-h"><div class="ic">\u25F4</div><div><div class="card-t">What the date suggestions are based on</div>
+  <div class="card-s">Measured from the record, and it sharpens as more agreed dates come due</div></div></div>
+  <div class="tpr">
+    <div class="tp"><span class="tp-l">Completed per week</span><span class="tp-v">${TPUT.per_week}</span></div>
+    <div class="tp"><span class="tp-l">Completions measured</span><span class="tp-v">${TPUT.completions}</span></div>
+    <div class="tp"><span class="tp-l">Agreed dates come due</span><span class="tp-v">${TPUT.slip_sample}</span></div>
+    <div class="tp"><span class="tp-l">Met on time</span><span class="tp-v">${TPUT.hit_rate==null?'&mdash;':TPUT.hit_rate+'%'}</span></div>
+  </div>
+  <div class="nd-say" style="margin:12px 0 0">${esc(TPUT.basis)}</div>
+</div>`:''}
 ${undated.length?`<div class="card">
   <div class="card-h"><div class="ic warm">\u25F7</div><div><div class="card-t">No date set</div>
   <div class="card-s">In hand, but with nothing to slip against. Propose a date and it goes to the dev team to confirm.</div></div></div>
