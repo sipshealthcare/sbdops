@@ -142,6 +142,12 @@
 #sbd-root .nodate.off{border-left-color:#1c2646 !important;color:#64748b !important;}
 #sbd-root .nd-l{color:#e0a132 !important;}
 #sbd-root .nodate.off .nd-l{color:#64748b !important;}
+#sbd-root .nd-say,#sbd-root .rec-w{color:#94a3b8 !important;}
+#sbd-root .rec{background:rgba(212,154,0,.07) !important;border-color:rgba(212,154,0,.28) !important;}
+#sbd-root .rec-h{color:#e6ebf5 !important;} #sbd-root .rec-h b{color:#D49A00 !important;}
+#sbd-root .qd{background:#131b3a !important;color:#94a3b8 !important;border-color:#1c2646 !important;}
+#sbd-root .qd:hover,#sbd-root .qd.on{background:#D49A00 !important;color:#000000 !important;}
+#sbd-root .dtwrap .dtico{color:#94a3b8 !important;}
 /* ── END LOCK ──────────────────────────────────────────────────── */
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -489,6 +495,23 @@ body{background:#070d1f}
 @media(max-width:1150px){.stats{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:860px){.ndrow{flex-direction:column;align-items:stretch}.ndrow .dt,.ndrow .btn{width:100%}}
+
+.nd-say{font-size:12px;color:var(--dim);line-height:1.5;margin-bottom:10px;max-width:62ch}
+.rec{background:rgba(212,154,0,.07);border:1px solid rgba(212,154,0,.28);
+  border-radius:9px;padding:11px 12px;margin-bottom:11px}
+.rec-h{font-size:12.5px;color:#e6ebf5}
+.rec-h b{color:var(--gold)}
+.rec-w{font-size:11px;color:var(--dim);line-height:1.5;margin:5px 0 9px;max-width:70ch}
+.dtwrap{position:relative;display:inline-block}
+.dtwrap .inp{padding-right:28px;cursor:pointer}
+.dtwrap .dtico{position:absolute;right:10px;top:50%;transform:translateY(-50%);
+  color:var(--dim);font-size:10px;pointer-events:none}
+.dtwrap:hover .inp{border-color:var(--gold)}
+.inp[type=date]::-webkit-calendar-picker-indicator{opacity:0;position:absolute;right:0;
+  width:100%;height:100%;cursor:pointer}
+.qd{border:1px solid var(--line);background:var(--lift);color:var(--dim);border-radius:7px;
+  padding:6px 10px;font-size:11.5px;font-family:inherit;cursor:pointer;font-weight:600}
+.qd:hover,.qd.on{background:var(--gold);color:#000;border-color:var(--gold)}
 </style>
 </head>
 <body>
@@ -540,6 +563,7 @@ async function q(path){
   return d||[];
 }
 
+let SUGG={};
 let ALL=[], INTAKE=[], DEC=[], REL=[], REF=[], BRIEFS=[], ADD=[], SNAP=[], TIERS=[];
 const WHO='sbd_master_who';
 const me=()=>localStorage.getItem(WHO)||'Ignacio';
@@ -559,6 +583,10 @@ async function load(){
     q('severity_tiers?select=tier,name&order=tier.asc')
   ]);
   ALL=items; INTAKE=intake; DEC=dec; REL=rel; REF=ref; BRIEFS=briefs; ADD=add; SNAP=snap; TIERS=tiers;
+  // a recommendation for anything in hand without a date, from measured throughput
+  SUGG={};
+  await Promise.all(ALL.filter(t=>t.status!=='shipped'&&t.status!=='backlog'&&!t.proposed_on)
+    .map(t=>rpc('suggest_date',{p_number:t.number}).then(r=>{SUGG[t.number]=r;}).catch(()=>{})));
   rpc('snapshot_tracker').catch(()=>{});
 }
 
@@ -590,12 +618,12 @@ function datePill(t){
 function dateBlock(t){
   if(!t.proposed_on) return '';
   if(t.date_state==='confirmed')
-    return `<div class="agreed"><span class="ag-l">Date agreed</span>${D(t.proposed_on)}${t.answered_by?` &middot; confirmed by ${esc(t.answered_by)}`:''}</div>`;
+    return `<div class="agreed"><span class="ag-l">Completion date agreed</span><b>${DL(t.proposed_on)}</b>${t.answered_by?` &middot; confirmed by ${esc(t.answered_by)}`:''}${!t.public_visible?' <span class="by">&middot; not yet shared with leaders</span>':''}</div>`;
   if(t.date_state==='countered')
     return `<div class="agreed ct"><span class="ag-l">They sent a different date back</span>
       ${D(t.proposed_on)} &rarr; ${D(t.counter_on)}${t.counter_note?` &mdash; ${esc(t.counter_note)}`:''}
       <span class="by"> &middot; see Dates sent back above</span></div>`;
-  return `<div class="agreed wt"><span class="ag-l">Waiting on the dev team</span>You proposed ${D(t.proposed_on)}</div>`;
+  return `<div class="agreed wt"><span class="ag-l">Waiting on the dev team to confirm</span>You proposed <b>${DL(t.proposed_on)}</b> as the completion date. They have not answered yet.</div>`;
 }
 
 /* a queue row, in the reference's task-card idiom */
@@ -627,13 +655,23 @@ function noDate(t){
   if(t.status==='shipped'||t.proposed_on) return '';
   if(t.status==='backlog')
     return `<div class="nodate off"><span class="nd-l">Backlog</span>No date needed until this is picked up.</div>`;
+  const g=SUGG[t.number];
   return `<div class="nodate">
-    <span class="nd-l">No date set</span>
+    <span class="nd-l">No completion date has been proposed</span>
+    <div class="nd-say">Pick a date you want this finished by. It goes to the dev team, who confirm it
+      or send back a different one with their reason.</div>
+    ${g?`<div class="rec">
+      <div class="rec-h">Suggested: <b>${DL(g.suggested_on)}</b></div>
+      <div class="rec-w">${esc(g.reason)}</div>
+      <button class="qd" data-usesugg="${t.number}" data-d="${g.suggested_on}">Use this date</button>
+    </div>`:''}
     <div class="ndrow">
-      <input class="inp dt" id="pd-${t.number}" type="date" min="${today()}">
-      <button class="btn btn-g" data-propose="${t.number}">Propose this date</button>
+      <div class="dtwrap"><input class="inp dt" id="pd-${t.number}" type="date" min="${today()}">
+        <span class="dtico">&#9662;</span></div>
+      <button class="btn btn-g" data-propose="${t.number}">Propose this date to the dev team</button>
     </div></div>`;
 }
+
 
 function pubRow(t){
   return `<div class="pubrow">
@@ -1002,6 +1040,11 @@ async function refresh(quiet){ try{ await load(); draw(); if(!quiet) say('Refres
 async function act(fn){ try{ await fn(); await refresh(true); }catch(e){ say(e.message); } }
 const val=id=>{const n=document.getElementById(id);return n?n.value.trim():'';};
 
+document.addEventListener('click',e=>{
+  const w=e.target.closest('.dtwrap'); if(!w) return;
+  const f=w.querySelector('input[type=date]');
+  if(f&&f.showPicker){ try{ f.showPicker(); }catch(_){} }
+});
 document.getElementById('burger').onclick=()=>{document.getElementById('side').classList.add('open');
   document.getElementById('scrim').classList.add('on');};
 document.getElementById('scrim').onclick=shut;
@@ -1028,6 +1071,10 @@ document.addEventListener('click',e=>{
   if(pm){ const ref=pm.dataset.pm;
     return act(async()=>{ const n=await rpc('promote_intake',{p_ref:ref,p_title:val('pt-'+ref),p_priority:'medium'});
       say(`On the tracker as #${n}.`); }); }
+
+  const us=e.target.closest('[data-usesugg]');
+  if(us){ const f=document.getElementById('pd-'+us.dataset.usesugg);
+    if(f){ f.value=us.dataset.d; us.classList.add('on'); } return; }
 
   const pd=e.target.closest('[data-propose]');
   if(pd){ const n=Number(pd.dataset.propose);
