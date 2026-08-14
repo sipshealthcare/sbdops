@@ -131,6 +131,9 @@
 #sbd-root .orbar{color:#64748b !important;}
 #sbd-root .orbar:before,#sbd-root .orbar:after{background:#1c2646 !important;}
 #sbd-root .counter .flab{color:#94a3b8 !important;}
+#sbd-root .dp-l,#sbd-root .dp-ar{color:#64748b !important;}
+#sbd-root .dp-v.old{color:#94a3b8 !important;} #sbd-root .dp-v.new{color:#e0a132 !important;}
+#sbd-root .dp-why{color:#cbd5e5 !important;}
 /* ── END LOCK ──────────────────────────────────────────────────── */
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -465,6 +468,16 @@ body{background:#070d1f}
   .counter .flab,.counter .inp,.counter .btn{grid-column:1!important;grid-row:auto!important;width:100%}
   .counter .flab{margin-top:4px}
 }
+
+/* original and new dates read side by side, never in the same field */
+.dpair{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.dp{display:flex;flex-direction:column;gap:3px}
+.dp-l{font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);font-weight:600}
+.dp-v{font-size:13.5px;font-weight:600}
+.dp-v.old{color:var(--dim)}
+.dp-v.new{color:var(--amb)}
+.dp-ar{color:var(--mut);font-size:14px;padding-bottom:2px}
+.dp-why{font-size:12px;color:#cbd5e5;margin-top:9px;line-height:1.5}
 </style>
 </head>
 <body>
@@ -564,14 +577,24 @@ function dateBlock(t){
   if(t.date_state==='confirmed')
     return `<div class="agreed"><span class="ag-l">Confirmed</span>${D(t.proposed_on)}${t.answered_by?` &middot; ${esc(t.answered_by)}`:''}</div>`;
   if(t.date_state==='countered')
-    return `<div class="agreed ct"><span class="ag-l">Moved to ${D(t.counter_on)}</span>${esc(t.counter_note||'')}${t.answered_by?`<span class="by"> &middot; ${esc(t.answered_by)}</span>`:''}</div>`;
+    return `<div class="agreed ct">
+      <span class="ag-l">Sent back, waiting on Ignacio</span>
+      <div class="dpair">
+        <div class="dp"><span class="dp-l">Originally proposed</span><span class="dp-v old">${D(t.proposed_on)}</span></div>
+        <div class="dp-ar">&rarr;</div>
+        <div class="dp"><span class="dp-l">You sent back</span><span class="dp-v new">${D(t.counter_on)}</span></div>
+      </div>
+      ${t.counter_note?`<div class="dp-why">${esc(t.counter_note)}</div>`:''}
+      ${t.answered_by?`<span class="by">${esc(t.answered_by)}</span>`:''}</div>`;
   return `<div class="ask">
-    <div class="ask-h">Ignacio proposed <b>${D(t.proposed_on)}</b> for this.</div>
+    <div class="dpair" style="margin-bottom:12px">
+      <div class="dp"><span class="dp-l">Proposed by Ignacio</span><span class="dp-v old">${D(t.proposed_on)}</span></div>
+    </div>
     <div class="row"><button class="btn btn-g" data-ok="${t.number}">Confirm ${short(t.proposed_on)}</button></div>
     <div class="orbar"><span>or propose a different date</span></div>
     <div class="counter">
-      <label class="flab" for="nd-${t.number}">New date</label>
-      <input class="inp dt" id="nd-${t.number}" type="date" value="${t.proposed_on}">
+      <label class="flab" for="nd-${t.number}">New proposed date</label>
+      <input class="inp dt" id="nd-${t.number}" type="date">
       <label class="flab" for="wy-${t.number}">Why it needs to move</label>
       <input class="inp why" id="wy-${t.number}" placeholder="It gets taken as given, so say why">
       <button class="btn btn-o" data-no="${t.number}">Send this date back</button>
@@ -888,8 +911,9 @@ document.addEventListener('click',e=>{
 
   const no=e.target.closest('[data-no]');
   if(no){ const n=Number(no.dataset.no), who=val('who'); if(who) localStorage.setItem(WHO,who);
+    if(!val('nd-'+n)) return say('Pick the new date you can hit.');
     return act(async()=>{ await rpc('answer_date',{p_number:n,p_action:'counter',
-      p_new_date:val('nd-'+n)||null,p_reason:val('wy-'+n)||null,p_who:who||null});
+      p_new_date:val('nd-'+n),p_reason:val('wy-'+n)||null,p_who:who||null});
       say(`#${n} moved to ${short(val('nd-'+n))}. Reason sent with it.`); }); }
 });
 
