@@ -563,7 +563,7 @@ function view(){
 
   const hr=new Date().getHours();
   const greet=hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
-  const lead = overdue.length ? `${overdue.length} item${overdue.length>1?'s are':' is'} past its date.`
+  const lead = overdue.length ? `${overdue.length} item${overdue.length>1?'s are past their':' is past its'} date.`
              : waiting.length ? `${waiting.length} date${waiting.length>1?'s are':' is'} waiting on you.`
              : dueSoon.length ? `${dueSoon.length} due in the next day.`
              : 'Nothing overdue and no dates outstanding.';
