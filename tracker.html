@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>SBD Platform &middot; Delivery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#D49A00;--ink:#070d1f;--card:#0e1328;--line:#1c2646;--lift:#131b3a;
+--txt:#e6ebf5;--dim:#94a3b8;--mut:#64748b;--red:#f0616d;--amb:#e0a132;--grn:#3fb984}
+
+/* ── SIMVOLY / BAKND EMBED COLOR LOCK ─────────────────────────── */
+@layer host-reset{ #sbd-root, #sbd-root *{ box-sizing:border-box !important; } }
+#sbd-root, #sbd-root div,#sbd-root span,#sbd-root p,#sbd-root a,#sbd-root li,
+#sbd-root h1,#sbd-root h2,#sbd-root h3,#sbd-root button{font-family:'Poppins',-apple-system,'Segoe UI',sans-serif !important;}
+#sbd-root{background:#070d1f !important;color:#e6ebf5 !important;}
+#sbd-root .bmark{background:#D49A00 !important;color:#000000 !important;}
+#sbd-root .hero-t,#sbd-root .card-t,#sbd-root .it-t{color:#ffffff !important;}
+#sbd-root .hero-s,#sbd-root .card-s,#sbd-root .stat-l{color:#94a3b8 !important;}
+#sbd-root .hero-d,#sbd-root .it-m,#sbd-root .foot{color:#64748b !important;}
+#sbd-root .card,#sbd-root .stat{background:#0e1328 !important;border-color:#1c2646 !important;}
+#sbd-root .it{background:#131b3a !important;border-color:#1c2646 !important;}
+#sbd-root .stat-v{color:#ffffff !important;}
+#sbd-root .btn{background:#1c2646 !important;color:#e6ebf5 !important;}
+#sbd-root .pill{color:#e6ebf5 !important;}
+#sbd-root .p-grn{background:rgba(63,185,132,.14) !important;color:#3fb984 !important;}
+#sbd-root .p-amb{background:rgba(224,161,50,.14) !important;color:#e0a132 !important;}
+#sbd-root .p-gry{background:rgba(100,116,139,.18) !important;color:#94a3b8 !important;}
+#sbd-root .p-red{background:rgba(240,97,109,.14) !important;color:#f0616d !important;}
+#sbd-root .ic{background:#131b3a !important;color:#94a3b8 !important;}
+#sbd-root .ic.warm{background:linear-gradient(140deg,#D49A00,#8a6400) !important;color:#000000 !important;}
+#sbd-root .proof{color:#cbd5e5 !important;border-color:#3fb984 !important;}
+#sbd-root .proof-l{color:#3fb984 !important;}
+/* ── END LOCK ──────────────────────────────────────────────────── */
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#070d1f}
+#sbd-root{min-height:100vh;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;
+  position:relative;overflow-x:hidden}
+#sbd-root:before{content:'';position:fixed;top:-220px;right:-180px;width:720px;height:600px;
+  background:radial-gradient(closest-side,rgba(212,154,0,.26),rgba(212,154,0,.08) 55%,transparent 78%);
+  filter:blur(18px);pointer-events:none;z-index:0}
+.main{position:relative;z-index:1;max-width:840px;margin:0 auto;padding:26px 18px 70px}
+
+.top{display:flex;align-items:center;gap:11px;padding-bottom:22px}
+.bmark{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;
+  font-weight:700;font-size:11.5px;flex:0 0 34px}
+.bname{font-weight:600;font-size:15px}
+.bsub{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.btn{border:0;border-radius:10px;padding:10px 17px;font-size:13px;font-weight:600;
+  cursor:pointer;font-family:inherit;margin-left:auto;min-height:40px}
+.btn:hover{background:#243056!important}
+
+.hero{padding:2px 0 22px}
+.hero-d{font-size:12px}
+.hero-t{font-size:29px;font-weight:600;line-height:1.14;margin-top:6px;letter-spacing:-.02em;text-wrap:balance}
+.hero-s{font-size:15px;margin-top:6px;max-width:60ch}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:20px}
+.stat{border:1px solid var(--line);border-radius:15px;padding:16px}
+.stat-v{font-size:27px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.stat-l{font-size:11px;letter-spacing:.03em;margin-top:7px}
+
+.card{border:1px solid var(--line);border-radius:17px;padding:19px;margin-bottom:15px}
+.card-h{display:flex;align-items:flex-start;gap:11px;margin-bottom:15px}
+.ic{width:34px;height:34px;border-radius:11px;flex:0 0 34px;display:grid;place-items:center;font-size:14px}
+.card-t{font-size:16px;font-weight:600}
+.card-s{font-size:12.5px;margin-top:2px}
+
+.it{border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:9px}
+.it:last-child{margin-bottom:0}
+.it-h{display:flex;justify-content:space-between;gap:11px;align-items:flex-start}
+.it-t{font-size:13.5px;font-weight:600;line-height:1.45;min-width:0;overflow-wrap:anywhere}
+.it-m{font-size:11px;margin-top:6px}
+.pill{display:inline-block;font-size:10.5px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.proof{margin-top:9px;font-size:11.5px;line-height:1.5;border-left:2px solid var(--grn);padding:3px 0 3px 9px}
+.proof-l{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  font-weight:600;margin-bottom:2px}
+.empty{font-size:13px;color:var(--dim)}
+.foot{font-size:11.5px;text-align:center;padding-top:24px;line-height:1.6}
+@media(max-width:640px){
+  .stats{grid-template-columns:1fr}
+  .hero-t{font-size:23px}
+  .main{padding:20px 14px 60px}
+}
+</style>
+</head>
+<body>
+<div id="sbd-root">
+  <div class="main">
+    <div class="top">
+      <div class="bmark">SBD</div>
+      <div><div class="bname">SBD Platform</div><div class="bsub">Delivery</div></div>
+      <button class="btn" id="refresh">Refresh</button>
+    </div>
+    <div id="view"><div class="empty">Loading…</div></div>
+  </div>
+</div>
+
+<script>
+/* Read-only leadership view of the SBD Platform build.
+   It reads one curated database view, v_public_tracker, which contains only
+   the items Ignacio has marked for sharing and only the columns safe to share.
+   Internal notes, intake, the question thread and any date still being agreed
+   never reach this page. */
+const SB_URL='https://uwgpjjbbfwqiumzfkwuy.supabase.co';
+const SB_KEY='sb_publishable_USi4uTOHHwrNjKXB3-bbDQ_Gzk7PN2q';
+
+const esc=t=>String(t??'').replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+const P=(c,t)=>`<span class="pill ${c}">${t}</span>`;
+const D=d=>d?new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
+const DL=d=>d?new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}):'';
+const today=()=>new Date().toISOString().slice(0,10);
+const days=d=>Math.round((new Date(d+'T12:00:00')-new Date(today()+'T12:00:00'))/86400000);
+
+let ROWS=[];
+async function load(){
+  const r=await fetch(`${SB_URL}/rest/v1/v_public_tracker?select=*`,
+    {headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`}});
+  if(!r.ok) throw new Error('Could not reach the record just now.');
+  ROWS=await r.json();
+}
+
+const label=s=>({shipped:'Live','in-progress':'In progress',blocked:'Blocked',
+                 backlog:'Scheduled',open:'In hand'}[s]||s);
+const tone =s=>({shipped:'p-grn','in-progress':'p-amb',blocked:'p-red'}[s]||'p-gry');
+
+function item(t,showDue){
+  const due=showDue&&t.due_on;
+  const n=due?days(t.due_on):null;
+  return `<div class="it">
+    <div class="it-h"><div class="it-t">${esc(t.title)}</div>
+      <div>${P(tone(t.status),label(t.status))}</div></div>
+    <div class="it-m">${[
+      t.status==='shipped'&&t.shipped_on?`Live ${D(t.shipped_on)}`:'',
+      due?`Due ${D(t.due_on)}${n<0?` &middot; ${Math.abs(n)} days past`:n===0?' &middot; today':''}`:'',
+      t.sprint?esc(t.sprint):''
+    ].filter(Boolean).join(' &middot; ')||'&nbsp;'}</div>
+    ${t.confirmed_by?`<div class="proof"><span class="proof-l">How it was confirmed</span>${esc(t.confirmed_by)}</div>`:''}
+  </div>`;
+}
+
+function draw(){
+  const live=ROWS.filter(t=>t.status==='shipped');
+  const hand=ROWS.filter(t=>t.status!=='shipped'&&(!t.due_on||days(t.due_on)<=7));
+  const soon=ROWS.filter(t=>t.status!=='shipped'&&t.due_on&&days(t.due_on)>7);
+  const last30=live.filter(t=>t.shipped_on&&days(t.shipped_on)>=-30).length;
+  const withProof=live.filter(t=>t.confirmed_by).length;
+
+  document.getElementById('view').innerHTML=`
+<div class="hero">
+  <div class="hero-d">${DL(today())}</div>
+  <h1 class="hero-t">Where the platform build stands</h1>
+  <div class="hero-s">Read straight from the delivery record. Every item marked live has been
+    checked against the running system, not against a report of it.</div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="stat-v">${live.length}</div><div class="stat-l">Live</div></div>
+  <div class="stat"><div class="stat-v">${hand.length}</div><div class="stat-l">In hand</div></div>
+  <div class="stat"><div class="stat-v">${soon.length}</div><div class="stat-l">Scheduled</div></div>
+</div>
+
+<div class="card">
+  <div class="card-h"><div class="ic warm">&#10003;</div>
+    <div><div class="card-t">Live</div>
+    <div class="card-s">${withProof} of ${live.length} carry a recorded check against the running system</div></div></div>
+  ${live.length?live.map(t=>item(t,false)).join(''):'<div class="empty">Nothing recorded as live yet.</div>'}
+</div>
+
+<div class="card">
+  <div class="card-h"><div class="ic">&#9654;</div>
+    <div><div class="card-t">In hand</div>
+    <div class="card-s">Being worked on now</div></div></div>
+  ${hand.length?hand.map(t=>item(t,true)).join(''):'<div class="empty">Nothing in hand right now.</div>'}
+</div>
+
+<div class="card">
+  <div class="card-h"><div class="ic">&#9673;</div>
+    <div><div class="card-t">Scheduled</div>
+    <div class="card-s">Dates agreed with the development team</div></div></div>
+  ${soon.length?soon.map(t=>item(t,true)).join(''):'<div class="empty">Nothing scheduled beyond the current week.</div>'}
+</div>
+
+<div class="foot">
+  Showing ${ROWS.length} item${ROWS.length===1?'':'s'} selected for this view.<br>
+  Dates shown are ones both sides have agreed. Anything still being settled is left off.
+</div>`;
+}
+
+async function go(quiet){
+  const b=document.getElementById('refresh');
+  b.disabled=true; if(!quiet) b.textContent='Refreshing…';
+  try{ await load(); draw(); }
+  catch(e){ document.getElementById('view').innerHTML=
+    `<div class="card"><div class="card-t">Could not load</div>
+     <div class="card-s" style="margin-top:7px">${esc(e.message)} Try Refresh in a moment.</div></div>`; }
+  finally{ b.disabled=false; b.textContent='Refresh'; }
+}
+document.getElementById('refresh').onclick=()=>go();
+go(true);
+</script>
+</body>
+</html>
