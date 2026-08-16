@@ -303,6 +303,10 @@ body{background:#070d1f}
 .hero-t{font-size:31px;font-weight:600;line-height:1.12;margin-top:7px;color:#fff;letter-spacing:-.02em}
 .hero-s{font-size:16px;color:var(--dim);margin-top:5px;font-weight:400}
 .hero-a{display:flex;gap:9px;flex-wrap:wrap;margin-top:17px}
+.btn-doc{display:inline-flex;align-items:center;gap:8px;text-decoration:none;
+  background:var(--lift);color:var(--gold);border:1px solid var(--gold)}
+.btn-doc:hover{background:rgba(212,154,0,.14)}
+.btn-doc .doc-i{font-size:14px;line-height:1}
 .hero-a .btn{padding:11px 20px;font-size:13.5px;border-radius:11px}
 
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:15px}
@@ -529,8 +533,6 @@ body{background:#070d1f}
     <nav class="nav" id="nav"></nav>
     <div class="sidefoot">
       Everything here comes from Ignacio or the tracker. Send EODs the way you always have.
-      <a class="dlink" href="https://drive.google.com/drive/folders/1_UwQyh-x2ue6Qzf4xR7Owk8q3fUti2Y4?usp=sharing"
-         target="_blank" rel="noopener"><span class="dl-i">&#9707;</span>Build documents &rarr;</a>
     </div>
   </aside>
   <div class="scrim" id="scrim"></div>
@@ -733,6 +735,8 @@ function heroBlock(){
   <div class="hero-s">${lead}</div>
   <div class="hero-a">
     <button class="btn btn-g" data-go="dates">Answer dates${S.waiting.length?` (${S.waiting.length})`:''}</button>
+    <a class="btn btn-doc" href="https://drive.google.com/drive/folders/1_UwQyh-x2ue6Qzf4xR7Owk8q3fUti2Y4?usp=sharing"
+       target="_blank" rel="noopener"><span class="doc-i">&#9707;</span>Build documents</a>
     <button class="btn btn-o" id="rf2">Refresh</button>
   </div>
 </div>
