@@ -180,6 +180,40 @@ body{background:#070d1f}
 .mini:last-child{border-bottom:0}
 .mini-t{color:#cbd5e5;min-width:0;overflow-wrap:anywhere}
 .mini-d{color:var(--mut);font-size:11px;white-space:nowrap}
+/* Raising an update. Same shape as the report form staff already use. */
+.f{margin-bottom:17px}
+.f-l{display:block;font-size:13px;font-weight:600;color:#fff;margin-bottom:3px}
+.f-h{display:block;font-size:11.5px;color:var(--mut);margin-bottom:8px;line-height:1.5}
+.inp,.sel,.ta{width:100%;background:var(--card);border:1px solid var(--line);border-radius:11px;
+  color:var(--txt);padding:12px 14px;font-size:13.5px;font-family:inherit;line-height:1.5}
+.inp::placeholder,.ta::placeholder{color:var(--mut)}
+.inp:focus,.sel:focus,.ta:focus{outline:2px solid var(--gold);outline-offset:-1px}
+.ta{min-height:118px;resize:vertical}
+.sel{cursor:pointer;appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--dim) 50%),linear-gradient(135deg,var(--dim) 50%,transparent 50%);
+  background-position:calc(100% - 19px) 50%,calc(100% - 14px) 50%;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:38px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--dim);border-radius:10px;
+  padding:9px 14px;font-size:12.5px;font-family:inherit;cursor:pointer;font-weight:500}
+.chip:hover{border-color:var(--gold);color:var(--txt)}
+.chip.on{background:var(--gold);color:#000;border-color:var(--gold);font-weight:600}
+.send{border:0;border-radius:11px;padding:12px 22px;font-size:13.5px;font-weight:600;
+  background:var(--gold);color:#000;cursor:pointer;font-family:inherit}
+.send:disabled{opacity:.55;cursor:default}
+.upd{border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:9px;background:var(--lift)}
+.upd:last-child{margin-bottom:0}
+.upd-h{display:flex;justify-content:space-between;gap:11px;align-items:flex-start}
+.upd-t{font-size:13px;line-height:1.55;color:#e6ebf5;min-width:0;overflow-wrap:anywhere}
+.upd-m{font-size:11px;color:var(--mut);margin-top:7px}
+.upd-m .hash{color:var(--gold);font-weight:700}
+.upd-s{margin-top:9px;font-size:12px;line-height:1.55;border-left:2px solid var(--line);
+  padding:3px 0 3px 10px;color:var(--dim)}
+.upd-s.go{border-left-color:var(--grn);color:#cbd5e5}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--gold);
+  color:#000;padding:11px 20px;border-radius:11px;font-size:13px;font-weight:600;z-index:70;
+  opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.on{opacity:1}
 .srchwrap{margin:-6px 0 18px}
 .srch{width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;
   color:var(--txt);padding:12px 15px;font-size:13.5px;font-family:inherit}
@@ -249,6 +283,7 @@ body{background:#070d1f}
       <div class="srchwrap"><input class="srch" id="search"
         placeholder="Search &mdash; a number, or words from a task"></div>
       <div id="view"><div class="empty">Loading…</div></div>
+      <div class="toast" id="toast"></div>
     </div>
   </div>
 </div>
@@ -393,6 +428,83 @@ function ring(done,total,label,sub){
     <div style="font-size:11.5px;color:var(--mut);line-height:1.55;padding-top:4px">${esc(sub)}</div></div>`;
 }
 
+const WHOKEY='sbd_leader_who';
+let MINE=[], uImpact='Just an idea', uItem='', uSent=false;
+
+async function loadMine(){
+  const who=(document.getElementById('uwho')||{}).value||localStorage.getItem(WHOKEY)||'';
+  if(!who.trim()){ MINE=[]; return; }
+  const r=await fetch(`${SB_URL}/rest/v1/rpc/my_updates`,{method:'POST',cache:'no-store',
+    headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`},
+    body:JSON.stringify({p_who:who})});
+  MINE = r.ok ? (await r.json()) : [];
+}
+
+function updState(u){
+  if(u.item_number){
+    const d=u.item_date?DL(u.item_date):null;
+    if(u.item_status==='shipped') return {t:`Live. Delivered ${d||'and recorded'}.`,go:true};
+    if(u.item_date_state==='confirmed'&&d) return {t:`Scheduled for ${d}, agreed with the development team.`,go:true};
+    if(u.item_date_state==='pending'&&d)   return {t:`Date of ${d} proposed, waiting on the development team to confirm.`,go:false};
+    if(u.item_date_state==='countered'&&d) return {t:`The development team sent back ${d}. Dr. Jake is settling it.`,go:false};
+    return {t:'On the tracker as #'+u.item_number+'. No date agreed yet.',go:false};
+  }
+  if(u.status==='tabled') return {t:'Parked for now.'+(u.decision?' '+u.decision:''),go:false};
+  if(u.status==='closed') return {t:'Closed.'+(u.decision?' '+u.decision:''),go:false};
+  if(u.status==='approved') return {t:'Approved. It is being scheduled.',go:true};
+  return {t:'With Dr. Jake. He reads these himself.',go:false};
+}
+
+function vUpdates(){
+  const who=localStorage.getItem(WHOKEY)||'';
+  const opts=ROWS.map(t=>`<option value="${t.number}"${String(uItem)===String(t.number)?' selected':''}>#${t.number} &mdash; ${esc(t.summary||t.title)}</option>`).join('');
+  return `<div class="card">
+  <div class="card-h"><div class="ic warm">&#9998;</div>
+    <div><div class="card-t">Raise an update</div>
+    <div class="card-s">Something that needs changing, adding, or explaining. Pick what it relates to, say what is needed, and it goes to Dr. Jake. He decides on it and puts a date against it with the development team.</div></div></div>
+
+  <div class="f"><label class="f-l" for="uwho">Your name</label>
+    <span class="f-h">So the answer comes back to you.</span>
+    <input class="inp" id="uwho" value="${esc(who)}" placeholder="First and last"></div>
+
+  <div class="f"><label class="f-l" for="uitem">What it relates to</label>
+    <span class="f-h">Pick the item on the record this is about. If it is not on the record yet, say so and describe it below.</span>
+    <select class="sel" id="uitem">
+      <option value=""${uItem?'':' selected'}>Not on the record yet</option>
+      ${opts}
+    </select></div>
+
+  <div class="f"><label class="f-l" for="uwhat">What is needed</label>
+    <span class="f-h">Plain words. Type it, or press the microphone in the corner of the box and speak it.</span>
+    <textarea class="ta" id="uwhat" placeholder="What needs to change, and what it should do instead"></textarea></div>
+
+  <div class="f"><span class="f-l">How much it matters</span>
+    <span class="f-h">Your honest read. Priority gets worked out on our side.</span>
+    <div class="chips">${['Blocking me now','Slowing me down','Minor','Just an idea']
+      .map(x=>`<button class="chip${uImpact===x?' on':''}" data-imp="${x}">${x}</button>`).join('')}</div></div>
+
+  <button class="send" id="usend">Send it to Dr. Jake</button>
+</div>
+
+<div class="card">
+  <div class="card-h"><div class="ic">&#9673;</div>
+    <div><div class="card-t">What you have sent</div>
+    <div class="card-s">${who?`Everything raised under ${esc(who)}, newest first`:'Put your name in above and anything you have sent appears here'}</div></div></div>
+  ${MINE.length?MINE.map(u=>{const st=updState(u);
+    return `<div class="upd">
+      <div class="upd-h"><div class="upd-t">${esc(u.what)}</div>
+        <div>${P(u.item_status==='shipped'?'p-grn':u.item_number?'p-amb':'p-gry',
+          u.item_status==='shipped'?'Live':u.item_number?'Scheduled':'With Dr. Jake')}</div></div>
+      <div class="upd-m"><span class="hash">${esc(u.ref)}</span> &middot; sent ${D(String(u.submitted_at).slice(0,10))}${u.relates_to?` &middot; about #${u.relates_to}`:''}</div>
+      <div class="upd-s${st.go?' go':''}">${esc(st.t)}</div>
+    </div>`;}).join('')
+   :`<div class="empty">${who?'Nothing raised under that name yet.':'Nothing to show yet.'}</div>`}
+</div>`;
+}
+
+function say(m){ const t=document.getElementById('toast'); if(!t) return;
+  t.textContent=m; t.classList.add('on'); setTimeout(()=>t.classList.remove('on'),3200); }
+
 let LTAB='dash';
 function drawNav(){
   const live=ROWS.filter(t=>t.status==='shipped').length;
@@ -400,7 +512,8 @@ function drawNav(){
   document.getElementById('lnav').innerHTML=
     `<button class="ni${LTAB==='dash'?' on':''}" data-t="dash">&#9678;&nbsp; Dashboard</button>
      <button class="ni${LTAB==='live'?' on':''}" data-t="live">&#10003;&nbsp; Live<span class="nn">${live}</span></button>
-     <button class="ni${LTAB==='sched'?' on':''}" data-t="sched">&#9673;&nbsp; Scheduled<span class="nn">${sched}</span></button>`;
+     <button class="ni${LTAB==='sched'?' on':''}" data-t="sched">&#9673;&nbsp; Scheduled<span class="nn">${sched}</span></button>
+     <button class="ni${LTAB==='upd'?' on':''}" data-t="upd">&#9998;&nbsp; Updates${MINE.length?`<span class="nn">${MINE.length}</span>`:''}</button>`;
 }
 
 function draw(){
@@ -415,8 +528,8 @@ function draw(){
   const withProof=live.filter(t=>t.confirmed_by).length;
   drawNav();
   document.getElementById('ttl').textContent =
-    LTAB==='dash'?'Dashboard':LTAB==='live'?'Live':'Scheduled';
-  document.querySelector('.srchwrap').style.display = LTAB==='dash'?'none':'';
+    LTAB==='dash'?'Dashboard':LTAB==='live'?'Live':LTAB==='upd'?'Updates':'Scheduled';
+  document.querySelector('.srchwrap').style.display = (LTAB==='dash'||LTAB==='upd')?'none':'';
 
   const changed=ROWS.map(t=>t.updated_at).filter(Boolean).sort().pop();
   document.getElementById('stamp').innerHTML = changed
@@ -508,7 +621,9 @@ function draw(){
   </div>
 </div>`;
 
-  const body = LTAB==='dash'
+  const body = LTAB==='upd'
+    ? vUpdates()
+    : LTAB==='dash'
     ? dash
     : LTAB==='live'
     ? `<div class="card">
@@ -529,16 +644,56 @@ function draw(){
           :'<div class="empty">Nothing scheduled to show yet. Work appears here once its completion date is agreed.</div>'}
       </div>`;
 
-  document.getElementById('view').innerHTML = lede + body + HOWNOTE + `
+  document.getElementById('view').innerHTML = LTAB==='upd'
+    ? body
+    : lede + body + HOWNOTE + `
 <div class="foot">Showing ${ROWS.length} item${ROWS.length===1?'':'s'} selected for this view.</div>`;
   const q=document.getElementById('search').value.trim().toLowerCase();
   if(q) document.querySelectorAll('#view .it').forEach(c=>{
     c.style.display = c.textContent.toLowerCase().includes(q)?'':'none';});
 }
 
-document.addEventListener('click',e=>{
+document.addEventListener('click',async e=>{
+  const im=e.target.closest('[data-imp]');
+  if(im){ uImpact=im.dataset.imp; uItem=(document.getElementById('uitem')||{}).value||uItem;
+    const w=document.getElementById('uwho'); if(w) localStorage.setItem(WHOKEY,w.value.trim());
+    draw(); return; }
+
+  if(e.target.id==='usend'){
+    const who=(document.getElementById('uwho')||{}).value.trim();
+    const what=(document.getElementById('uwhat')||{}).value.trim();
+    const item=(document.getElementById('uitem')||{}).value;
+    if(!who)  return say('Put your name on it.');
+    if(what.length<10) return say('Say a little more about what is needed.');
+    e.target.disabled=true; e.target.textContent='Sending…';
+    try{
+      const r=await fetch(`${SB_URL}/rest/v1/rpc/submit_update`,{method:'POST',
+        headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`},
+        body:JSON.stringify({p_who:who,p_what:what,p_item:item?Number(item):null,p_impact:uImpact})});
+      const d=await r.json();
+      if(!r.ok) throw new Error(d&&(d.message||d.hint)||'It did not send. Try again in a moment.');
+      localStorage.setItem(WHOKEY,who);
+      uItem=''; uImpact='Just an idea';
+      await loadMine(); draw();
+      say(`Sent as ${d}. It is with Dr. Jake.`);
+      window.scrollTo(0,0);
+    }catch(err){ say(err.message); }
+    finally{ const b=document.getElementById('usend');
+      if(b){ b.disabled=false; b.textContent='Send it to Dr. Jake'; } }
+    return;
+  }
+
   const t=e.target.closest('[data-t]'); if(!t) return;
-  LTAB=t.dataset.t; draw(); window.scrollTo(0,0);
+  LTAB=t.dataset.t;
+  if(LTAB==='upd'){ await loadMine(); }
+  draw(); window.scrollTo(0,0);
+});
+
+/* remember the name as it is typed, and pull that sender's history when they finish */
+document.addEventListener('change',async e=>{
+  if(e.target.id==='uwho'){ localStorage.setItem(WHOKEY,e.target.value.trim());
+    await loadMine(); if(LTAB==='upd') draw(); }
+  if(e.target.id==='uitem'){ uItem=e.target.value; }
 });
 
 document.addEventListener('input',e=>{
