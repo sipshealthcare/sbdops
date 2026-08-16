@@ -622,7 +622,7 @@ async function load(){
   const [items,intake,dec,rel,ref,briefs,add,snap,tiers]=await Promise.all([
     q('tracker_items?select=*&order=number.asc'),
     q('intake?select=ref,who,sips_function,area,impact,what,expected,status,severity,verdict,analysis,decision,decided_at,submitted_at,tracker_item_id&order=submitted_at.asc'),
-    q('decisions?select=ref,question,blocks,raised_on,status,answer,reasoning,answered_on,review_on,verdict&order=raised_on.asc'),
+    q('decisions?select=ref,question,blocks,note,raised_on,status,answer,reasoning,answered_on,review_on,verdict&order=raised_on.asc'),
     q('releases?select=released_on,outcome,summary,detail,verification,item_numbers&order=released_on.desc&limit=20'),
     q('reference_docs?select=slug,title,body'),
     q('briefs?select=brief_date,author,body&order=brief_date.desc&limit=5'),
