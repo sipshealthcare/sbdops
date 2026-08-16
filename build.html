@@ -580,6 +580,14 @@ body{background:#070d1f}
   50%{opacity:.65;box-shadow:0 0 0 7px rgba(224,161,50,0)}}
 @media(prefers-reduced-motion:reduce){.stale-d{animation:none}}
 .stale-t{font-size:14.5px;font-weight:700;color:#f4d58a;letter-spacing:-.01em;padding-top:1px}
+.stale-sum{font-size:12px;color:#c9b489;line-height:1.5;margin-top:2px}
+.stale-c{flex:0 0 auto;border:1px solid rgba(224,161,50,.4);background:none;color:#f4d58a;
+  border-radius:8px;width:28px;height:28px;display:grid;place-items:center;cursor:pointer;
+  font-family:inherit;font-size:11px;line-height:1;padding:0;transition:transform .18s}
+.stale-c:hover{background:rgba(224,161,50,.14)}
+.stale.shut .stale-c{transform:rotate(-90deg)}
+.stale.shut .stale-l{display:none}
+.stale.shut{padding-bottom:14px}
 .stale-r{margin-left:auto;flex:0 0 auto;border-color:rgba(224,161,50,.5);color:#f4d58a}
 .stale-l{margin-top:10px;display:flex;flex-direction:column;gap:2px}
 .stale-i{display:flex;align-items:center;gap:11px;padding:9px 0;
@@ -999,10 +1007,17 @@ function chartShipped(){
 function staleBar(){
   const L=staleness();
   if(!L.length) return '';
-  return `<div class="stale">
+  /* Collapsible, never dismissible. Folded away it still says how much is waiting,
+     so it can be put out of the way without being forgotten. */
+  const sum=L.map(x=>x.n?`${x.n} ${x.t.replace(/^\d+\s+/,'').replace(/ (are|is|have|has) .*$/,'')}`:x.t)
+             .join(' &middot; ');
+  return `<div class="stale${staleOpen?'':' shut'}">
   <div class="stale-h"><span class="stale-d"></span>
-    <div class="stale-t">Needs updating</div>
-    <button class="btn stale-r" id="rf3">Refresh</button></div>
+    <div style="min-width:0;flex:1"><div class="stale-t">Needs updating</div>
+      ${staleOpen?'':`<div class="stale-sum">${sum}</div>`}</div>
+    <button class="btn stale-r" id="rf3">Refresh</button>
+    <button class="stale-c" data-stale="1" aria-label="${staleOpen?'Fold this away':'Open this up'}"
+      title="${staleOpen?'Fold this away':'Open this up'}">&#9660;</button></div>
   <div class="stale-l">${L.map(x=>`<div class="stale-i">
     <span class="stale-n">${x.n?x.n:'!'}</span>
     <div class="stale-x"><b>${x.t}</b><span>${x.s}</span></div>
@@ -1114,6 +1129,7 @@ function vToday(){
    it, and he can see that on his side. If an answer is not enough to build from,
    sending it back raises a new linked question rather than starting a thread. */
 let ansOldOpen=false, biAuto=null;
+let staleOpen = localStorage.getItem('sbd_stale_open') !== '0';
 function ansCard(d,fresh){
   const tabled=d.status==='tabled';
   const when=d.answered_on?D(d.answered_on):D(d.raised_on);
@@ -1291,10 +1307,9 @@ function vMcp(){
 
 <div class="card">
   <div class="card-h"><div class="ic warm">\u2713</div>
-    <div><div class="card-t">The one rule worth reading</div></div></div>
-  <div class="ch-s" style="margin:0">Closing an item asks for evidence, and it means it. Say how you checked the thing is live in the running system, not that you believe it is. That line is published to leadership as the proof the item shipped, so write it for them.
-  <br><br><b style="color:var(--grn)">Enough:</b> read the column straight back out of the live database. Signed in as a granted assessor and reached the screen.
-  <br><b style="color:var(--red)">Not enough:</b> done. Tested. Works.</div>
+    <div><div class="card-t">Why closing an item asks for a line</div></div></div>
+  <div class="ch-s" style="margin:0;max-width:80ch">When you close something, the line you write about how you checked it goes onto the leader page underneath the item, in your words. It is the part that makes the record worth anything to somebody who was not in the code, and it saves you being asked about it later.
+  <br><br>A sentence is plenty. <b style="color:var(--grn)">Read the column straight back out of the live database.</b> Or <b style="color:var(--grn)">signed in as a granted assessor and reached the screen.</b> If it is easier to say what you looked at than what you concluded, that works just as well.</div>
 </div>`;
 }
 
@@ -1540,6 +1555,12 @@ document.addEventListener('click',e=>{
   const nv=e.target.closest('[data-k]'); if(nv) return go(nv.dataset.k);
   const gt=e.target.closest('[data-go]'); if(gt) return go(gt.dataset.go);
   if(e.target.closest('[data-brief]')){ briefOpen=!briefOpen; return draw(); }
+
+  if(e.target.closest('[data-stale]')){
+    staleOpen=!staleOpen;
+    localStorage.setItem('sbd_stale_open', staleOpen?'1':'0');
+    const sb=document.getElementById('stale'); if(sb) sb.innerHTML=staleBar();
+    return; }
 
   const cp=e.target.closest('[data-cpy]');
   if(cp){ const n=document.getElementById(cp.dataset.cpy);
