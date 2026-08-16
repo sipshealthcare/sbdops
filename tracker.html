@@ -128,10 +128,19 @@ body{background:#070d1f}
 .grp:after{content:'';flex:1;height:1px;background:var(--line)}
 .it-ref{font-size:11px;color:var(--mut);margin-top:5px}
 .it-ref .hash{font-weight:700;color:var(--dim)}
-/* the join between what is coming and what has landed */
-.handoff{display:flex;align-items:center;gap:14px;margin:4px 0 15px;
-  font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut)}
-.handoff:before,.handoff:after{content:'';flex:1;height:1px;background:var(--line)}
+/* one page, two halves, switched in place rather than scrolled between */
+.seg{display:inline-flex;gap:4px;padding:4px;border:1px solid var(--line);border-radius:13px;
+  background:var(--card);margin-bottom:15px}
+.sg{display:flex;align-items:center;gap:9px;border:0;background:none;color:var(--dim);
+  border-radius:10px;padding:10px 18px;font-size:13.5px;font-family:inherit;cursor:pointer;
+  font-weight:500;white-space:nowrap}
+.sg:hover{color:var(--txt)}
+.sg.on{background:linear-gradient(120deg,rgba(212,154,0,.92),rgba(212,154,0,.55));
+  color:#000;font-weight:600}
+.sgn{font-size:11px;font-weight:700;border-radius:20px;padding:2px 8px;min-width:22px;
+  text-align:center;background:var(--line);color:var(--txt)}
+.sg.on .sgn{background:rgba(0,0,0,.22);color:#000}
+@media(max-width:520px){ .seg{display:flex;width:100%} .sg{flex:1;justify-content:center;padding:10px 8px} }
 .note{border:1px solid var(--line);border-radius:14px;padding:15px 16px;margin-top:18px;
   background:rgba(63,185,132,.045)}
 .note-t{font-size:12.5px;font-weight:600;color:var(--grn);margin-bottom:6px}
@@ -523,7 +532,7 @@ function vUpdates(){
 function say(m){ const t=document.getElementById('toast'); if(!t) return;
   t.textContent=m; t.classList.add('on'); setTimeout(()=>t.classList.remove('on'),3200); }
 
-let LTAB='dash', WANT=null;
+let LTAB='dash', WTAB='sched';
 function drawNav(){
   const live=ROWS.filter(t=>t.status==='shipped').length;
   const sched=ROWS.filter(t=>t.status!=='shipped').length;
@@ -545,7 +554,7 @@ function draw(){
   const withProof=live.filter(t=>t.confirmed_by).length;
   drawNav();
   document.getElementById('ttl').textContent =
-    LTAB==='dash'?'Dashboard':LTAB==='upd'?'Updates':'Scheduled and live';
+    LTAB==='dash'?'Dashboard':LTAB==='upd'?'Updates':WTAB==='live'?'Live':'Scheduled';
   document.querySelector('.srchwrap').style.display = (LTAB==='dash'||LTAB==='upd')?'none':'';
 
   const changed=ROWS.map(t=>t.updated_at).filter(Boolean).sort().pop();
@@ -642,18 +651,22 @@ function draw(){
     ? vUpdates()
     : LTAB==='dash'
     ? dash
-    /* One page. Coming first, then what has landed, so an item can be watched
-       crossing from the top half to the bottom half. */
-    : `<div class="card" id="sec-sched">
+    /* One page, one switch. Scheduled and live are the two states of the same
+       thing, so they share a page and swap in place. */
+    : `<div class="seg">
+        <button class="sg${WTAB==='sched'?' on':''}" data-w="sched">Scheduled<span class="sgn">${soon.length}</span></button>
+        <button class="sg${WTAB==='live'?' on':''}" data-w="live">Live<span class="sgn">${live.length}</span></button>
+      </div>`
+      + (WTAB==='sched'
+      ? `<div class="card" id="sec-sched">
         <div class="card-h"><div class="ic">&#9673;</div>
           <div><div class="card-t">Scheduled</div>
           <div class="card-s">Completion dates agreed by both sides${week?` &middot; ${week} due within a week`:''}${late?` &middot; ${late} past their date`:''}</div></div></div>
         ${soon.length?monthGroups(soon).map(([g,rows])=>
             `<div class="grp">${esc(g)}</div><div class="itgrid">${rows.map(item).join('')}</div>`).join('')
           :'<div class="empty">Nothing scheduled to show yet. Work appears here once its completion date is agreed.</div>'}
-      </div>
-      <div class="handoff"><span>Once an item is delivered and checked it moves down here</span></div>
-      <div class="card" id="sec-live">
+      </div>`
+      : `<div class="card" id="sec-live">
         <div class="card-h"><div class="ic warm">&#10003;</div>
           <div><div class="card-t">Live</div>
           <div class="card-s">${live.length?`${live.length} delivered${recent.length?`, ${recent.length} in the last 30 days`:''}`:'What ships appears here with how it was confirmed'}</div></div></div>
@@ -661,7 +674,7 @@ function draw(){
           ${recent.length?`<div class="grp">Live in the last 30 days</div><div class="itgrid">${recent.map(item).join('')}</div>`:''}
           ${older.length?`<div class="grp">Live before that</div><div class="itgrid">${older.map(item).join('')}</div>`:''}`
         :'<div class="empty">Nothing recorded as live yet.</div>'}
-      </div>`;
+      </div>`);
 
   document.getElementById('view').innerHTML = LTAB==='upd'
     ? body
@@ -707,15 +720,15 @@ document.addEventListener('click',async e=>{
     return;
   }
 
+  const w=e.target.closest('[data-w]');
+  if(w){ WTAB=w.dataset.w; draw(); window.scrollTo(0,0); return; }
+
   const t=e.target.closest('[data-t]'); if(!t) return;
   const k=t.dataset.t;
-  if(k==='live'||k==='sched'){ WANT='sec-'+(k==='live'?'live':'sched'); LTAB='work'; }
-  else { WANT=null; LTAB=k; }
+  if(k==='live'||k==='sched'){ WTAB=k; LTAB='work'; }
+  else LTAB=k;
   if(LTAB==='upd'){ await loadAreas(); await loadMine(); }
-  draw();
-  if(WANT){ const n=document.getElementById(WANT); WANT=null;
-    if(n){ n.scrollIntoView({block:'start'}); return; } }
-  window.scrollTo(0,0);
+  draw(); window.scrollTo(0,0);
 });
 
 /* remember the name as it is typed, and pull that sender's history when they finish */
