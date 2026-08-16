@@ -126,6 +126,36 @@ body{background:#070d1f}
   background:rgba(63,185,132,.045)}
 .note-t{font-size:12.5px;font-weight:600;color:var(--grn);margin-bottom:6px}
 .note-b{font-size:12.5px;line-height:1.65;color:var(--dim);max-width:74ch}
+/* At a glance. Circles carry the shape, the key carries the numbers, and both
+   are clickable so a glance can become a list. */
+.dash{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px}
+@media(max-width:820px){.dash{grid-template-columns:1fr}}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:15px}
+@media(max-width:820px){.kpis{grid-template-columns:1fr 1fr}}
+.kpi{border:1px solid var(--line);border-radius:15px;padding:15px;background:var(--card);
+  text-align:left;font-family:inherit;cursor:pointer;transition:border-color .15s}
+.kpi:hover{border-color:var(--gold)}
+.kpi-v{font-size:27px;font-weight:700;line-height:1;color:#fff}
+.kpi-v.grn{color:var(--grn)} .kpi-v.amb{color:var(--amb)} .kpi-v.red{color:var(--red)}
+.kpi-l{font-size:11px;color:var(--dim);margin-top:7px;line-height:1.4}
+.cwrap{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.dnt{width:140px;height:140px;flex:0 0 140px}
+.dseg{cursor:pointer;transition:opacity .15s}
+.dseg:hover{opacity:.72}
+.dnt-v{font-size:26px;font-weight:700;fill:#fff;text-anchor:middle;font-family:inherit}
+.dnt-l{font-size:10px;fill:var(--mut);text-anchor:middle;letter-spacing:.06em;
+  text-transform:uppercase;font-family:inherit}
+.dkey{flex:1;min-width:160px;display:flex;flex-direction:column;gap:2px}
+.dk{display:flex;align-items:center;gap:9px;padding:7px 0;font-size:12.5px;color:var(--dim);
+  border:0;background:none;font-family:inherit;text-align:left;cursor:pointer;width:100%}
+.dk:hover{color:var(--txt)}
+.dk .sw{width:10px;height:10px;border-radius:3px;flex:0 0 10px}
+.dk .kv{margin-left:auto;color:#fff;font-weight:700;font-variant-numeric:tabular-nums}
+.mini{display:flex;justify-content:space-between;gap:10px;align-items:baseline;
+  padding:9px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.mini:last-child{border-bottom:0}
+.mini-t{color:#cbd5e5;min-width:0;overflow-wrap:anywhere}
+.mini-d{color:var(--mut);font-size:11px;white-space:nowrap}
 .srchwrap{margin:-6px 0 18px}
 .srch{width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;
   color:var(--txt);padding:12px 15px;font-size:13.5px;font-family:inherit}
@@ -158,6 +188,24 @@ body{background:#070d1f}
   .lnav .ni{width:auto;padding:9px 13px}
   .main{padding:18px 14px 60px}
 }
+
+/* Speak instead of typing. One floating button follows whichever field has focus,
+   so no layout on any page has to make room for it. */
+.micb{position:fixed;z-index:60;width:26px;height:26px;border-radius:8px;
+  border:1px solid var(--line);background:var(--lift);color:var(--dim);
+  display:none;place-items:center;cursor:pointer;padding:0;font-family:inherit;
+  box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.micb.on2{display:grid}
+.micb:hover{color:var(--gold);border-color:var(--gold)}
+.micb.rec{color:#000;background:var(--gold);border-color:var(--gold);
+  animation:micp 1.25s ease-in-out infinite}
+@keyframes micp{0%,100%{box-shadow:0 0 0 0 rgba(212,154,0,.55)}
+  50%{box-shadow:0 0 0 7px rgba(212,154,0,0)}}
+@media(prefers-reduced-motion:reduce){.micb.rec{animation:none}}
+.michint{position:fixed;z-index:60;font-size:10.5px;font-weight:600;color:#000;
+  background:var(--gold);border-radius:7px;padding:3px 8px;display:none;white-space:nowrap;
+  box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.michint.on2{display:block}
 </style>
 </head>
 <body>
@@ -267,12 +315,51 @@ const HOWNOTE=`<div class="note">
   it is agreed again.</div>
 </div>`;
 
-let LTAB='live';
+/* One ring per question. Segments and key rows both carry a target tab, so a
+   glance turns into the matching list in one click. */
+function donut(segs){
+  const total=segs.reduce((a,x)=>a+x.n,0)||1;
+  const R=54, C=2*Math.PI*R, GAP=3.5;
+  let off=0, arcs='';
+  segs.forEach(x=>{
+    if(x.n){
+      const len=Math.max(1, x.n/total*C-GAP);
+      arcs+=`<circle class="dseg" data-t="${x.go}" r="${R}" cx="70" cy="70" fill="none"
+        stroke="${x.c}" stroke-width="15"
+        stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}"
+        stroke-dashoffset="${(-off).toFixed(2)}"><title>${esc(x.l)}: ${x.n}</title></circle>`;
+      off+=x.n/total*C;
+    }
+  });
+  return `<svg viewBox="0 0 140 140" class="dnt" role="img" aria-label="Delivery status">
+    <circle r="${R}" cx="70" cy="70" fill="none" stroke="#1c2646" stroke-width="15"></circle>
+    <g transform="rotate(-90 70 70)">${arcs}</g>
+    <text x="70" y="68" class="dnt-v">${segs.reduce((a,x)=>a+x.n,0)}</text>
+    <text x="70" y="86" class="dnt-l">shared</text></svg>
+  <div class="dkey">${segs.map(x=>
+    `<button class="dk" data-t="${x.go}"><i class="sw" style="background:${x.c}"></i>${esc(x.l)}<span class="kv">${x.n}</span></button>`).join('')}</div>`;
+}
+
+function ring(done,total,label,sub){
+  const R=54, C=2*Math.PI*R, pct=total?done/total:0;
+  return `<svg viewBox="0 0 140 140" class="dnt" role="img" aria-label="${esc(label)}">
+    <circle r="${R}" cx="70" cy="70" fill="none" stroke="#1c2646" stroke-width="15"></circle>
+    <g transform="rotate(-90 70 70)"><circle r="${R}" cx="70" cy="70" fill="none" stroke="var(--grn)"
+      stroke-width="15" stroke-linecap="round"
+      stroke-dasharray="${(pct*C).toFixed(2)} ${C.toFixed(2)}"></circle></g>
+    <text x="70" y="68" class="dnt-v">${Math.round(pct*100)}%</text>
+    <text x="70" y="86" class="dnt-l">checked</text></svg>
+  <div class="dkey"><div class="dk" style="cursor:default">${esc(label)}<span class="kv">${done} of ${total}</span></div>
+    <div style="font-size:11.5px;color:var(--mut);line-height:1.55;padding-top:4px">${esc(sub)}</div></div>`;
+}
+
+let LTAB='dash';
 function drawNav(){
   const live=ROWS.filter(t=>t.status==='shipped').length;
   const sched=ROWS.filter(t=>t.status!=='shipped').length;
   document.getElementById('lnav').innerHTML=
-    `<button class="ni${LTAB==='live'?' on':''}" data-t="live">&#10003;&nbsp; Live<span class="nn">${live}</span></button>
+    `<button class="ni${LTAB==='dash'?' on':''}" data-t="dash">&#9678;&nbsp; Dashboard</button>
+     <button class="ni${LTAB==='live'?' on':''}" data-t="live">&#10003;&nbsp; Live<span class="nn">${live}</span></button>
      <button class="ni${LTAB==='sched'?' on':''}" data-t="sched">&#9673;&nbsp; Scheduled<span class="nn">${sched}</span></button>`;
 }
 
@@ -287,7 +374,9 @@ function draw(){
   const late=soon.filter(t=>t.due_on&&days(t.due_on)<0).length;
   const withProof=live.filter(t=>t.confirmed_by).length;
   drawNav();
-  document.getElementById('ttl').textContent = LTAB==='live'?'Live':'Scheduled';
+  document.getElementById('ttl').textContent =
+    LTAB==='dash'?'Dashboard':LTAB==='live'?'Live':'Scheduled';
+  document.querySelector('.srchwrap').style.display = LTAB==='dash'?'none':'';
 
   const changed=ROWS.map(t=>t.updated_at).filter(Boolean).sort().pop();
   document.getElementById('stamp').innerHTML = changed
@@ -299,7 +388,60 @@ function draw(){
     <b>${soon.length}</b> ${soon.length===1?'has':'have'} a completion date agreed by both sides${late?`, and <b>${late}</b> ${late===1?'is':'are'} past that date`:''}.
     ${withProof} of the live items carr${withProof===1?'ies':'y'} a recorded check against the running system.</div>`;
 
-  const body = LTAB==='live'
+  const segs=[
+    {l:'Live',                c:'#3fb984', n:live.length, go:'live'},
+    {l:'Past their date',     c:'#f0616d', n:soon.filter(t=>t.due_on&&days(t.due_on)<0).length,             go:'sched'},
+    {l:'Due within a week',   c:'#e0a132', n:soon.filter(t=>t.due_on&&days(t.due_on)>=0&&days(t.due_on)<=7).length, go:'sched'},
+    {l:'Dated, further out',  c:'#7896eb', n:soon.filter(t=>t.due_on&&days(t.due_on)>7).length,             go:'sched'}
+  ];
+  const next=soon.slice(0,5);
+
+  const dash = `
+<div class="kpis">
+  <button class="kpi" data-t="live"><div class="kpi-v grn">${live.length}</div><div class="kpi-l">Live</div></button>
+  <button class="kpi" data-t="sched"><div class="kpi-v">${soon.length}</div><div class="kpi-l">Scheduled with an agreed date</div></button>
+  <button class="kpi" data-t="sched"><div class="kpi-v${week?' amb':''}">${week}</div><div class="kpi-l">Due within a week</div></button>
+  <button class="kpi" data-t="sched"><div class="kpi-v${late?' red':''}">${late}</div><div class="kpi-l">Past their date</div></button>
+</div>
+<div class="dash">
+  <div class="card" style="margin:0">
+    <div class="card-h"><div class="ic warm">&#9678;</div>
+      <div><div class="card-t">Where everything sits</div>
+      <div class="card-s">Click a slice or a line to open it</div></div></div>
+    <div class="cwrap">${donut(segs)}</div>
+  </div>
+  <div class="card" style="margin:0">
+    <div class="card-h"><div class="ic">&#10003;</div>
+      <div><div class="card-t">Checked against the running system</div>
+      <div class="card-s">Of the ${live.length} live item${live.length===1?'':'s'}</div></div></div>
+    <div class="cwrap">${ring(withProof,live.length,'Live items carrying a recorded check',
+      'Nothing is marked live on the strength of someone saying it is done.')}</div>
+  </div>
+  <div class="card" style="margin:0">
+    <div class="card-h"><div class="ic">&#10003;</div>
+      <div><div class="card-t">Went live recently</div>
+      <div class="card-s">Last 30 days</div></div></div>
+    ${recent.length?recent.slice(0,5).map(t=>`<div class="mini">
+      <span class="mini-t">${esc(t.summary||t.title)}</span>
+      <span class="mini-d">${D(t.shipped_on)}</span></div>`).join('')
+      :'<div class="empty">Nothing in the last 30 days.</div>'}
+    ${recent.length>5?`<div class="mini"><button class="dk" data-t="live" style="padding:0">See all ${recent.length}</button></div>`:''}
+  </div>
+  <div class="card" style="margin:0">
+    <div class="card-h"><div class="ic">&#9673;</div>
+      <div><div class="card-t">Coming up next</div>
+      <div class="card-s">Soonest agreed dates first</div></div></div>
+    ${next.length?next.map(t=>`<div class="mini">
+      <span class="mini-t">${esc(t.summary||t.title)}</span>
+      <span class="mini-d">${t.due_on?D(t.due_on):''}</span></div>`).join('')
+      :'<div class="empty">Nothing scheduled.</div>'}
+    ${soon.length>5?`<div class="mini"><button class="dk" data-t="sched" style="padding:0">See all ${soon.length}</button></div>`:''}
+  </div>
+</div>`;
+
+  const body = LTAB==='dash'
+    ? dash
+    : LTAB==='live'
     ? `<div class="card">
         <div class="card-h"><div class="ic warm">&#10003;</div>
           <div><div class="card-t">Live</div>
@@ -349,6 +491,83 @@ async function go(quiet){
 }
 document.getElementById('refresh').onclick=()=>go();
 go(true);
+
+/* Speech to text on every text field.
+   One button lives at the document level and moves to whichever field has focus.
+   Nothing about any form changes, and browsers without the API never see it. */
+(function(){
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR) return;
+  function ok(el){
+    if(!el) return false;
+    if(el.tagName === 'TEXTAREA') return true;
+    if(el.tagName !== 'INPUT') return false;
+    var t = (el.getAttribute('type') || 'text').toLowerCase();
+    return t === 'text' || t === 'search';
+  }
+  var b = document.createElement('button');
+  b.type = 'button'; b.className = 'micb';
+  b.setAttribute('aria-label', 'Speak instead of typing');
+  b.title = 'Speak instead of typing';
+  b.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">' +
+    '<path fill="currentColor" d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"/>' +
+    '<path fill="currentColor" d="M18 12a1 1 0 0 0-2 0 4 4 0 0 1-8 0 1 1 0 0 0-2 0 6 6 0 0 0 5 5.92V20H9a1 1 0 0 0 0 2h6a1 1 0 0 0 0-2h-2v-2.08A6 6 0 0 0 18 12z"/>' +
+    '</svg>';
+  var hint = document.createElement('div');
+  hint.className = 'michint'; hint.textContent = 'Listening';
+  document.body.appendChild(b); document.body.appendChild(hint);
+
+  var field = null, rec = null, live = false, base = '', at = 0;
+
+  function place(){
+    if(!field || !document.body.contains(field)){ hide(); return; }
+    var r = field.getBoundingClientRect();
+    if(r.width < 90 || r.bottom < 4 || r.top > innerHeight - 4){ hide(); return; }
+    var top = field.tagName === 'TEXTAREA' ? r.top + 8 : r.top + (r.height - 26) / 2;
+    b.style.left = (r.right - 33) + 'px'; b.style.top = top + 'px';
+    b.classList.add('on2');
+    hint.style.left = (r.right - 33) + 'px'; hint.style.top = (top - 24) + 'px';
+    if(live) hint.classList.add('on2'); else hint.classList.remove('on2');
+  }
+  function hide(){ b.classList.remove('on2'); hint.classList.remove('on2'); }
+
+  addEventListener('focusin', function(e){ if(ok(e.target)){ field = e.target; place(); } });
+  addEventListener('focusout', function(e){
+    if(e.target !== field) return;
+    setTimeout(function(){
+      if(document.activeElement !== field && !live){ hide(); field = null; }
+    }, 150);
+  });
+  addEventListener('scroll', place, true);
+  addEventListener('resize', place);
+
+  b.addEventListener('mousedown', function(e){ e.preventDefault(); });
+  b.addEventListener('click', function(){
+    if(live){ try{ rec.stop(); }catch(_){} return; }
+    if(!field) return;
+    rec = new SR();
+    rec.lang = 'en-US'; rec.interimResults = true; rec.continuous = true;
+    base = field.value;
+    at = (typeof field.selectionStart === 'number') ? field.selectionStart : field.value.length;
+    rec.onstart = function(){ live = true; b.classList.add('rec'); place(); };
+    rec.onerror = function(){ live = false; b.classList.remove('rec'); hint.classList.remove('on2'); };
+    rec.onend   = function(){ live = false; b.classList.remove('rec'); hint.classList.remove('on2');
+                              if(field) try{ field.focus(); }catch(_){} };
+    rec.onresult = function(ev){
+      var txt = '';
+      for(var i = 0; i < ev.results.length; i++) txt += ev.results[i][0].transcript;
+      txt = txt.replace(/\s+/g, ' ').trim();
+      if(!txt) return;
+      var pre = base.slice(0, at), post = base.slice(at);
+      var sep = (pre && !/\s$/.test(pre)) ? ' ' : '';
+      field.value = pre + sep + txt + post;
+      try{ field.setSelectionRange(field.value.length - post.length, field.value.length - post.length); }catch(_){}
+      field.dispatchEvent(new Event('input', {bubbles:true}));
+      place();
+    };
+    try{ rec.start(); }catch(_){}
+  });
+})();
 </script>
 </body>
 </html>

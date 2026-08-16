@@ -639,6 +639,24 @@ body{background:#070d1f}
 @media(max-width:860px){ .ans-act{flex-direction:column;align-items:stretch}
   .ans-act .btn{width:100%} .ans-h{flex-direction:column;gap:7px}
   .ans-p{justify-content:flex-start} }
+
+/* Speak instead of typing. One floating button follows whichever field has focus,
+   so no layout on any page has to make room for it. */
+.micb{position:fixed;z-index:60;width:26px;height:26px;border-radius:8px;
+  border:1px solid var(--line);background:var(--lift);color:var(--dim);
+  display:none;place-items:center;cursor:pointer;padding:0;font-family:inherit;
+  box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.micb.on2{display:grid}
+.micb:hover{color:var(--gold);border-color:var(--gold)}
+.micb.rec{color:#000;background:var(--gold);border-color:var(--gold);
+  animation:micp 1.25s ease-in-out infinite}
+@keyframes micp{0%,100%{box-shadow:0 0 0 0 rgba(212,154,0,.55)}
+  50%{box-shadow:0 0 0 7px rgba(212,154,0,0)}}
+@media(prefers-reduced-motion:reduce){.micb.rec{animation:none}}
+.michint{position:fixed;z-index:60;font-size:10.5px;font-weight:600;color:#000;
+  background:var(--gold);border-radius:7px;padding:3px 8px;display:none;white-space:nowrap;
+  box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.michint.on2{display:block}
 </style>
 </head>
 <body>
@@ -1462,6 +1480,83 @@ document.addEventListener('click',e=>{
   catch(e){ views.innerHTML=`<div class="view on"><div class="card"><div class="card-t">Could not load</div>
     <div class="p" style="margin-top:8px">${esc(e.message)}</div>
     <div class="row" style="margin-top:12px"><button class="btn" onclick="location.reload()">Try again</button></div></div></div>`; }
+})();
+
+/* Speech to text on every text field.
+   One button lives at the document level and moves to whichever field has focus.
+   Nothing about any form changes, and browsers without the API never see it. */
+(function(){
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR) return;
+  function ok(el){
+    if(!el) return false;
+    if(el.tagName === 'TEXTAREA') return true;
+    if(el.tagName !== 'INPUT') return false;
+    var t = (el.getAttribute('type') || 'text').toLowerCase();
+    return t === 'text' || t === 'search';
+  }
+  var b = document.createElement('button');
+  b.type = 'button'; b.className = 'micb';
+  b.setAttribute('aria-label', 'Speak instead of typing');
+  b.title = 'Speak instead of typing';
+  b.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">' +
+    '<path fill="currentColor" d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"/>' +
+    '<path fill="currentColor" d="M18 12a1 1 0 0 0-2 0 4 4 0 0 1-8 0 1 1 0 0 0-2 0 6 6 0 0 0 5 5.92V20H9a1 1 0 0 0 0 2h6a1 1 0 0 0 0-2h-2v-2.08A6 6 0 0 0 18 12z"/>' +
+    '</svg>';
+  var hint = document.createElement('div');
+  hint.className = 'michint'; hint.textContent = 'Listening';
+  document.body.appendChild(b); document.body.appendChild(hint);
+
+  var field = null, rec = null, live = false, base = '', at = 0;
+
+  function place(){
+    if(!field || !document.body.contains(field)){ hide(); return; }
+    var r = field.getBoundingClientRect();
+    if(r.width < 90 || r.bottom < 4 || r.top > innerHeight - 4){ hide(); return; }
+    var top = field.tagName === 'TEXTAREA' ? r.top + 8 : r.top + (r.height - 26) / 2;
+    b.style.left = (r.right - 33) + 'px'; b.style.top = top + 'px';
+    b.classList.add('on2');
+    hint.style.left = (r.right - 33) + 'px'; hint.style.top = (top - 24) + 'px';
+    if(live) hint.classList.add('on2'); else hint.classList.remove('on2');
+  }
+  function hide(){ b.classList.remove('on2'); hint.classList.remove('on2'); }
+
+  addEventListener('focusin', function(e){ if(ok(e.target)){ field = e.target; place(); } });
+  addEventListener('focusout', function(e){
+    if(e.target !== field) return;
+    setTimeout(function(){
+      if(document.activeElement !== field && !live){ hide(); field = null; }
+    }, 150);
+  });
+  addEventListener('scroll', place, true);
+  addEventListener('resize', place);
+
+  b.addEventListener('mousedown', function(e){ e.preventDefault(); });
+  b.addEventListener('click', function(){
+    if(live){ try{ rec.stop(); }catch(_){} return; }
+    if(!field) return;
+    rec = new SR();
+    rec.lang = 'en-US'; rec.interimResults = true; rec.continuous = true;
+    base = field.value;
+    at = (typeof field.selectionStart === 'number') ? field.selectionStart : field.value.length;
+    rec.onstart = function(){ live = true; b.classList.add('rec'); place(); };
+    rec.onerror = function(){ live = false; b.classList.remove('rec'); hint.classList.remove('on2'); };
+    rec.onend   = function(){ live = false; b.classList.remove('rec'); hint.classList.remove('on2');
+                              if(field) try{ field.focus(); }catch(_){} };
+    rec.onresult = function(ev){
+      var txt = '';
+      for(var i = 0; i < ev.results.length; i++) txt += ev.results[i][0].transcript;
+      txt = txt.replace(/\s+/g, ' ').trim();
+      if(!txt) return;
+      var pre = base.slice(0, at), post = base.slice(at);
+      var sep = (pre && !/\s$/.test(pre)) ? ' ' : '';
+      field.value = pre + sep + txt + post;
+      try{ field.setSelectionRange(field.value.length - post.length, field.value.length - post.length); }catch(_){}
+      field.dispatchEvent(new Event('input', {bubbles:true}));
+      place();
+    };
+    try{ rec.start(); }catch(_){}
+  });
 })();
 </script>
 </body>
