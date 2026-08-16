@@ -159,6 +159,20 @@ body{background:#070d1f}
 .dk:hover{color:var(--txt)}
 .dk .sw{width:10px;height:10px;border-radius:3px;flex:0 0 10px}
 .dk .kv{margin-left:auto;color:#fff;font-weight:700;font-variant-numeric:tabular-nums}
+/* a single number with its trend, which is what pace actually is */
+.pace{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap}
+.pace-n{font-size:46px;font-weight:700;line-height:.95;color:#fff}
+.pace-c{font-size:12.5px;color:var(--dim);line-height:1.55;max-width:34ch}
+.pace-c b{color:var(--grn)}
+.pace-c b.down{color:var(--amb)}
+.wk8{display:flex;align-items:flex-end;gap:7px;margin-top:18px}
+.wk8 .c{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end}
+.wk8 .cv{font-size:11px;font-weight:700;color:#e6ebf5;text-align:center;height:16px;
+  font-variant-numeric:tabular-nums}
+.wk8 .cb{background:var(--grn);border-radius:4px 4px 0 0;min-height:2px;opacity:.5}
+.wk8 .c.on .cb{opacity:1}
+.wk8 .cl{font-size:10px;color:var(--mut);text-align:center;margin-top:8px;padding-top:8px;
+  border-top:1px solid var(--line);white-space:nowrap}
 .mini{display:flex;justify-content:space-between;gap:10px;align-items:baseline;
   padding:9px 0;border-bottom:1px solid var(--line);font-size:12.5px}
 .mini:last-child{border-bottom:0}
@@ -348,6 +362,19 @@ function donut(segs){
     `<button class="dk" data-t="${x.go}"><i class="sw" style="background:${x.c}"></i>${esc(x.l)}<span class="kv">${x.n}</span></button>`).join('')}</div>`;
 }
 
+/* Delivered per week, eight weeks back, from the dates on the record itself. */
+function shippedWeeks(rows){
+  const mon=d=>{const x=new Date(d+'T12:00:00'); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x;};
+  const start=mon(today()), out=[];
+  for(let i=7;i>=0;i--){
+    const a=new Date(start); a.setDate(a.getDate()-i*7);
+    const b=new Date(a); b.setDate(b.getDate()+7);
+    const ai=a.toISOString().slice(0,10), bi=b.toISOString().slice(0,10);
+    out.push({label:D(ai), n:rows.filter(t=>t.shipped_on&&t.shipped_on>=ai&&t.shipped_on<bi).length});
+  }
+  return out;
+}
+
 function ring(done,total,label,sub){
   const R=54, C=2*Math.PI*R, pct=total?done/total:0;
   return `<svg viewBox="0 0 140 140" class="dnt" role="img" aria-label="${esc(label)}">
@@ -391,10 +418,11 @@ function draw(){
     ? `<b>Read live from the record</b>Last change ${DL(String(changed).slice(0,10))}`
     : '<b>Read live from the record</b>';
 
-  /* The sentence a leader came for, before any list. */
-  const lede = `<div class="lede"><b>${live.length}</b> of ${ROWS.length} shared items ${live.length===1?'is':'are'} live.
-    <b>${soon.length}</b> ${soon.length===1?'has':'have'} a completion date agreed by both sides${late?`, and <b>${late}</b> ${late===1?'is':'are'} past that date`:''}.
-    ${withProof} of the live items carr${withProof===1?'ies':'y'} a recorded check against the running system.</div>`;
+  /* The dashboard carries the counts now, so the list tabs get a short orienting
+     line and the dashboard gets none at all. */
+  const lede = LTAB==='dash' ? '' :
+    `<div class="lede"><b>${live.length}</b> of ${ROWS.length} shared items ${live.length===1?'is':'are'} live.
+    <b>${soon.length}</b> ${soon.length===1?'has':'have'} a completion date agreed by both sides${late?`, and <b>${late}</b> ${late===1?'is':'are'} past that date`:''}.</div>`;
 
   const segs=[
     {l:'Live',                c:'#3fb984', n:live.length, go:'live'},
@@ -419,11 +447,24 @@ function draw(){
     <div class="cwrap">${donut(segs)}</div>
   </div>
   <div class="card" style="margin:0">
-    <div class="card-h"><div class="ic">&#10003;</div>
-      <div><div class="card-t">Checked against the running system</div>
-      <div class="card-s">Of the ${live.length} live item${live.length===1?'':'s'}</div></div></div>
-    <div class="cwrap">${ring(withProof,live.length,'Live items carrying a recorded check',
-      'Nothing is marked live on the strength of someone saying it is done.')}</div>
+    <div class="card-h"><div class="ic">&#9650;</div>
+      <div><div class="card-t">Delivery pace</div>
+      <div class="card-s">What actually went live, by week</div></div></div>
+    ${(()=>{
+      const w=shippedWeeks(live), max=Math.max(1,...w.map(x=>x.n));
+      const last30=live.filter(t=>t.shipped_on&&days(t.shipped_on)>=-30).length;
+      const prev30=live.filter(t=>t.shipped_on&&days(t.shipped_on)<-30&&days(t.shipped_on)>=-60).length;
+      const dir=last30>prev30?'up':last30<prev30?'down':'level';
+      return `<div class="pace">
+        <div class="pace-n">${last30}</div>
+        <div class="pace-c">went live in the last 30 days, against <b class="${dir==='down'?'down':''}">${prev30}</b>
+          in the 30 before that. ${dir==='up'?'The pace is climbing.':dir==='down'?'The pace has eased off.':'The pace is holding.'}</div>
+      </div>
+      <div class="wk8">${w.map((x,i)=>`<div class="c${i===w.length-1?' on':''}" title="Week of ${esc(x.label)}: ${x.n}">
+        <div class="cv">${x.n||''}</div>
+        <div class="cb" style="height:${Math.max(2,Math.round(x.n/max*84))}px"></div>
+        <div class="cl">${esc(x.label)}</div></div>`).join('')}</div>`;
+    })()}
   </div>
   <div class="card" style="margin:0">
     <div class="card-h"><div class="ic">&#10003;</div>
