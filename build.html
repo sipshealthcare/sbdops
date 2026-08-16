@@ -579,10 +579,9 @@ body{background:#070d1f}
 @keyframes stalep{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(224,161,50,.55)}
   50%{opacity:.65;box-shadow:0 0 0 7px rgba(224,161,50,0)}}
 @media(prefers-reduced-motion:reduce){.stale-d{animation:none}}
-.stale-t{font-size:14.5px;font-weight:700;color:#f4d58a;letter-spacing:-.01em}
-.stale-s{font-size:11.5px;color:#c9b489;line-height:1.55;margin-top:3px;max-width:76ch}
+.stale-t{font-size:14.5px;font-weight:700;color:#f4d58a;letter-spacing:-.01em;padding-top:1px}
 .stale-r{margin-left:auto;flex:0 0 auto;border-color:rgba(224,161,50,.5);color:#f4d58a}
-.stale-l{margin-top:12px;display:flex;flex-direction:column;gap:2px}
+.stale-l{margin-top:10px;display:flex;flex-direction:column;gap:2px}
 .stale-i{display:flex;align-items:center;gap:11px;padding:9px 0;
   border-top:1px solid rgba(224,161,50,.18)}
 .stale-n{flex:0 0 26px;height:26px;border-radius:8px;display:grid;place-items:center;
@@ -697,7 +696,7 @@ async function q(path){
   return d||[];
 }
 
-let ALL=[], BRIEF=null, DEC=[], EOD=[];
+let ALL=[], BRIEF=null, DEC=[], EOD=[], MARK=null;
 const WHO='sbd_dev_who';
 const me=()=>localStorage.getItem(WHO)||'';
 const open_=()=>ALL.filter(t=>t.status!=='shipped');
@@ -708,7 +707,7 @@ const unreadAns=()=>decided().filter(d=>!d.seen_at);
 const kidsOf=ref=>DEC.filter(d=>d.parent_ref===ref);
 
 async function load(){
-  const [items,briefs,dec,eod]=await Promise.all([
+  const [items,briefs,dec,eod,mark]=await Promise.all([
     q('tracker_items?select=number,title,status,priority,sprint,rank,origin,note,how_to_check,'+
       'proposed_on,date_state,counter_on,counter_note,answered_by,answered_at,shipped_on,verified_note,updated_at,'+
       'question_note,question_by,question_at,reply_note,reply_by,reply_at'+
@@ -717,9 +716,10 @@ async function load(){
     q('decisions?select=ref,question,blocks,note,raised_on,status,answer,reasoning,verdict,'+
       'answered_on,review_on,seen_at,seen_by,parent_ref,asked_by'+
       '&order=answered_on.desc.nullslast,ref.desc'),
-    q('eod_reports?select=report_date,author&order=report_date.desc&limit=1')
+    q('eod_reports?select=report_date,author&order=report_date.desc&limit=1'),
+    q('ops_marks?select=key,at,by&key=eq.tracker_synced')
   ]);
-  ALL=items; BRIEF=briefs[0]||null; DEC=dec; EOD=eod;
+  ALL=items; BRIEF=briefs[0]||null; DEC=dec; EOD=eod; MARK=(mark&&mark[0])||null;
 }
 
 const agreed=t=>t.date_state==='countered'?t.counter_on:t.proposed_on;
@@ -861,6 +861,13 @@ function lastWorkday(){
    page can clear, so the bar is never just a complaint. */
 function staleness(){
   const S=stats(), out=[];
+  const synced=MARK?String(MARK.at).slice(0,10):null;
+  const moved=MARK?ALL.filter(t=>t.updated_at&&t.updated_at>MARK.at).length:ALL.length;
+  if(!synced || synced<lastWorkday() || moved)
+    out.push({mark:true,
+      t:'The sprint tracker needs updating',
+      s:synced?`Last marked updated ${D(synced)}.${moved?` ${moved} item${moved>1?'s have':' has'} changed since.`:''}`
+              :'It has not been marked updated yet.'});
   if(S.overdue.length) out.push({n:S.overdue.length, go:'queue',
     t:`${S.overdue.length} item${S.overdue.length>1?'s are':' is'} past the date on the board`,
     s:'Mark it done with how you checked it, or send a new date with the reason. Either one clears it.'});
@@ -938,12 +945,12 @@ function staleBar(){
   if(!L.length) return '';
   return `<div class="stale">
   <div class="stale-h"><span class="stale-d"></span>
-    <div><div class="stale-t">The board is behind the work</div>
-      <div class="stale-s">Leadership, sales and client success read this board to describe where the platform stands, so it has to match what is actually true. This stays up until it does, and it has no dismiss on purpose.</div></div>
+    <div class="stale-t">Needs updating</div>
     <button class="btn stale-r" id="rf3">Refresh</button></div>
   <div class="stale-l">${L.map(x=>`<div class="stale-i">
     <span class="stale-n">${x.n?x.n:'!'}</span>
     <div class="stale-x"><b>${x.t}</b><span>${x.s}</span></div>
+    ${x.mark?`<button class="btn stale-g" data-synced="1">I have updated it</button>`:''}
     ${x.go?`<button class="btn stale-g" data-go="${x.go}">Open</button>`:''}
   </div>`).join('')}</div>
 </div>`;
@@ -1368,6 +1375,10 @@ document.getElementById('scrim').onclick=shut;
 
 document.addEventListener('click',e=>{
   if(e.target===refreshBtn||e.target.id==='rf2'||e.target.id==='rf3') return refresh();
+
+  if(e.target.closest('[data-synced]')){ const who=val('who');
+    return act(async()=>{ await rpc('mark_tracker_synced',{p_who:who||null});
+      say('Sprint tracker marked up to date.'); }); }
   const nv=e.target.closest('[data-k]'); if(nv) return go(nv.dataset.k);
   const gt=e.target.closest('[data-go]'); if(gt) return go(gt.dataset.go);
   if(e.target.closest('[data-brief]')){ briefOpen=!briefOpen; return draw(); }
