@@ -434,6 +434,11 @@ body{background:#070d1f}
 .nav-i.on .nav-n{background:rgba(0,0,0,.22);color:#000}
 .sidefoot{padding:14px 16px 18px;font-size:11px;line-height:1.55;color:var(--mut);
   border-top:1px solid var(--line)}
+.dlink{display:flex;align-items:center;gap:8px;margin-top:12px;padding:9px 11px;
+  border:1px solid var(--line);border-radius:9px;background:var(--lift);
+  color:var(--gold);font-size:12px;font-weight:600;text-decoration:none}
+.dlink:hover{border-color:var(--gold);background:rgba(212,154,0,.08)}
+.dlink .dl-i{font-size:13px;line-height:1}
 .main{flex:1;min-width:0;position:relative;z-index:1;max-width:none;margin:0;padding:20px 22px 60px}
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:35;display:none}
 .scrim.on{display:block}
@@ -524,6 +529,8 @@ body{background:#070d1f}
     <nav class="nav" id="nav"></nav>
     <div class="sidefoot">
       Everything here comes from Ignacio or the tracker. Send EODs the way you always have.
+      <a class="dlink" href="https://drive.google.com/drive/folders/1_UwQyh-x2ue6Qzf4xR7Owk8q3fUti2Y4?usp=sharing"
+         target="_blank" rel="noopener"><span class="dl-i">&#9707;</span>Build documents &rarr;</a>
     </div>
   </aside>
   <div class="scrim" id="scrim"></div>
