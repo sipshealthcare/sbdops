@@ -175,7 +175,9 @@ const FUNCTIONS=[
   {slug:'operations',label:'Scheduling and operations'},
   {slug:'other',     label:'Somewhere else'}
 ];
-const S={who:localStorage.getItem('sbd_who')||'',fn:localStorage.getItem('sbd_fn')||'',tab:'new'};
+const S={who:localStorage.getItem('sbd_who')||'',mail:localStorage.getItem('sbd_mail')||'',
+         fn:localStorage.getItem('sbd_fn')||'',tab:'new'};
+const okMail=m=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(m||'').trim());
 const el=document.getElementById('main');
 const esc=t=>String(t||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
 const chips=(a,d)=>a.map((x,i)=>`<button type="button" class="chip${i===d?' on':''}">${x}</button>`).join('');
@@ -190,6 +192,10 @@ function gate(msg){
     <div class="f" style="margin-top:17px"><label class="lbl" for="g1">Your name</label>
       <span class="hint">A return address, so you can be told what happened to what you send.</span>
       <input class="inp" id="g1" value="${esc(S.who)}" placeholder="Jane Doe"></div>
+    <div class="f"><label class="lbl" for="g2">Your work email</label>
+      <span class="hint">This is what your report gets tracked against, and where the answer goes.</span>
+      <input class="inp" id="g2" type="email" inputmode="email" autocomplete="email"
+        value="${esc(S.mail)}" placeholder="you@sterilebydesign.ai"></div>
     <div class="f"><label class="lbl">Which part of SIPS you work in</label>
       <span class="hint">Two people can hit the same screen and be looking at different problems. This is how we tell them apart.</span>
       <div class="row" id="gfunc">${FUNCTIONS.map(f=>
@@ -199,11 +205,16 @@ function gate(msg){
   </div>`;
   document.getElementById('gsave').onclick=()=>{
     const w=document.getElementById('g1').value.trim();
+    const m=document.getElementById('g2').value.trim();
     const f=document.querySelector('#gfunc .chip.on');
     if(!w) return gate('We need a name so you can be told what happened to it.');
-    if(!f){ S.who=w; return gate('Pick the part of SIPS you work in.'); }
-    S.who=w; S.fn=f.dataset.fn;
-    localStorage.setItem('sbd_who',w); localStorage.setItem('sbd_fn',S.fn); render();
+    S.who=w;
+    if(!okMail(m)){ S.mail=m; return gate('We need your work email. That is how this gets tracked and how the answer reaches you.'); }
+    S.mail=m;
+    if(!f) return gate('Pick the part of SIPS you work in.');
+    S.fn=f.dataset.fn;
+    localStorage.setItem('sbd_who',w); localStorage.setItem('sbd_mail',m);
+    localStorage.setItem('sbd_fn',S.fn); render();
   };
 }
 
@@ -245,6 +256,7 @@ async function submit(){
       p_what:what,
       p_function:S.fn,
       p_expected:document.getElementById('q2').value.trim(),
+      p_email:S.mail,
       p_area:document.querySelector('#area .chip.on').textContent,
       p_impact:document.querySelector('#impact .chip.on').textContent
     });
@@ -267,7 +279,7 @@ async function mineView(){
     <div class="card-s">You hear back on every one. Nothing is ever closed off, it is either done, in progress, or tabled.</div></div>
     <div class="load" id="ml">Loading...</div>`;
   try{
-    const items=await rpc('my_intake',{p_who:S.who})||[];
+    const items=await rpc('my_intake',{p_who:S.who,p_email:S.mail})||[];
     const box=document.getElementById('ml');
     if(!items.length){ box.outerHTML='<div class="load">Nothing yet. Anything you send will show up here with its outcome.</div>'; return; }
     box.outerHTML=items.map(i=>`<div class="item">
@@ -282,7 +294,7 @@ async function mineView(){
 
 function render(){
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.t===S.tab));
-  if(!S.who||!S.fn) return gate();
+  if(!S.who||!okMail(S.mail)||!S.fn) return gate();
   S.tab==='mine'?mineView():formView();
   window.scrollTo(0,0);
 }

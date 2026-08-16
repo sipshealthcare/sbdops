@@ -428,7 +428,7 @@ function ring(done,total,label,sub){
     <div style="font-size:11.5px;color:var(--mut);line-height:1.55;padding-top:4px">${esc(sub)}</div></div>`;
 }
 
-const WHOKEY='sbd_leader_who';
+const WHOKEY='sbd_leader_who', MAILKEY='sbd_leader_email';
 let MINE=[], AREAS=[], uImpact='Just an idea', uArea='';
 
 async function loadAreas(){
@@ -440,11 +440,11 @@ async function loadAreas(){
 }
 
 async function loadMine(){
-  const who=(document.getElementById('uwho')||{}).value||localStorage.getItem(WHOKEY)||'';
-  if(!who.trim()){ MINE=[]; return; }
+  const mail=(document.getElementById('umail')||{}).value||localStorage.getItem(MAILKEY)||'';
+  if(!mail.trim()){ MINE=[]; return; }
   const r=await fetch(`${SB_URL}/rest/v1/rpc/my_updates`,{method:'POST',cache:'no-store',
     headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`},
-    body:JSON.stringify({p_who:who})});
+    body:JSON.stringify({p_email:mail})});
   MINE = r.ok ? (await r.json()) : [];
 }
 
@@ -454,28 +454,32 @@ function updState(u){
     if(u.item_status==='shipped') return {t:`Live. Delivered ${d||'and recorded'}.`,go:true};
     if(u.item_date_state==='confirmed'&&d) return {t:`Scheduled for ${d}, agreed with the development team.`,go:true};
     if(u.item_date_state==='pending'&&d)   return {t:`Date of ${d} proposed, waiting on the development team to confirm.`,go:false};
-    if(u.item_date_state==='countered'&&d) return {t:`The development team sent back ${d}. Dr. Jake is settling it.`,go:false};
+    if(u.item_date_state==='countered'&&d) return {t:`The development team sent back ${d}. Ignacio is settling it.`,go:false};
     return {t:'On the tracker as #'+u.item_number+'. No date agreed yet.',go:false};
   }
   if(u.status==='tabled') return {t:'Parked for now.'+(u.decision?' '+u.decision:''),go:false};
   if(u.status==='closed') return {t:'Closed.'+(u.decision?' '+u.decision:''),go:false};
   if(u.status==='approved') return {t:'Approved. It is being scheduled.',go:true};
-  return {t:'With Dr. Jake. He reads these himself.',go:false};
+  return {t:'With Ignacio. He reads these himself.',go:false};
 }
 
 function vUpdates(){
-  const who=localStorage.getItem(WHOKEY)||'';
+  const who=localStorage.getItem(WHOKEY)||'', mail=localStorage.getItem(MAILKEY)||'';
   const opts=AREAS.filter(a=>a!=='Somewhere else').map(a=>
     `<option value="${esc(a)}"${uArea===a?' selected':''}>${esc(a)}</option>`).join('')
     + (AREAS.includes('Somewhere else')?`<option value="Somewhere else"${uArea==='Somewhere else'?' selected':''}>Somewhere else</option>`:'');
   return `<div class="card">
   <div class="card-h"><div class="ic warm">&#9998;</div>
     <div><div class="card-t">Raise an update</div>
-    <div class="card-s">Something that needs changing, adding, or explaining. Pick what it relates to, say what is needed, and it goes to Dr. Jake. He decides on it and puts a date against it with the development team.</div></div></div>
+    <div class="card-s">Something that needs changing, adding, or explaining. Pick what it relates to, say what is needed, and it goes to Ignacio, who runs the technology and development side. He decides on it and puts a date against it with the development team.</div></div></div>
 
   <div class="f"><label class="f-l" for="uwho">Your name</label>
-    <span class="f-h">So the answer comes back to you.</span>
     <input class="inp" id="uwho" value="${esc(who)}" placeholder="First and last"></div>
+
+  <div class="f"><label class="f-l" for="umail">Your work email</label>
+    <span class="f-h">This is how it gets tracked and how the answer finds you. Everything you have sent shows up below once your email is in.</span>
+    <input class="inp" id="umail" type="email" inputmode="email" autocomplete="email"
+      value="${esc(mail)}" placeholder="you@sterilebydesign.ai"></div>
 
   <div class="f"><label class="f-l" for="uarea">What part of the platform</label>
     <span class="f-h">The closest one. If none of them fit, pick Somewhere else and say where below.</span>
@@ -493,22 +497,22 @@ function vUpdates(){
     <div class="chips">${['Blocking me now','Slowing me down','Minor','Just an idea']
       .map(x=>`<button class="chip${uImpact===x?' on':''}" data-imp="${x}">${x}</button>`).join('')}</div></div>
 
-  <button class="send" id="usend">Send it to Dr. Jake</button>
+  <button class="send" id="usend">Send it to Ignacio</button>
 </div>
 
 <div class="card">
   <div class="card-h"><div class="ic">&#9673;</div>
     <div><div class="card-t">What you have sent</div>
-    <div class="card-s">${who?`Everything raised under ${esc(who)}, newest first`:'Put your name in above and anything you have sent appears here'}</div></div></div>
+    <div class="card-s">${mail?`Everything raised from ${esc(mail)}, newest first`:'Put your email in above and anything you have sent appears here'}</div></div></div>
   ${MINE.length?MINE.map(u=>{const st=updState(u);
     return `<div class="upd">
       <div class="upd-h"><div class="upd-t">${esc(u.what)}</div>
         <div>${P(u.item_status==='shipped'?'p-grn':u.item_number?'p-amb':'p-gry',
-          u.item_status==='shipped'?'Live':u.item_number?'Scheduled':'With Dr. Jake')}</div></div>
+          u.item_status==='shipped'?'Live':u.item_number?'Scheduled':'With Ignacio')}</div></div>
       <div class="upd-m"><span class="hash">${esc(u.ref)}</span> &middot; ${esc(u.area||'')} &middot; sent ${D(String(u.submitted_at).slice(0,10))}</div>
       <div class="upd-s${st.go?' go':''}">${esc(st.t)}</div>
     </div>`;}).join('')
-   :`<div class="empty">${who?'Nothing raised under that name yet.':'Nothing to show yet.'}</div>`}
+   :`<div class="empty">${mail?'Nothing raised from that email yet.':'Nothing to show yet.'}</div>`}
 </div>`;
 }
 
@@ -667,31 +671,34 @@ document.addEventListener('click',async e=>{
   const im=e.target.closest('[data-imp]');
   if(im){ uImpact=im.dataset.imp; uArea=(document.getElementById('uarea')||{}).value||uArea;
     const w=document.getElementById('uwho'); if(w) localStorage.setItem(WHOKEY,w.value.trim());
+    const m=document.getElementById('umail'); if(m) localStorage.setItem(MAILKEY,m.value.trim());
     draw(); return; }
 
   if(e.target.id==='usend'){
     const who=(document.getElementById('uwho')||{}).value.trim();
+    const mail=(document.getElementById('umail')||{}).value.trim();
     const what=(document.getElementById('uwhat')||{}).value.trim();
     const area=(document.getElementById('uarea')||{}).value;
     if(!who)  return say('Put your name on it.');
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(mail)) return say('Put a work email in, so the answer can reach you.');
     if(!area) return say('Pick the part of the platform it relates to.');
     if(what.length<10) return say('Say a little more about what is needed.');
     e.target.disabled=true; e.target.textContent='Sending…';
     try{
       const r=await fetch(`${SB_URL}/rest/v1/rpc/submit_update`,{method:'POST',
         headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`},
-        body:JSON.stringify({p_who:who,p_what:what,p_area:area,p_impact:uImpact})});
+        body:JSON.stringify({p_who:who,p_email:mail,p_what:what,p_area:area,p_impact:uImpact})});
       const d=await r.json();
       if(!r.ok) throw new Error(d&&(d.message||d.hint)||'It did not send. Try again in a moment.');
-      localStorage.setItem(WHOKEY,who);
+      localStorage.setItem(WHOKEY,who); localStorage.setItem(MAILKEY,mail);
       uArea=''; uImpact='Just an idea';
       const box=document.getElementById('uwhat'); if(box) box.value='';
       await loadMine(); draw();
-      say(`Sent as ${d}. It is with Dr. Jake.`);
+      say(`Sent as ${d}. It is with Ignacio.`);
       window.scrollTo(0,0);
     }catch(err){ say(err.message); }
     finally{ const b=document.getElementById('usend');
-      if(b){ b.disabled=false; b.textContent='Send it to Dr. Jake'; } }
+      if(b){ b.disabled=false; b.textContent='Send it to Ignacio'; } }
     return;
   }
 
@@ -703,7 +710,8 @@ document.addEventListener('click',async e=>{
 
 /* remember the name as it is typed, and pull that sender's history when they finish */
 document.addEventListener('change',async e=>{
-  if(e.target.id==='uwho'){ localStorage.setItem(WHOKEY,e.target.value.trim());
+  if(e.target.id==='uwho'){ localStorage.setItem(WHOKEY,e.target.value.trim()); }
+  if(e.target.id==='umail'){ localStorage.setItem(MAILKEY,e.target.value.trim());
     await loadMine(); if(LTAB==='upd') draw(); }
   if(e.target.id==='uarea'){ uArea=e.target.value; }
 });
