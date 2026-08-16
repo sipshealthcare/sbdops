@@ -1059,9 +1059,10 @@ function vDecisions(){
     <div class="qi-p">${d.status==='answered'?P('p-grn','Answered'):P('p-gry','Tabled')}</div></div>
     <div class="qi-m"><span class="hash">${esc(d.ref)}</span>${d.answered_on?D(d.answered_on):''}${d.review_on?' &middot; review '+D(d.review_on):''}</div>
     ${d.answer?`<div class="agreed"><span class="ag-l">Answer</span>${esc(d.answer)}</div>`:''}
-    <div class="rcpt${d.seen_at?' on':''}">${d.seen_at
-      ? `\u2713 Read by ${esc(d.seen_by||'the dev team')} on ${D(String(d.seen_at).slice(0,10))}`
-      : 'Not read yet. It is sitting on the dev team&rsquo;s Answers tab.'}</div>
+    <div class="rcpt${d.seen_at&&d.seen_by!=='carryover'?' on':''}">${
+      !d.seen_at ? 'Not read yet. It is sitting on the dev team&rsquo;s Answers tab.'
+      : d.seen_by==='carryover' ? 'Predates the Answers tab. It was passed on another way at the time.'
+      : `\u2713 Read by ${esc(d.seen_by)} on ${D(String(d.seen_at).slice(0,10))}`}</div>
     ${kids.length?`<div class="qi-n warm">They sent this back: ${kids.map(k=>esc(k.ref)+(k.status==='open'?' (open, waiting on you)':' (answered)')).join(', ')}</div>`:''}
     ${work.length
       ? `<div class="rcpt on">On the tracker as ${work.map(t=>'#'+t.number).join(', ')}</div>`

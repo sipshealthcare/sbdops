@@ -552,6 +552,7 @@ body{background:#070d1f}
 .ans-act{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px;
   padding-top:13px;border-top:1px solid var(--line)}
 .ans-seen{font-size:11.5px;color:var(--grn);font-weight:600;margin-right:2px}
+.ans-seen.carry{color:var(--mut);font-weight:500;line-height:1.55;max-width:70ch}
 .ans-seen .sd{color:var(--mut);font-weight:500}
 .fu{margin-top:12px;padding:12px 13px;border-radius:10px;background:rgba(224,161,50,.06);
   border:1px solid rgba(224,161,50,.28)}
@@ -876,7 +877,9 @@ function ansCard(d,fresh){
   ${kids.length?`<div class="ans-ctx fu-sent">Follow-up sent: ${kids.map(k=>esc(k.ref)+(k.status==='open'?' (waiting on him)':' (answered)')).join(', ')}. It sits on his board as its own question and the answer comes back to this tab.</div>`:''}
   <div class="ans-act">
     ${d.seen_at
-      ? `<span class="ans-seen">\u2713 Read <span class="sd">by ${esc(d.seen_by||'the dev team')} on ${seenOn}</span></span>
+      ? `${d.seen_by==='carryover'
+          ? `<span class="ans-seen carry">Decided before this tab existed, so it is not counted as new. It is here as the record.</span>`
+          : `<span class="ans-seen">\u2713 Read <span class="sd">by ${esc(d.seen_by||'the dev team')} on ${seenOn}</span></span>`}
          <button class="btn" data-fuopen="${esc(d.ref)}">Ask a follow-up</button>`
       : `<button class="btn btn-g" data-ack="${esc(d.ref)}">Got it</button>
          <button class="btn" data-fuopen="${esc(d.ref)}">Still not clear</button>`}
