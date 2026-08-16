@@ -429,7 +429,15 @@ function ring(done,total,label,sub){
 }
 
 const WHOKEY='sbd_leader_who';
-let MINE=[], uImpact='Just an idea', uItem='', uSent=false;
+let MINE=[], AREAS=[], uImpact='Just an idea', uArea='';
+
+async function loadAreas(){
+  if(AREAS.length) return;
+  const r=await fetch(`${SB_URL}/rest/v1/rpc/list_areas`,{method:'POST',cache:'no-store',
+    headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`},
+    body:'{}'});
+  AREAS = r.ok ? (await r.json()).map(x=>x.label||x) : [];
+}
 
 async function loadMine(){
   const who=(document.getElementById('uwho')||{}).value||localStorage.getItem(WHOKEY)||'';
@@ -457,7 +465,9 @@ function updState(u){
 
 function vUpdates(){
   const who=localStorage.getItem(WHOKEY)||'';
-  const opts=ROWS.map(t=>`<option value="${t.number}"${String(uItem)===String(t.number)?' selected':''}>#${t.number} &mdash; ${esc(t.summary||t.title)}</option>`).join('');
+  const opts=AREAS.filter(a=>a!=='Somewhere else').map(a=>
+    `<option value="${esc(a)}"${uArea===a?' selected':''}>${esc(a)}</option>`).join('')
+    + (AREAS.includes('Somewhere else')?`<option value="Somewhere else"${uArea==='Somewhere else'?' selected':''}>Somewhere else</option>`:'');
   return `<div class="card">
   <div class="card-h"><div class="ic warm">&#9998;</div>
     <div><div class="card-t">Raise an update</div>
@@ -467,10 +477,10 @@ function vUpdates(){
     <span class="f-h">So the answer comes back to you.</span>
     <input class="inp" id="uwho" value="${esc(who)}" placeholder="First and last"></div>
 
-  <div class="f"><label class="f-l" for="uitem">What it relates to</label>
-    <span class="f-h">Pick the item on the record this is about. If it is not on the record yet, say so and describe it below.</span>
-    <select class="sel" id="uitem">
-      <option value=""${uItem?'':' selected'}>Not on the record yet</option>
+  <div class="f"><label class="f-l" for="uarea">What part of the platform</label>
+    <span class="f-h">The closest one. If none of them fit, pick Somewhere else and say where below.</span>
+    <select class="sel" id="uarea">
+      <option value=""${uArea?'':' selected'} disabled>Choose one</option>
       ${opts}
     </select></div>
 
@@ -495,7 +505,7 @@ function vUpdates(){
       <div class="upd-h"><div class="upd-t">${esc(u.what)}</div>
         <div>${P(u.item_status==='shipped'?'p-grn':u.item_number?'p-amb':'p-gry',
           u.item_status==='shipped'?'Live':u.item_number?'Scheduled':'With Dr. Jake')}</div></div>
-      <div class="upd-m"><span class="hash">${esc(u.ref)}</span> &middot; sent ${D(String(u.submitted_at).slice(0,10))}${u.relates_to?` &middot; about #${u.relates_to}`:''}</div>
+      <div class="upd-m"><span class="hash">${esc(u.ref)}</span> &middot; ${esc(u.area||'')} &middot; sent ${D(String(u.submitted_at).slice(0,10))}</div>
       <div class="upd-s${st.go?' go':''}">${esc(st.t)}</div>
     </div>`;}).join('')
    :`<div class="empty">${who?'Nothing raised under that name yet.':'Nothing to show yet.'}</div>`}
@@ -655,25 +665,27 @@ function draw(){
 
 document.addEventListener('click',async e=>{
   const im=e.target.closest('[data-imp]');
-  if(im){ uImpact=im.dataset.imp; uItem=(document.getElementById('uitem')||{}).value||uItem;
+  if(im){ uImpact=im.dataset.imp; uArea=(document.getElementById('uarea')||{}).value||uArea;
     const w=document.getElementById('uwho'); if(w) localStorage.setItem(WHOKEY,w.value.trim());
     draw(); return; }
 
   if(e.target.id==='usend'){
     const who=(document.getElementById('uwho')||{}).value.trim();
     const what=(document.getElementById('uwhat')||{}).value.trim();
-    const item=(document.getElementById('uitem')||{}).value;
+    const area=(document.getElementById('uarea')||{}).value;
     if(!who)  return say('Put your name on it.');
+    if(!area) return say('Pick the part of the platform it relates to.');
     if(what.length<10) return say('Say a little more about what is needed.');
     e.target.disabled=true; e.target.textContent='Sending…';
     try{
       const r=await fetch(`${SB_URL}/rest/v1/rpc/submit_update`,{method:'POST',
         headers:{'Content-Type':'application/json',apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`},
-        body:JSON.stringify({p_who:who,p_what:what,p_item:item?Number(item):null,p_impact:uImpact})});
+        body:JSON.stringify({p_who:who,p_what:what,p_area:area,p_impact:uImpact})});
       const d=await r.json();
       if(!r.ok) throw new Error(d&&(d.message||d.hint)||'It did not send. Try again in a moment.');
       localStorage.setItem(WHOKEY,who);
-      uItem=''; uImpact='Just an idea';
+      uArea=''; uImpact='Just an idea';
+      const box=document.getElementById('uwhat'); if(box) box.value='';
       await loadMine(); draw();
       say(`Sent as ${d}. It is with Dr. Jake.`);
       window.scrollTo(0,0);
@@ -685,7 +697,7 @@ document.addEventListener('click',async e=>{
 
   const t=e.target.closest('[data-t]'); if(!t) return;
   LTAB=t.dataset.t;
-  if(LTAB==='upd'){ await loadMine(); }
+  if(LTAB==='upd'){ await loadAreas(); await loadMine(); }
   draw(); window.scrollTo(0,0);
 });
 
@@ -693,7 +705,7 @@ document.addEventListener('click',async e=>{
 document.addEventListener('change',async e=>{
   if(e.target.id==='uwho'){ localStorage.setItem(WHOKEY,e.target.value.trim());
     await loadMine(); if(LTAB==='upd') draw(); }
-  if(e.target.id==='uitem'){ uItem=e.target.value; }
+  if(e.target.id==='uarea'){ uArea=e.target.value; }
 });
 
 document.addEventListener('input',e=>{
