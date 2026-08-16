@@ -633,6 +633,14 @@ body{background:#070d1f}
 .nd2-m{font-size:11px;color:var(--mut);margin-top:5px}
 .nd2-m .hash{color:var(--gold);font-weight:700}
 .nd2-a{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
+/* the sprint tracker, edited in place */
+.sheetwrap{position:relative;border:1px solid var(--line);border-radius:12px;overflow:hidden;
+  background:#fff;height:min(74vh,880px);margin-top:4px}
+.sheetwrap iframe{width:100%;height:100%;border:0;display:block}
+.sheetfall{position:absolute;inset:0;display:grid;place-items:center;padding:26px;
+  background:var(--lift);text-align:center;font-size:12.5px;color:var(--dim);line-height:1.6}
+.sheetbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:13px}
+@media(max-width:760px){ .sheetbar .btn{width:100%} .sheetwrap{height:70vh} }
 @media(max-width:760px){ .nd2-a{flex-direction:column} .nd2-a .btn{width:100%} }
 .bi-done{margin-top:11px;font-size:12px;line-height:1.55;color:#cbd5e5;
   border-left:2px solid var(--grn);padding:3px 0 3px 11px;max-width:76ch}
@@ -882,7 +890,7 @@ function staleness(){
   const synced=MARK?String(MARK.at).slice(0,10):null;
   const moved=MARK?ALL.filter(t=>t.updated_at&&t.updated_at>MARK.at).length:ALL.length;
   if(!synced || synced<lastWorkday() || moved)
-    out.push({mark:true,
+    out.push({mark:true, go:'sheet',
       t:'The sprint tracker needs updating',
       s:synced?`Last marked updated ${D(synced)}.${moved?` ${moved} item${moved>1?'s have':' has'} changed since.`:''}`
               :'It has not been marked updated yet.'});
@@ -1160,6 +1168,36 @@ function vAnswers(){
 </div>`;
 }
 
+const SHEET_ID='1O4uFHO8ihT1lsEvosluuYAePdaQAc5Xvj0rvJC_ez5I';
+const SHEET_URL='https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/edit?usp=sharing';
+
+/* The sprint tracker itself, editable in place. Google will only render this for
+   someone signed in to an account with edit rights on the sheet, so the fallback
+   underneath is a real path rather than an apology. */
+function vSheet(){
+  const synced=MARK?String(MARK.at).slice(0,10):null;
+  const moved=MARK?ALL.filter(t=>t.updated_at&&t.updated_at>MARK.at).length:ALL.length;
+  return `<div class="card">
+  <div class="card-h"><div class="ic warm">\u25A6</div>
+    <div><div class="card-t">Sprint tracker</div>
+    <div class="card-s">${synced?`Last marked updated ${D(synced)}.${moved?` ${moved} item${moved>1?'s have':' has'} changed since.`:' Nothing has changed since.'}`:'Not marked updated yet.'} Edit it here, then mark it updated so the bar clears.</div></div></div>
+  <div class="sheetbar">
+    <button class="btn btn-g" data-synced="1">I have updated it</button>
+    <a class="btn btn-doc" href="${SHEET_URL}" target="_blank" rel="noopener">
+      <span class="doc-i">&#9702;</span>Open in Google Sheets</a>
+    <button class="btn btn-o" id="rf4">Refresh</button>
+  </div>
+  <div class="sheetwrap">
+    <div class="sheetfall">If the sheet does not appear here, you are either not signed in to the
+      Google account that has edit rights, or Google has declined to display it in a frame.
+      Open in Google Sheets works either way, and marking it updated works from here regardless.</div>
+    <iframe src="${SHEET_URL}&rm=minimal" title="Sprint tracker"
+      style="position:relative;z-index:1"
+      referrerpolicy="no-referrer-when-downgrade"></iframe>
+  </div>
+</div>`;
+}
+
 function vBrief(){
   const nd=needsDate(), S=stats();
   return heroBlock()+`
@@ -1341,13 +1379,14 @@ const V={
   brief:   {icon:'\u2726', label:'Dashboard',           h:vBrief},
   answers: {icon:'\u2713', label:'Answers from Ignacio', h:vAnswers,
             n:()=>unreadAns().length},
+  sheet:   {icon:'\u25A6', label:'Sprint tracker',       h:vSheet},
   dates:   {icon:'\u25F7', label:'Dates to answer',    h:vDates,
             n:()=>open_().filter(t=>t.date_state==='pending').length},
   queue:   {icon:'\u25A4', label:'The queue',          h:vQueue,
             n:()=>open_().filter(t=>t.date_state!=='pending'||t.rank!=null).length},
   standing:{icon:'\u25CE', label:'Where things stand', h:vStanding}
 };
-const KEYS=['brief','answers','today','dates','queue','standing'];
+const KEYS=['brief','answers','sheet','today','dates','queue','standing'];
 let cur='brief';
 function drawNav(){
   const nav=document.getElementById('nav'); if(!nav) return;
@@ -1392,7 +1431,7 @@ document.getElementById('burger').onclick=()=>{document.getElementById('side').c
 document.getElementById('scrim').onclick=shut;
 
 document.addEventListener('click',e=>{
-  if(e.target===refreshBtn||e.target.id==='rf2'||e.target.id==='rf3') return refresh();
+  if(e.target===refreshBtn||e.target.id==='rf2'||e.target.id==='rf3'||e.target.id==='rf4') return refresh();
 
   if(e.target.closest('[data-synced]')){ const who=val('who');
     return act(async()=>{ await rpc('mark_tracker_synced',{p_who:who||null});
