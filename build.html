@@ -567,6 +567,45 @@ body{background:#070d1f}
   color:var(--mut);font-weight:600;margin:12px 0 5px}
 .bi .quick{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
 .bi[hidden]{display:none!important}
+
+/* The board is only worth anything if it matches the work. No dismiss button on
+   purpose: it goes when the board is current, not when it is waved away. */
+.stale{position:sticky;top:0;z-index:25;margin:0 0 16px;padding:14px 16px 13px;
+  border-radius:14px;background:linear-gradient(180deg,#2a1e05,#1a1608);
+  border:1px solid rgba(224,161,50,.45);box-shadow:0 10px 26px rgba(0,0,0,.45)}
+.stale-h{display:flex;align-items:flex-start;gap:12px}
+.stale-d{flex:0 0 10px;width:10px;height:10px;border-radius:50%;background:var(--amb);
+  margin-top:5px;animation:stalep 2.4s ease-in-out infinite}
+@keyframes stalep{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(224,161,50,.55)}
+  50%{opacity:.65;box-shadow:0 0 0 7px rgba(224,161,50,0)}}
+@media(prefers-reduced-motion:reduce){.stale-d{animation:none}}
+.stale-t{font-size:14.5px;font-weight:700;color:#f4d58a;letter-spacing:-.01em}
+.stale-s{font-size:11.5px;color:#c9b489;line-height:1.55;margin-top:3px;max-width:76ch}
+.stale-r{margin-left:auto;flex:0 0 auto;border-color:rgba(224,161,50,.5);color:#f4d58a}
+.stale-l{margin-top:12px;display:flex;flex-direction:column;gap:2px}
+.stale-i{display:flex;align-items:center;gap:11px;padding:9px 0;
+  border-top:1px solid rgba(224,161,50,.18)}
+.stale-n{flex:0 0 26px;height:26px;border-radius:8px;display:grid;place-items:center;
+  background:var(--amb);color:#1a1608;font-size:12.5px;font-weight:800}
+.stale-x{min-width:0;flex:1}
+.stale-x b{display:block;font-size:13px;font-weight:600;color:#f6e6c2;line-height:1.4}
+.stale-x span{display:block;font-size:11.5px;color:#bfa77f;line-height:1.5;margin-top:2px}
+.stale-g{flex:0 0 auto;padding:7px 13px;font-size:11.5px;
+  border-color:rgba(224,161,50,.45);color:#f4d58a}
+.stale-g:hover,.stale-r:hover{background:rgba(224,161,50,.14)}
+@media(max-width:760px){
+  .stale-h{flex-wrap:wrap}
+  .stale-r{margin-left:0;width:100%;order:3;margin-top:10px}
+  .stale-i{flex-wrap:wrap}
+  .stale-g{width:100%;margin-left:37px}
+}
+
+/* a date that has already gone by is not a status, it is a decision to make */
+.late{margin-top:11px;padding:12px 13px;border-radius:10px;
+  background:rgba(240,97,109,.07);border:1px solid rgba(240,97,109,.3)}
+.late-l{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--red);font-weight:700;margin-bottom:5px}
+.late-s{font-size:11.5px;color:var(--dim);line-height:1.55;margin-bottom:11px;max-width:72ch}
 .bi-done{margin-top:11px;font-size:12px;line-height:1.55;color:#cbd5e5;
   border-left:2px solid var(--grn);padding:3px 0 3px 11px;max-width:76ch}
 @media(max-width:860px){ .ans-act{flex-direction:column;align-items:stretch}
@@ -593,6 +632,7 @@ body{background:#070d1f}
       <div><div class="top-t" id="ttl">SBD Build</div><div class="top-s" id="sub">Dev queue</div></div>
       <button class="btn" id="refresh" style="margin-left:auto" hidden>Refresh</button>
     </div>
+    <div id="stale"></div>
     <div id="views"></div>
   </main>
 </div>
@@ -628,7 +668,7 @@ async function q(path){
   return d||[];
 }
 
-let ALL=[], BRIEF=null, DEC=[];
+let ALL=[], BRIEF=null, DEC=[], EOD=[];
 const WHO='sbd_dev_who';
 const me=()=>localStorage.getItem(WHO)||'';
 const open_=()=>ALL.filter(t=>t.status!=='shipped');
@@ -639,7 +679,7 @@ const unreadAns=()=>decided().filter(d=>!d.seen_at);
 const kidsOf=ref=>DEC.filter(d=>d.parent_ref===ref);
 
 async function load(){
-  const [items,briefs,dec]=await Promise.all([
+  const [items,briefs,dec,eod]=await Promise.all([
     q('tracker_items?select=number,title,status,priority,sprint,rank,origin,note,how_to_check,'+
       'proposed_on,date_state,counter_on,counter_note,answered_by,answered_at,shipped_on,verified_note,updated_at,'+
       'question_note,question_by,question_at,reply_note,reply_by,reply_at'+
@@ -647,9 +687,10 @@ async function load(){
     q('briefs?select=brief_date,author,body&order=brief_date.desc&limit=1'),
     q('decisions?select=ref,question,blocks,note,raised_on,status,answer,reasoning,verdict,'+
       'answered_on,review_on,seen_at,seen_by,parent_ref,asked_by'+
-      '&order=answered_on.desc.nullslast,ref.desc')
+      '&order=answered_on.desc.nullslast,ref.desc'),
+    q('eod_reports?select=report_date,author&order=report_date.desc&limit=1')
   ]);
-  ALL=items; BRIEF=briefs[0]||null; DEC=dec;
+  ALL=items; BRIEF=briefs[0]||null; DEC=dec; EOD=eod;
 }
 
 const agreed=t=>t.date_state==='countered'?t.counter_on:t.proposed_on;
@@ -689,8 +730,26 @@ function quickDates(from){
 
 function dateBlock(t){
   if(!t.proposed_on) return '';
-  if(t.date_state==='confirmed')
-    return `<div class="agreed"><span class="ag-l">Confirmed</span>${D(t.proposed_on)}${t.answered_by?` &middot; ${esc(t.answered_by)}`:''}</div>`;
+  if(t.date_state==='confirmed'){
+    if(days(t.proposed_on)>=0)
+      return `<div class="agreed"><span class="ag-l">Confirmed</span>${D(t.proposed_on)}${t.answered_by?` &middot; ${esc(t.answered_by)}`:''}</div>`;
+    return `<div class="late"><span class="late-l">This date has passed &middot; ${Math.abs(days(t.proposed_on))}d over</span>
+      <div class="late-s">Agreed for ${D(t.proposed_on)}. If it is done, mark it done above with how you checked it. If it slipped, send the date you can hit and the reason. It reaches Ignacio as a date sent back, so nothing moves quietly.</div>
+      <div class="counter">
+        <div class="fld fld-d">
+          <label class="flab" for="nd-${t.number}">New date</label>
+          <div class="dtwrap"><input class="inp dt" id="nd-${t.number}" type="date" min="${today()}">
+            <span class="dtico">\u25BE</span></div>
+          <div class="quick">${quickDates(t.proposed_on).map(x=>
+            `<button class="qd" data-qd="${t.number}" data-d="${x.iso}">${x.label}</button>`).join('')}</div>
+        </div>
+        <div class="fld fld-w">
+          <label class="flab" for="wy-${t.number}">Why it moved</label>
+          <input class="inp why" id="wy-${t.number}" placeholder="It gets taken as given, so say why">
+        </div>
+        <button class="btn btn-o send" data-no="${t.number}">Send this date</button>
+      </div></div>`;
+  }
   if(t.date_state==='countered')
     return `<div class="agreed ct">
       <span class="ag-l">Sent back, waiting on Ignacio</span>
@@ -760,6 +819,54 @@ function askBlock(t){
       <button class="btn btn-g" data-qsend="${t.number}">Send it</button>
     </div>
   </div>`;
+}
+
+/* the most recent weekday before today: on Monday that is Friday */
+function lastWorkday(){
+  const d=new Date(today()+'T12:00:00');
+  do{ d.setDate(d.getDate()-1); } while(d.getDay()===0||d.getDay()===6);
+  return d.toISOString().slice(0,10);
+}
+
+/* Everything making the board disagree with the work. Each line is something this
+   page can clear, so the bar is never just a complaint. */
+function staleness(){
+  const S=stats(), out=[];
+  if(S.overdue.length) out.push({n:S.overdue.length, go:'queue',
+    t:`${S.overdue.length} item${S.overdue.length>1?'s are':' is'} past the date on the board`,
+    s:'Mark it done with how you checked it, or send a new date with the reason. Either one clears it.'});
+  if(S.waiting.length) out.push({n:S.waiting.length, go:'dates',
+    t:`${S.waiting.length} date${S.waiting.length>1?'s are':' is'} waiting on you`,
+    s:'Confirm it, or send back the date you can actually hit.'});
+  const last=EOD.length?EOD[0].report_date:null, due=lastWorkday();
+  if(!last||last<due) out.push({
+    t:last?`No end of day report since ${D(last)}`:'No end of day report on file',
+    s:`The last one due was ${D(due)}. Send it the way you always have and this clears on the next refresh.`});
+  const quiet=open_().filter(t=>t.updated_at&&days(String(t.updated_at).slice(0,10))<=-10);
+  if(quiet.length) out.push({n:quiet.length, go:'queue',
+    t:`${quiet.length} item${quiet.length>1?'s have':' has'} not moved in ten days`,
+    s:'If one is finished, close it. If it is parked on purpose, send a date and say so, and it stops counting.'});
+  const un=unreadAns();
+  if(un.length) out.push({n:un.length, go:'answers',
+    t:`${un.length} answer${un.length>1?'s are':' is'} unread`,
+    s:'Press Got it so Ignacio can see it landed and stops chasing it.'});
+  return out;
+}
+
+function staleBar(){
+  const L=staleness();
+  if(!L.length) return '';
+  return `<div class="stale">
+  <div class="stale-h"><span class="stale-d"></span>
+    <div><div class="stale-t">The board is behind the work</div>
+      <div class="stale-s">Leadership, sales and client success read this board to describe where the platform stands, so it has to match what is actually true. This stays up until it does, and it has no dismiss on purpose.</div></div>
+    <button class="btn stale-r" id="rf3">Refresh</button></div>
+  <div class="stale-l">${L.map(x=>`<div class="stale-i">
+    <span class="stale-n">${x.n?x.n:'!'}</span>
+    <div class="stale-x"><b>${x.t}</b><span>${x.s}</span></div>
+    ${x.go?`<button class="btn stale-g" data-go="${x.go}">Open</button>`:''}
+  </div>`).join('')}</div>
+</div>`;
 }
 
 function bar(pct,tone){ return `<div class="bar"><span class="${tone}" style="width:${Math.max(2,Math.min(100,pct))}%"></span></div>`; }
@@ -1107,6 +1214,7 @@ const views=document.getElementById('views'), toast=document.getElementById('toa
 const refreshBtn=document.getElementById('refresh');
 function say(m){ toast.textContent=m; toast.classList.add('on'); setTimeout(()=>toast.classList.remove('on'),2800); }
 function draw(){
+  const sb=document.getElementById('stale'); if(sb) sb.innerHTML=staleBar();
   views.innerHTML=`<div class="view on">${V[cur].h()}</div>`;
   document.getElementById('ttl').textContent=V[cur].label;
   document.getElementById('sub').textContent=cur==='brief'?'Dev queue':V[cur].label;
@@ -1129,7 +1237,7 @@ document.getElementById('burger').onclick=()=>{document.getElementById('side').c
 document.getElementById('scrim').onclick=shut;
 
 document.addEventListener('click',e=>{
-  if(e.target===refreshBtn||e.target.id==='rf2') return refresh();
+  if(e.target===refreshBtn||e.target.id==='rf2'||e.target.id==='rf3') return refresh();
   const nv=e.target.closest('[data-k]'); if(nv) return go(nv.dataset.k);
   const gt=e.target.closest('[data-go]'); if(gt) return go(gt.dataset.go);
   if(e.target.closest('[data-brief]')){ briefOpen=!briefOpen; return draw(); }
