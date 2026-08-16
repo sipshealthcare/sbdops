@@ -1045,6 +1045,9 @@ function stats(){
   };
 }
 
+/* who this board belongs to. one line to change if the team changes. */
+const TEAM = 'Shawn &amp; Sriman';
+
 function heroBlock(){
   const S=stats();
   const hr=new Date().getHours();
@@ -1057,7 +1060,7 @@ function heroBlock(){
   return `
 <div class="hero">
   <div class="hero-d">${new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</div>
-  <h1 class="hero-t">${greet}, dev team</h1>
+  <h1 class="hero-t">${greet}, ${TEAM}</h1>
   <div class="hero-s">${lead}</div>
   <div class="hero-a">
     ${S.unread.length?`<button class="btn btn-g" data-go="answers">Read answers (${S.unread.length})</button>`:''}
