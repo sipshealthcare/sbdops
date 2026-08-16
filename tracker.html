@@ -250,14 +250,25 @@ body{background:#070d1f}
 .top-t{font-size:20px;font-weight:600;color:#fff}
 .main{flex:1;min-width:0;max-width:none;margin:0;padding:24px 28px 70px}
 @media(min-width:1600px){.main{max-width:1560px}}
+/* Off canvas below 820. The sidebar is a drawer, opened by the hamburger,
+   closed by the scrim, by Escape, or by picking a section. */
+.lscrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:35;display:none}
+.lscrim.on{display:block}
+.burger{width:38px;height:38px;border:1px solid var(--line);border-radius:10px;
+  background:none;display:none;place-content:center;gap:4px;cursor:pointer;flex:0 0 38px}
+.burger span{width:15px;height:2px;border-radius:2px;display:block;background:var(--txt)}
+.burger:hover{border-color:var(--gold)}
+
 @media(max-width:820px){
-  .wrap{display:block}
-  .lside{position:static;width:auto;height:auto;display:flex;align-items:center;gap:12px;
-    padding:14px;border-right:0;border-bottom:1px solid var(--line)}
-  .lbrand{padding:0}
-  .lnav{flex-direction:row;flex:1;justify-content:flex-end}
-  .lnav .ni{width:auto;padding:9px 13px}
-  .main{padding:18px 14px 60px}
+  .lside{position:fixed;inset:0 auto 0 0;width:250px;flex:0 0 250px;height:100%;
+    z-index:40;transform:translateX(-100%);transition:transform .22s;
+    border-right:1px solid var(--line);overflow-y:auto}
+  .lside.open{transform:none}
+  .burger{display:grid}
+  .main{padding:18px 14px 60px;width:100%;min-width:0}
+  .top{gap:11px}
+  .top .stamp{width:100%;order:3}
+  .lnav .ni{padding:12px 13px;font-size:14.5px}
 }
 
 /* Speak instead of typing. One floating button follows whichever field has focus,
@@ -282,13 +293,16 @@ body{background:#070d1f}
 <body>
 <div id="sbd-root">
   <div class="wrap">
-    <aside class="lside">
+    <aside class="lside" id="lside">
       <div class="lbrand"><div class="bmark">SBD</div>
         <div><div class="bname">SBD Platform</div><div class="bsub">Delivery</div></div></div>
       <nav class="lnav" id="lnav"></nav>
     </aside>
+    <div class="lscrim" id="lscrim"></div>
     <div class="main">
       <div class="top">
+        <button class="burger" id="burger" aria-label="Sections" aria-expanded="false">
+          <span></span><span></span><span></span></button>
         <div class="top-t" id="ttl">Live</div>
         <div class="stamp" id="stamp"></div>
         <button class="btn" id="refresh" style="margin-left:14px">Refresh</button>
@@ -728,8 +742,36 @@ document.addEventListener('click',async e=>{
   if(k==='live'||k==='sched'){ WTAB=k; LTAB='work'; }
   else LTAB=k;
   if(LTAB==='upd'){ await loadAreas(); await loadMine(); }
+  shut();                       /* picking a section closes the drawer on a phone */
   draw(); window.scrollTo(0,0);
 });
+
+/* The drawer. Opened by the hamburger, closed by the scrim, by Escape,
+   or by choosing a section. */
+function shut(){
+  const s=document.getElementById('lside'), c=document.getElementById('lscrim'),
+        bg=document.getElementById('burger');
+  if(s) s.classList.remove('open');
+  if(c) c.classList.remove('on');
+  if(bg) bg.setAttribute('aria-expanded','false');
+}
+function openDrawer(){
+  const s=document.getElementById('lside'), c=document.getElementById('lscrim'),
+        bg=document.getElementById('burger');
+  if(s) s.classList.add('open');
+  if(c) c.classList.add('on');
+  if(bg) bg.setAttribute('aria-expanded','true');
+}
+document.addEventListener('click',e=>{
+  if(e.target.closest('#burger')){
+    const s=document.getElementById('lside');
+    return s && s.classList.contains('open') ? shut() : openDrawer();
+  }
+  if(e.target.id==='lscrim') shut();
+});
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') shut(); });
+/* if the window grows past the breakpoint while it is open, drop the drawer state */
+window.addEventListener('resize',()=>{ if(window.innerWidth>820) shut(); });
 
 /* remember the name as it is typed, and pull that sender's history when they finish */
 document.addEventListener('change',async e=>{
