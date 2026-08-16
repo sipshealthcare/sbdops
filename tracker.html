@@ -793,7 +793,11 @@ async function go(quiet){
   const b=document.getElementById('refresh');
   b.disabled=true; if(!quiet) b.textContent='Refreshing…';
   try{ await load(); draw(); }
-  catch(e){ document.getElementById('view').innerHTML=
+  catch(e){
+    /* the menu still has to work when the record cannot be reached, because on a
+       phone the drawer is the only way to move between sections */
+    drawNav();
+    document.getElementById('view').innerHTML=
     `<div class="card"><div class="card-t">Could not load</div>
      <div class="card-s" style="margin-top:7px">${esc(e.message)} Try Refresh in a moment.</div></div>`; }
   finally{ b.disabled=false; b.textContent='Refresh'; }
