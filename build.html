@@ -309,7 +309,7 @@ body{background:#070d1f}
 .btn-doc .doc-i{font-size:14px;line-height:1}
 .hero-a .btn{padding:11px 20px;font-size:13.5px;border-radius:11px}
 
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:15px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(146px,1fr));gap:11px;margin-bottom:15px}
 .stat{border:1px solid var(--line);border-radius:15px;padding:15px 16px;background:var(--card)}
 .stat-v{font-size:26px;font-weight:700;line-height:1;color:#fff;font-variant-numeric:tabular-nums}
 .stat-v.amb{color:var(--amb)} .stat-v.red{color:var(--red)}
@@ -508,8 +508,11 @@ body{background:#070d1f}
   color:var(--dim);font-size:11px;pointer-events:none}
 .dtwrap:hover .inp{border-color:var(--gold)}
 .dtwrap:hover .dtico{color:var(--gold)}
-.inp[type=date]::-webkit-calendar-picker-indicator{opacity:0;position:absolute;right:0;
+.dtwrap .inp[type=date]::-webkit-calendar-picker-indicator{opacity:0;position:absolute;right:0;
   width:100%;height:100%;cursor:pointer}
+.inp[type=date]::-webkit-calendar-picker-indicator{opacity:.55;cursor:pointer;
+  filter:invert(.72);padding:0;margin:0}
+.inp[type=date]:hover::-webkit-calendar-picker-indicator{opacity:1}
 .quick{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}
 .qd{border:1px solid var(--line);background:var(--lift);color:var(--dim);border-radius:7px;
   padding:5px 9px;font-size:11px;font-family:inherit;cursor:pointer;font-weight:500;white-space:nowrap}
@@ -522,6 +525,43 @@ body{background:#070d1f}
   border-left:2px solid var(--amb);font-size:12px;color:#cbd5e5}
 .nd-l{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
   color:var(--amb);font-weight:600;margin-bottom:3px}
+
+/* Answers from Ignacio.
+   An answer nobody has confirmed reading is still an open loop, so unread is
+   the loud state and read is the quiet one. */
+.ans{border:1px solid var(--line);border-radius:13px;padding:15px 16px;margin-bottom:11px;
+  background:var(--lift);min-width:0;overflow-wrap:anywhere}
+.ans:last-child{margin-bottom:0}
+.ans.fresh{border-color:rgba(212,154,0,.45);background:rgba(212,154,0,.055)}
+.ans-h{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.ans-q{font-size:14.5px;font-weight:600;color:#fff;line-height:1.45;min-width:0}
+.ans-p{flex:0 0 auto;display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.ans-m{font-size:11px;color:var(--mut);margin-top:7px;display:flex;flex-wrap:wrap;
+  gap:4px 10px;align-items:center}
+.ans-m .hash{font-weight:700;color:var(--gold);letter-spacing:.02em}
+.ans-ctx{font-size:12px;line-height:1.6;color:var(--dim);margin-top:10px;
+  border-left:2px solid var(--line);padding:2px 0 2px 11px;max-width:80ch}
+.ans-ctx.fu-sent{border-left-color:var(--amb);color:#cbd5e5}
+.ans-b{margin-top:13px;border-left:3px solid var(--gold);padding:2px 0 2px 13px}
+.ans-l{display:block;font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--gold);font-weight:700;margin-bottom:5px}
+.ans-t{font-size:13.5px;line-height:1.68;color:#e6ebf5;white-space:pre-wrap;max-width:80ch}
+.ans-why{margin-top:12px;border-left:2px solid var(--line);padding:2px 0 2px 13px}
+.ans-why .ans-l{color:var(--mut)}
+.ans-why .ans-t{font-size:12.5px;line-height:1.62;color:#94a3b8}
+.ans-act{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px;
+  padding-top:13px;border-top:1px solid var(--line)}
+.ans-seen{font-size:11.5px;color:var(--grn);font-weight:600;margin-right:2px}
+.ans-seen .sd{color:var(--mut);font-weight:500}
+.fu{margin-top:12px;padding:12px 13px;border-radius:10px;background:rgba(224,161,50,.06);
+  border:1px solid rgba(224,161,50,.28)}
+.fu-h{font-size:11.5px;color:var(--dim);line-height:1.55;margin-bottom:9px;max-width:74ch}
+.fu textarea.inp{width:100%;padding:10px 12px;font-size:12.5px;line-height:1.55;
+  min-height:82px;resize:vertical;font-family:inherit}
+.fu[hidden]{display:none!important}
+@media(max-width:860px){ .ans-act{flex-direction:column;align-items:stretch}
+  .ans-act .btn{width:100%} .ans-h{flex-direction:column;gap:7px}
+  .ans-p{justify-content:flex-start} }
 </style>
 </head>
 <body>
@@ -578,20 +618,28 @@ async function q(path){
   return d||[];
 }
 
-let ALL=[], BRIEF=null;
+let ALL=[], BRIEF=null, DEC=[];
 const WHO='sbd_dev_who';
 const me=()=>localStorage.getItem(WHO)||'';
 const open_=()=>ALL.filter(t=>t.status!=='shipped');
+/* Decided means Ignacio has put an answer on it. A question still sitting with
+   him is not the dev team's to look at, so it never reaches this surface. */
+const decided=()=>DEC.filter(d=>d.status!=='open'&&String(d.answer||'').trim());
+const unreadAns=()=>decided().filter(d=>!d.seen_at);
+const kidsOf=ref=>DEC.filter(d=>d.parent_ref===ref);
 
 async function load(){
-  const [items,briefs]=await Promise.all([
+  const [items,briefs,dec]=await Promise.all([
     q('tracker_items?select=number,title,status,priority,sprint,rank,origin,note,how_to_check,'+
       'proposed_on,date_state,counter_on,counter_note,answered_by,answered_at,shipped_on,verified_note,updated_at,'+
       'question_note,question_by,question_at,reply_note,reply_by,reply_at'+
       '&order=number.asc'),
-    q('briefs?select=brief_date,author,body&order=brief_date.desc&limit=1')
+    q('briefs?select=brief_date,author,body&order=brief_date.desc&limit=1'),
+    q('decisions?select=ref,question,blocks,note,raised_on,status,answer,reasoning,verdict,'+
+      'answered_on,review_on,seen_at,seen_by,parent_ref,asked_by'+
+      '&order=answered_on.desc.nullslast,ref.desc')
   ]);
-  ALL=items; BRIEF=briefs[0]||null;
+  ALL=items; BRIEF=briefs[0]||null; DEC=dec;
 }
 
 const agreed=t=>t.date_state==='countered'?t.counter_on:t.proposed_on;
@@ -716,7 +764,9 @@ function stats(){
     overdue: rows.filter(t=>{const d=agreed(t);return d&&days(d)<0;}),
     dueSoon: rows.filter(t=>{const d=agreed(t);return d&&days(d)>=0&&days(d)<=1;}),
     proposed: ALL.filter(t=>t.proposed_on),
-    sprint:   ALL.filter(t=>t.sprint==='S8')
+    sprint:   ALL.filter(t=>t.sprint==='S8'),
+    answers:  decided(),
+    unread:   unreadAns()
   };
 }
 
@@ -724,7 +774,8 @@ function heroBlock(){
   const S=stats();
   const hr=new Date().getHours();
   const greet=hr<12?'Good morning':hr<18?'Good afternoon':'Good evening';
-  const lead = S.overdue.length ? `${S.overdue.length} item${S.overdue.length>1?'s are past their':' is past its'} date.`
+  const lead = S.unread.length  ? `${S.unread.length} answer${S.unread.length>1?'s are':' is'} back from Ignacio and unread.`
+             : S.overdue.length ? `${S.overdue.length} item${S.overdue.length>1?'s are past their':' is past its'} date.`
              : S.waiting.length ? `${S.waiting.length} date${S.waiting.length>1?'s are':' is'} waiting on you.`
              : S.dueSoon.length ? `${S.dueSoon.length} due in the next day.`
              : 'Nothing overdue and no dates outstanding.';
@@ -734,13 +785,15 @@ function heroBlock(){
   <h1 class="hero-t">${greet}, dev team</h1>
   <div class="hero-s">${lead}</div>
   <div class="hero-a">
-    <button class="btn btn-g" data-go="dates">Answer dates${S.waiting.length?` (${S.waiting.length})`:''}</button>
+    ${S.unread.length?`<button class="btn btn-g" data-go="answers">Read answers (${S.unread.length})</button>`:''}
+    <button class="btn${S.unread.length?'':' btn-g'}" data-go="dates">Answer dates${S.waiting.length?` (${S.waiting.length})`:''}</button>
     <a class="btn btn-doc" href="https://drive.google.com/drive/folders/1_UwQyh-x2ue6Qzf4xR7Owk8q3fUti2Y4?usp=sharing"
        target="_blank" rel="noopener"><span class="doc-i">&#9707;</span>Build documents</a>
     <button class="btn btn-o" id="rf2">Refresh</button>
   </div>
 </div>
 <div class="stats">
+  <button class="stat" data-go="answers"><div class="stat-v${S.unread.length?' amb':''}">${S.unread.length}</div><div class="stat-l">Answers to read</div></button>
   <button class="stat" data-go="queue"><div class="stat-v">${S.rows.length}</div><div class="stat-l">In the queue</div></button>
   <button class="stat" data-go="dates"><div class="stat-v${S.waiting.length?' amb':''}">${S.waiting.length}</div><div class="stat-l">Dates to answer</div></button>
   <button class="stat" data-go="queue"><div class="stat-v${S.overdue.length?' red':''}">${S.overdue.length}</div><div class="stat-l">Past their date</div></button>
@@ -765,6 +818,13 @@ function vToday(){
     </div>
   </div>
   <div class="col standing">
+    ${S.unread.length?`<div class="card">
+      <div class="card-h"><div class="ic warm">\u2713</div>
+        <div><div class="card-t">Answers from Ignacio</div>
+        <div class="card-s">${S.unread.length} unread</div></div></div>
+      ${S.unread.slice(0,3).map(d=>`<div class="mini"><span class="mini-t">${esc(d.ref)} &middot; ${esc(d.question).slice(0,42)}</span>${P('p-amb','New')}</div>`).join('')}
+      <div class="row" style="margin-top:10px"><button class="btn btn-g" data-go="answers">Read them</button></div>
+    </div>`:''}
     ${S.waiting.length?`<div class="card">
       <div class="card-h"><div class="ic warm">\u25F7</div>
         <div><div class="card-t">Dates to answer</div>
@@ -786,6 +846,71 @@ function vToday(){
         <div class="goal-m">${done} of ${S.sprint.length} items</div></div>`;})()}
     </div>
   </div>
+</div>`;
+}
+
+/* Answers from Ignacio.
+   The loop: he answers on his board, it lands here, the team confirms they read
+   it, and he can see that on his side. If an answer is not enough to build from,
+   sending it back raises a new linked question rather than starting a thread. */
+let ansOldOpen=false;
+function ansCard(d,fresh){
+  const tabled=d.status==='tabled';
+  const when=d.answered_on?D(d.answered_on):D(d.raised_on);
+  const kids=kidsOf(d.ref);
+  const seenOn=d.seen_at?D(String(d.seen_at).slice(0,10)):'';
+  return `<div class="ans${fresh?' fresh':''}">
+  <div class="ans-h">
+    <div class="ans-q">${esc(d.question)}</div>
+    <div class="ans-p">${fresh?P('p-amb','New'):''}${tabled?P('p-blu','Tabled'):''}${d.verdict?P('p-gry',esc(d.verdict)):''}</div>
+  </div>
+  <div class="ans-m"><span class="hash">${esc(d.ref)}</span>
+    <span>Answered ${when}</span>
+    ${d.blocks?`<span>${esc(d.blocks)}</span>`:''}
+    ${tabled&&d.review_on?`<span>Comes back ${D(d.review_on)}</span>`:''}</div>
+  ${d.note?`<div class="ans-ctx">${esc(d.note)}</div>`:''}
+  <div class="ans-b"><span class="ans-l">His answer</span>
+    <div class="ans-t">${esc(d.answer)}</div></div>
+  ${d.reasoning?`<div class="ans-why"><span class="ans-l">Why</span>
+    <div class="ans-t">${esc(d.reasoning)}</div></div>`:''}
+  ${kids.length?`<div class="ans-ctx fu-sent">Follow-up sent: ${kids.map(k=>esc(k.ref)+(k.status==='open'?' (waiting on him)':' (answered)')).join(', ')}. It sits on his board as its own question and the answer comes back to this tab.</div>`:''}
+  <div class="ans-act">
+    ${d.seen_at
+      ? `<span class="ans-seen">\u2713 Read <span class="sd">by ${esc(d.seen_by||'the dev team')} on ${seenOn}</span></span>
+         <button class="btn" data-fuopen="${esc(d.ref)}">Ask a follow-up</button>`
+      : `<button class="btn btn-g" data-ack="${esc(d.ref)}">Got it</button>
+         <button class="btn" data-fuopen="${esc(d.ref)}">Still not clear</button>`}
+  </div>
+  <div class="fu" id="fu-${esc(d.ref)}" hidden>
+    <div class="fu-h">Say what is missing. It goes back to Ignacio as its own question, linked to this one, and lands on his board straight away. Being specific here saves a round trip.</div>
+    <textarea class="inp" id="ft-${esc(d.ref)}" placeholder="What would you need to know to build this?"></textarea>
+    <div class="row" style="margin-top:9px">
+      <button class="btn btn-g" data-fusend="${esc(d.ref)}">Send it back</button>
+      <button class="btn" data-fuopen="${esc(d.ref)}">Cancel</button>
+    </div>
+  </div>
+</div>`;
+}
+
+function vAnswers(){
+  const S=stats();
+  const fresh=S.unread, seen=S.answers.filter(d=>d.seen_at);
+  return `<div class="card">
+  <div class="card-h"><div class="ic warm">\u2713</div>
+    <div><div class="card-t">Answers from Ignacio</div>
+    <div class="card-s">Every question he has decided, newest first. Mark one read so he knows it landed. If an answer is not enough to build from, send it back rather than guessing.</div></div></div>
+  <div class="f" style="margin:2px 0 16px;max-width:340px">
+    <input class="inp" id="who" value="${esc(me())}" placeholder="Your name, so he knows who read it">
+  </div>
+  ${fresh.length?`<div class="orbar">New since you last looked</div>
+    ${fresh.map(d=>ansCard(d,true)).join('')}`
+   :`<div class="nodate"><span class="nd-l">All caught up</span>
+      Every answer on the board has been read. New ones appear here the moment he answers, and the tab carries a count so you do not have to come looking.</div>`}
+  ${seen.length?`<div class="orbar">Already read</div>
+    ${(ansOldOpen?seen:seen.slice(0,2)).map(d=>ansCard(d,false)).join('')}
+    ${seen.length>2?`<div class="morebar"><div class="rule"></div>
+      <button class="btn" data-ansmore="1">${ansOldOpen?'See less':`See all ${seen.length}`}</button>
+      <div class="rule"></div></div>`:''}`:''}
 </div>`;
 }
 
@@ -922,13 +1047,15 @@ function briefBlock(body){
 const V={
   today:   {icon:'\u25C6', label:'Today',              h:vToday},
   brief:   {icon:'\u2726', label:'Morning brief',      h:vBrief},
+  answers: {icon:'\u2713', label:'Answers from Ignacio', h:vAnswers,
+            n:()=>unreadAns().length},
   dates:   {icon:'\u25F7', label:'Dates to answer',    h:vDates,
             n:()=>open_().filter(t=>t.date_state==='pending').length},
   queue:   {icon:'\u25A4', label:'The queue',          h:vQueue,
             n:()=>open_().filter(t=>t.date_state!=='pending'||t.rank!=null).length},
   standing:{icon:'\u25CE', label:'Where things stand', h:vStanding}
 };
-const KEYS=['brief','today','dates','queue','standing'];
+const KEYS=['brief','answers','today','dates','queue','standing'];
 let cur='brief';
 function drawNav(){
   const nav=document.getElementById('nav'); if(!nav) return;
@@ -972,6 +1099,24 @@ document.addEventListener('click',e=>{
   const nv=e.target.closest('[data-k]'); if(nv) return go(nv.dataset.k);
   const gt=e.target.closest('[data-go]'); if(gt) return go(gt.dataset.go);
   if(e.target.closest('[data-brief]')){ briefOpen=!briefOpen; return draw(); }
+
+  if(e.target.closest('[data-ansmore]')){ ansOldOpen=!ansOldOpen; return draw(); }
+
+  const ak=e.target.closest('[data-ack]');
+  if(ak){ const r=ak.dataset.ack, who=val('who'); if(who) localStorage.setItem(WHO,who);
+    return act(async()=>{ await rpc('ack_decision',{p_ref:r,p_who:who||null});
+      say(`${r} marked read. Ignacio sees that on his board.`); }); }
+
+  const fo=e.target.closest('[data-fuopen]');
+  if(fo){ const b=document.getElementById('fu-'+fo.dataset.fuopen);
+    if(b){ b.hidden=!b.hidden; if(!b.hidden){ const t=b.querySelector('textarea'); if(t) t.focus(); } }
+    return; }
+
+  const fs=e.target.closest('[data-fusend]');
+  if(fs){ const r=fs.dataset.fusend, who=val('who'); if(who) localStorage.setItem(WHO,who);
+    if(!val('ft-'+r)) return say('Say what is not clear, so he can answer it in one pass.');
+    return act(async()=>{ const o=await rpc('follow_up_decision',{p_ref:r,p_question:val('ft-'+r),p_who:who||null});
+      say(`Sent back as ${o&&o.ref?o.ref:'a new question'}. It is on his board now.`); }); }
 
   const dn=e.target.closest('[data-done]');
   if(dn){ const n=Number(dn.dataset.done), who=val('who');

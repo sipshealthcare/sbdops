@@ -297,6 +297,14 @@ body{background:#070d1f}
 .qi-m{font-size:11px;color:var(--mut);margin-top:6px}
 .qi-n{font-size:12.5px;line-height:1.62;color:#94a3b8;margin:9px 0 2px;
   border-left:2px solid var(--line);padding:3px 0 3px 11px;max-width:78ch}
+.qi-n.warm{border-left-color:var(--amb);color:#cbd5e5}
+/* Whether an answer actually reached anyone. An unread answer is still an open loop. */
+.rcpt{margin-top:10px;font-size:11.5px;font-weight:600;color:var(--mut)}
+.rcpt.on{color:var(--grn)}
+.wk{margin-top:10px;padding:12px 13px;border-radius:10px;background:var(--lift);
+  border:1px solid var(--line)}
+.wk-h{font-size:11.5px;color:var(--dim);line-height:1.55;margin-bottom:10px;max-width:74ch}
+.wk[hidden]{display:none!important}
 .qi-b{font-size:12.5px;color:#cbd5e5;margin-top:8px;line-height:1.55}
 .check{margin-top:9px;font-size:11.5px;line-height:1.5;color:#94a3b8;
   border-left:2px solid var(--line);padding:3px 0 3px 9px}
@@ -625,7 +633,8 @@ async function load(){
   const [items,intake,dec,rel,ref,briefs,add,snap,tiers]=await Promise.all([
     q('tracker_items?select=*&order=number.asc'),
     q('intake?select=ref,who,sips_function,area,impact,what,expected,status,severity,verdict,analysis,decision,decided_at,submitted_at,tracker_item_id&order=submitted_at.asc'),
-    q('decisions?select=ref,question,blocks,note,raised_on,status,answer,reasoning,answered_on,review_on,verdict&order=raised_on.asc'),
+    q('decisions?select=ref,question,blocks,note,raised_on,status,answer,reasoning,answered_on,'+
+      'review_on,verdict,seen_at,seen_by,parent_ref,asked_by&order=raised_on.asc'),
     q('releases?select=released_on,outcome,summary,detail,verification,item_numbers&order=released_on.desc&limit=20'),
     q('reference_docs?select=slug,title,body'),
     q('briefs?select=brief_date,author,body&order=brief_date.desc&limit=5'),
@@ -1018,7 +1027,12 @@ ${!sent.length&&!undated.length&&!pending.length?'<div class="card"><div class="
 
 function vDecisions(){
   const open=DEC.filter(d=>d.status==='open').sort((a,b)=>new Date(a.raised_on)-new Date(b.raised_on));
-  const closed=DEC.filter(d=>d.status!=='open');
+  /* newest answer first: the thing you just decided should be the thing you see */
+  const closed=DEC.filter(d=>d.status!=='open').sort((a,b)=>
+    String(b.answered_on||b.raised_on).localeCompare(String(a.answered_on||a.raised_on))
+    || String(b.ref).localeCompare(String(a.ref)));
+  const kidsOf=r=>DEC.filter(x=>x.parent_ref===r);
+  const workFor=r=>ALL.filter(t=>t.origin===r);
   return `<div class="card">
   <div class="card-h"><div class="ic warm">\u25C7</div><div><div class="card-t">Open decisions</div>
   <div class="card-s">Age is the thing to watch</div></div></div>
@@ -1026,6 +1040,7 @@ function vDecisions(){
     <div class="qi-h"><div class="qi-t">${esc(d.question)}</div>
       <div class="qi-p">${P(ageD(d.raised_on)>=30?'p-red':ageD(d.raised_on)>=10?'p-amb':'p-gry',ageD(d.raised_on)+'d')}</div></div>
     <div class="qi-m"><span class="hash">${esc(d.ref)}</span>${d.blocks?esc(d.blocks):'raised '+D(d.raised_on)}</div>
+    ${d.parent_ref?`<div class="qi-n warm">Follow-up on ${esc(d.parent_ref)}${d.asked_by?`, sent back by ${esc(d.asked_by)}`:''}. Your first answer was read but was not enough to build from.</div>`:''}
     ${d.note?`<div class="qi-n">${esc(d.note)}</div>`:''}
     <div class="ask">
       <input class="inp" id="ans-${esc(d.ref)}" placeholder="Your answer" style="width:100%;margin-bottom:8px;padding:10px 11px;font-size:12.5px">
@@ -1038,10 +1053,31 @@ function vDecisions(){
 </div>
 <div class="card">
   <div class="card-h"><div class="ic">\u2713</div><div><div class="card-t">Decided</div></div></div>
-  ${closed.length?closed.map(d=>`<div class="qi"><div class="qi-h"><div class="qi-t">${esc(d.question)}</div>
+  ${closed.length?closed.map(d=>{
+    const kids=kidsOf(d.ref), work=workFor(d.ref);
+    return `<div class="qi"><div class="qi-h"><div class="qi-t">${esc(d.question)}</div>
     <div class="qi-p">${d.status==='answered'?P('p-grn','Answered'):P('p-gry','Tabled')}</div></div>
     <div class="qi-m"><span class="hash">${esc(d.ref)}</span>${d.answered_on?D(d.answered_on):''}${d.review_on?' &middot; review '+D(d.review_on):''}</div>
-    ${d.answer?`<div class="agreed"><span class="ag-l">Answer</span>${esc(d.answer)}</div>`:''}</div>`).join(''):'<div class="p muted">Nothing decided yet.</div>'}
+    ${d.answer?`<div class="agreed"><span class="ag-l">Answer</span>${esc(d.answer)}</div>`:''}
+    <div class="rcpt${d.seen_at?' on':''}">${d.seen_at
+      ? `\u2713 Read by ${esc(d.seen_by||'the dev team')} on ${D(String(d.seen_at).slice(0,10))}`
+      : 'Not read yet. It is sitting on the dev team&rsquo;s Answers tab.'}</div>
+    ${kids.length?`<div class="qi-n warm">They sent this back: ${kids.map(k=>esc(k.ref)+(k.status==='open'?' (open, waiting on you)':' (answered)')).join(', ')}</div>`:''}
+    ${work.length
+      ? `<div class="rcpt on">On the tracker as ${work.map(t=>'#'+t.number).join(', ')}</div>`
+      : `<div class="row" style="margin-top:10px"><button class="btn btn-o" data-wkopen="${esc(d.ref)}">Turn this into work</button></div>
+        <div class="wk" id="wk-${esc(d.ref)}" hidden>
+          <div class="wk-h">Some answers create build work. This puts it on the tracker with ${esc(d.ref)} recorded as its origin, so the reason survives the handoff.</div>
+          <input class="inp" id="wt-${esc(d.ref)}" placeholder="What gets built, in one line" style="width:100%;margin-bottom:9px;padding:10px 11px;font-size:12.5px">
+          <div class="row">
+            <select class="inp" id="wp-${esc(d.ref)}" style="width:auto;padding:9px 11px;font-size:12.5px">
+              <option value="critical">Critical</option><option value="high">High</option>
+              <option value="medium" selected>Medium</option><option value="low">Low</option></select>
+            <button class="btn btn-g" data-wksend="${esc(d.ref)}">Add to the queue</button>
+            <button class="btn" data-wkopen="${esc(d.ref)}">Cancel</button>
+          </div>
+        </div>`}
+    </div>`;}).join(''):'<div class="p muted">Nothing decided yet.</div>'}
 </div>`;
 }
 
@@ -1273,6 +1309,18 @@ document.addEventListener('click',e=>{
     return act(async()=>{ await rpc('set_rank',{p_number:n,p_rank:Number(val('rk-'+n))||1}); say('Order updated.'); }); }
   const ur=e.target.closest('[data-unrank]');
   if(ur) return act(async()=>{ await rpc('set_rank',{p_number:Number(ur.dataset.unrank),p_rank:null}); say('Removed from the order.'); });
+
+  const wo=e.target.closest('[data-wkopen]');
+  if(wo){ const b=document.getElementById('wk-'+wo.dataset.wkopen);
+    if(b){ b.hidden=!b.hidden; if(!b.hidden){ const i=b.querySelector('input'); if(i) i.focus(); } }
+    return; }
+  const ws=e.target.closest('[data-wksend]');
+  if(ws){ const r=ws.dataset.wksend, t=val('wt-'+r);
+    if(!t) return say('Say what gets built, in one line.');
+    const sel=document.getElementById('wp-'+r), pr=sel?sel.value:'medium';
+    return act(async()=>{ const n=await rpc('add_task',{p_title:t,p_priority:pr,
+      p_note:'Came out of decision '+r+'.',p_origin:r});
+      say(`Added as #${n}. It shows on the dev queue with ${r} kept as the reason.`); }); }
 
   const aw=e.target.closest('[data-answer]');
   if(aw){ const r=aw.dataset.answer;
