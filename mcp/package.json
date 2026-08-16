@@ -1,0 +1,11 @@
+{
+  "name": "sbdops-mcp",
+  "version": "1.0.0",
+  "description": "Talk to the SBD Build board from Claude Code. Read the queue, answer dates, mark work done, read Ignacio's answers, and file the end of day report without leaving the terminal.",
+  "type": "module",
+  "bin": { "sbdops-mcp": "./server.js" },
+  "main": "./server.js",
+  "engines": { "node": ">=18" },
+  "dependencies": { "@modelcontextprotocol/sdk": "^1.0.0" },
+  "files": ["server.js", "README.md"]
+}
