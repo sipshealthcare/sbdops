@@ -677,10 +677,21 @@ body{background:#070d1f}
 .spec-b{padding:2px 16px 18px;border-top:1px solid var(--line)}
 .spec-a{display:flex;flex-wrap:wrap;align-items:center;gap:11px;margin:14px 0 4px}
 .spec-u{font-size:11.5px;color:var(--dim)}
-.speclink{display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-size:12.5px;
-  font-weight:600;color:var(--gold);background:none;border:0;padding:0;cursor:pointer;
-  font-family:inherit}
-.speclink:hover{text-decoration:underline}
+.speclink{display:flex;align-items:center;gap:13px;width:100%;text-align:left;margin-top:13px;
+  padding:13px 15px;border:1px solid rgba(212,154,0,.42);border-radius:11px;cursor:pointer;
+  background:linear-gradient(90deg,rgba(212,154,0,.14),rgba(212,154,0,.05));
+  font-family:inherit;color:inherit;transition:border-color .12s,background .12s}
+.speclink:hover{border-color:var(--gold);
+  background:linear-gradient(90deg,rgba(212,154,0,.22),rgba(212,154,0,.08))}
+.sl-i{flex:0 0 30px;height:30px;border-radius:9px;display:grid;place-items:center;
+  background:rgba(212,154,0,.2);color:var(--gold);font-size:14px}
+.sl-x{min-width:0;flex:1}
+.sl-t{font-size:13.5px;font-weight:700;color:var(--gold);line-height:1.4}
+.sl-s{font-size:12px;color:var(--dim);margin-top:2px;line-height:1.5}
+.sl-g{flex:0 0 auto;font-size:12px;font-weight:700;color:var(--gold);
+  border:1px solid rgba(212,154,0,.5);border-radius:8px;padding:6px 12px;white-space:nowrap}
+.speclink:hover .sl-g{background:var(--gold);color:#000;border-color:var(--gold)}
+@media(max-width:560px){.speclink{flex-wrap:wrap;gap:10px}.sl-g{width:100%;text-align:center}}
 code.mono{background:#0a1226;border:1px solid var(--line);border-radius:5px;padding:1px 5px;
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#cbd5e5}
 @media(max-width:560px){.spec-h{padding:13px 13px}.spec-b{padding:2px 13px 15px}}
@@ -916,7 +927,12 @@ function card(t,compact){
       ?'<div class="nodate"><span class="nd-l">No date set</span>Ignacio has not put a date on this yet.</div>':''}
     ${askBlock(t)}
     ${specFor(t.number)?`<button class="speclink" data-godetail="${esc(specFor(t.number).slug)}">
-      &#9656; Read the detail on this one</button>`:''}
+      <span class="sl-i">&#9776;</span>
+      <span class="sl-x">
+        <span class="sl-t">Exactly how this one gets done</span>
+        <span class="sl-s">The full write-up: what to copy, what to watch for, and what closes it.</span>
+      </span>
+      <span class="sl-g">Click here &rarr;</span></button>`:''}
     ${t.status!=='shipped'?`<div class="donerow">
       <input class="inp why" id="dn-${t.number}" placeholder="How you checked it is live">
       <button class="btn btn-o" data-done="${t.number}">Mark it done</button></div>`:''}
