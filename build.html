@@ -1570,7 +1570,8 @@ const V={
             n:()=>unreadAns().length},
   sheet:   {icon:'\u25A6', label:'Sprint tracker',       h:vSheet},
   mcp:     {icon:'\u2318', label:'MCP server',           h:vMcp},
-  details: {icon:'\u2630', label:'More details',        h:vDetails},
+  details: {icon:'\u2630', label:'More details',        h:vDetails,
+            sub:'The write-up behind an item'},
   dates:   {icon:'\u25F7', label:'Dates to answer',    h:vDates,
             n:()=>open_().filter(t=>t.date_state==='pending').length},
   queue:   {icon:'\u25A4', label:'The queue',          h:vQueue,
@@ -1598,7 +1599,7 @@ function draw(){
   const sb=document.getElementById('stale'); if(sb) sb.innerHTML=staleBar();
   views.innerHTML=`<div class="view on">${V[cur].h()}</div>`;
   document.getElementById('ttl').textContent=V[cur].label;
-  document.getElementById('sub').textContent=cur==='brief'?'Dev queue':V[cur].label;
+  document.getElementById('sub').textContent=V[cur].sub||(cur==='brief'?'Dev queue':V[cur].label);
   if(biAuto){ const r=biAuto; biAuto=null;
     const b=document.getElementById('bi-'+r);
     if(b){ b.hidden=false; b.scrollIntoView({block:'center'});
