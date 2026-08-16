@@ -128,6 +128,10 @@ body{background:#070d1f}
 .grp:after{content:'';flex:1;height:1px;background:var(--line)}
 .it-ref{font-size:11px;color:var(--mut);margin-top:5px}
 .it-ref .hash{font-weight:700;color:var(--dim)}
+/* the join between what is coming and what has landed */
+.handoff{display:flex;align-items:center;gap:14px;margin:4px 0 15px;
+  font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut)}
+.handoff:before,.handoff:after{content:'';flex:1;height:1px;background:var(--line)}
 .note{border:1px solid var(--line);border-radius:14px;padding:15px 16px;margin-top:18px;
   background:rgba(63,185,132,.045)}
 .note-t{font-size:12.5px;font-weight:600;color:var(--grn);margin-bottom:6px}
@@ -519,14 +523,13 @@ function vUpdates(){
 function say(m){ const t=document.getElementById('toast'); if(!t) return;
   t.textContent=m; t.classList.add('on'); setTimeout(()=>t.classList.remove('on'),3200); }
 
-let LTAB='dash';
+let LTAB='dash', WANT=null;
 function drawNav(){
   const live=ROWS.filter(t=>t.status==='shipped').length;
   const sched=ROWS.filter(t=>t.status!=='shipped').length;
   document.getElementById('lnav').innerHTML=
     `<button class="ni${LTAB==='dash'?' on':''}" data-t="dash">&#9678;&nbsp; Dashboard</button>
-     <button class="ni${LTAB==='live'?' on':''}" data-t="live">&#10003;&nbsp; Live<span class="nn">${live}</span></button>
-     <button class="ni${LTAB==='sched'?' on':''}" data-t="sched">&#9673;&nbsp; Scheduled<span class="nn">${sched}</span></button>
+     <button class="ni${LTAB==='work'?' on':''}" data-t="work">&#9673;&nbsp; Scheduled and live<span class="nn">${sched+live}</span></button>
      <button class="ni${LTAB==='upd'?' on':''}" data-t="upd">&#9998;&nbsp; Updates${MINE.length?`<span class="nn">${MINE.length}</span>`:''}</button>`;
 }
 
@@ -542,7 +545,7 @@ function draw(){
   const withProof=live.filter(t=>t.confirmed_by).length;
   drawNav();
   document.getElementById('ttl').textContent =
-    LTAB==='dash'?'Dashboard':LTAB==='live'?'Live':LTAB==='upd'?'Updates':'Scheduled';
+    LTAB==='dash'?'Dashboard':LTAB==='upd'?'Updates':'Scheduled and live';
   document.querySelector('.srchwrap').style.display = (LTAB==='dash'||LTAB==='upd')?'none':'';
 
   const changed=ROWS.map(t=>t.updated_at).filter(Boolean).sort().pop();
@@ -639,23 +642,25 @@ function draw(){
     ? vUpdates()
     : LTAB==='dash'
     ? dash
-    : LTAB==='live'
-    ? `<div class="card">
+    /* One page. Coming first, then what has landed, so an item can be watched
+       crossing from the top half to the bottom half. */
+    : `<div class="card" id="sec-sched">
+        <div class="card-h"><div class="ic">&#9673;</div>
+          <div><div class="card-t">Scheduled</div>
+          <div class="card-s">Completion dates agreed by both sides${week?` &middot; ${week} due within a week`:''}${late?` &middot; ${late} past their date`:''}</div></div></div>
+        ${soon.length?monthGroups(soon).map(([g,rows])=>
+            `<div class="grp">${esc(g)}</div><div class="itgrid">${rows.map(item).join('')}</div>`).join('')
+          :'<div class="empty">Nothing scheduled to show yet. Work appears here once its completion date is agreed.</div>'}
+      </div>
+      <div class="handoff"><span>Once an item is delivered and checked it moves down here</span></div>
+      <div class="card" id="sec-live">
         <div class="card-h"><div class="ic warm">&#10003;</div>
           <div><div class="card-t">Live</div>
-          <div class="card-s">${live.length?`${withProof} of ${live.length} carry a recorded check against the running system`:'What ships appears here with how it was confirmed'}</div></div></div>
+          <div class="card-s">${live.length?`${live.length} delivered${recent.length?`, ${recent.length} in the last 30 days`:''}`:'What ships appears here with how it was confirmed'}</div></div></div>
         ${live.length?`
           ${recent.length?`<div class="grp">Live in the last 30 days</div><div class="itgrid">${recent.map(item).join('')}</div>`:''}
           ${older.length?`<div class="grp">Live before that</div><div class="itgrid">${older.map(item).join('')}</div>`:''}`
         :'<div class="empty">Nothing recorded as live yet.</div>'}
-      </div>`
-    : `<div class="card">
-        <div class="card-h"><div class="ic">&#9673;</div>
-          <div><div class="card-t">Scheduled</div>
-          <div class="card-s">Completion dates agreed by both sides &middot; ${week} due within a week</div></div></div>
-        ${soon.length?monthGroups(soon).map(([g,rows])=>
-            `<div class="grp">${esc(g)}</div><div class="itgrid">${rows.map(item).join('')}</div>`).join('')
-          :'<div class="empty">Nothing scheduled to show yet. Work appears here once its completion date is agreed.</div>'}
       </div>`;
 
   document.getElementById('view').innerHTML = LTAB==='upd'
@@ -703,9 +708,14 @@ document.addEventListener('click',async e=>{
   }
 
   const t=e.target.closest('[data-t]'); if(!t) return;
-  LTAB=t.dataset.t;
+  const k=t.dataset.t;
+  if(k==='live'||k==='sched'){ WANT='sec-'+(k==='live'?'live':'sched'); LTAB='work'; }
+  else { WANT=null; LTAB=k; }
   if(LTAB==='upd'){ await loadAreas(); await loadMine(); }
-  draw(); window.scrollTo(0,0);
+  draw();
+  if(WANT){ const n=document.getElementById(WANT); WANT=null;
+    if(n){ n.scrollIntoView({block:'start'}); return; } }
+  window.scrollTo(0,0);
 });
 
 /* remember the name as it is typed, and pull that sender's history when they finish */
