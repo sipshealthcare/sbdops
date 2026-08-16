@@ -640,8 +640,7 @@ async function load(){
     q('tracker_items?select=*&order=number.asc'),
     q('intake?select=ref,who,sips_function,area,impact,what,expected,status,severity,verdict,analysis,decision,decided_at,submitted_at,tracker_item_id&order=submitted_at.asc'),
     q('decisions?select=ref,question,blocks,note,raised_on,status,answer,reasoning,answered_on,'+
-      'review_on,verdict,seen_at,seen_by,parent_ref,asked_by,'+
-      'build_ask,build_ask_by,build_ask_at&order=raised_on.asc'),
+      'review_on,verdict,seen_at,seen_by,parent_ref,asked_by&order=raised_on.asc'),
     q('releases?select=released_on,outcome,summary,detail,verification,item_numbers&order=released_on.desc&limit=20'),
     q('reference_docs?select=slug,title,body'),
     q('briefs?select=brief_date,author,body&order=brief_date.desc&limit=5'),
@@ -1012,12 +1011,16 @@ ${sent.length?`<div class="card">
   <div class="card-s">The dev team proposed a different date. Taken as given unless you say otherwise.</div></div></div>
   ${sent.map(t=>`<div class="qi"><div class="qi-h"><div class="qi-t">${esc(t.title)}</div>
     <div class="qi-p">${P('p-amb',short(t.counter_on))}</div></div>
-    <div class="qi-m"><span class="hash">#${t.number}</span>${esc(t.answered_by||'Dev team')}</div>
-    <div class="dpair" style="margin:10px 0">
-      <div class="dp"><span class="dp-l">You proposed</span><span class="dp-v old">${D(t.proposed_on)}</span></div>
-      <div class="dp-ar">&rarr;</div>
-      <div class="dp"><span class="dp-l">They sent back</span><span class="dp-v new">${D(t.counter_on)}</span></div>
-    </div>
+    <div class="qi-m"><span class="hash">#${t.number}</span>${esc(t.answered_by||'Dev team')}${/^D-/.test(t.origin||'')?' &middot; off '+esc(t.origin):''}</div>
+    ${/^D-/.test(t.origin||'')&&t.proposed_on===t.counter_on
+      ? `<div class="dpair" style="margin:10px 0">
+           <div class="dp"><span class="dp-l">They proposed</span><span class="dp-v new">${D(t.counter_on)}</span></div>
+         </div>`
+      : `<div class="dpair" style="margin:10px 0">
+           <div class="dp"><span class="dp-l">You proposed</span><span class="dp-v old">${D(t.proposed_on)}</span></div>
+           <div class="dp-ar">&rarr;</div>
+           <div class="dp"><span class="dp-l">They sent back</span><span class="dp-v new">${D(t.counter_on)}</span></div>
+         </div>`}
     <div class="agreed ct"><span class="ag-l">Their reason</span>${esc(t.counter_note||'')}</div>
     <div class="ask">
       <div class="ask-h">Take their date, or propose another and send it back.</div>
@@ -1087,12 +1090,11 @@ function vDecisions(){
         : t.date_state==='countered' ? 'They sent back '+D(t.counter_on)+'.'
         : t.date_state==='confirmed' ? 'They confirmed '+D(agreed(t))+'.'
         : 'No date set yet, so it is sitting on your Waiting on dates tab.'}</div>`).join('')
-      : `${d.build_ask?`<div class="wk-ask"><b>${esc(d.build_ask_by||'The dev team')} says this needs a build item:</b><br>${esc(d.build_ask)}</div>`:''}
-        <div class="row" style="margin-top:10px"><button class="btn ${d.build_ask?'btn-g':'btn-o'}" data-wkopen="${esc(d.ref)}">Turn this into work</button></div>
+      : `<div class="row" style="margin-top:10px"><button class="btn btn-o" data-wkopen="${esc(d.ref)}">Turn this into work</button></div>
         <div class="wk" id="wk-${esc(d.ref)}" hidden>
-          <div class="wk-h">This puts it on the tracker with ${esc(d.ref)} kept as its origin, so the reason survives the handoff. Give it a date here and it goes straight to the dev team's Dates to answer tab, where they confirm it or send back a different one with their reason. Leave the date blank and it lands undated on your own Waiting on dates tab instead.</div>
+          <div class="wk-h">This puts it on the tracker with ${esc(d.ref)} kept as its origin, so the reason survives the handoff. Give it a date here and it goes straight to the dev team's Dates to answer tab, where they confirm it or send back a different one with their reason. Leave the date blank and it lands undated on your own Waiting on dates tab instead. They can also do this from their side: an answer they read carries a Propose a date button, and what they send arrives on your Dates sent back tab.</div>
           <span class="wk-l">What gets built</span>
-          <input class="inp" id="wt-${esc(d.ref)}" value="${esc(d.build_ask||'')}" placeholder="One line, in plain words" style="width:100%;padding:10px 11px;font-size:12.5px">
+          <input class="inp" id="wt-${esc(d.ref)}" placeholder="One line, in plain words" style="width:100%;padding:10px 11px;font-size:12.5px">
           <span class="wk-l">Priority</span>
           <select class="inp" id="wp-${esc(d.ref)}" style="width:auto;padding:9px 11px;font-size:12.5px">
             <option value="critical">Critical</option><option value="high">High</option>
