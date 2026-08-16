@@ -663,6 +663,27 @@ body{background:#070d1f}
   font-family:inherit;cursor:pointer}
 .cpy:hover{border-color:var(--gold);color:var(--gold)}
 .cpy.done{background:var(--gold);color:#000;border-color:var(--gold)}
+/* More details: the write-up behind an item on the board */
+.spec{border:1px solid var(--line);border-radius:13px;margin-bottom:11px;overflow:hidden;
+  background:var(--lift)}
+.spec.on{border-color:var(--gold)}
+.spec-h{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;cursor:pointer;
+  background:none;border:0;color:inherit;font-family:inherit;padding:15px 16px}
+.spec-h:hover .spec-t{color:var(--gold)}
+.spec-x{min-width:0;flex:1}
+.spec-t{font-size:14.5px;font-weight:650;color:var(--ink);line-height:1.45}
+.spec-s{font-size:12.5px;color:var(--dim);margin-top:4px;line-height:1.6}
+.spec-c{flex:0 0 auto;color:var(--dim);font-size:11px;margin-top:3px}
+.spec-b{padding:2px 16px 18px;border-top:1px solid var(--line)}
+.spec-a{display:flex;flex-wrap:wrap;align-items:center;gap:11px;margin:14px 0 4px}
+.spec-u{font-size:11.5px;color:var(--dim)}
+.speclink{display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-size:12.5px;
+  font-weight:600;color:var(--gold);background:none;border:0;padding:0;cursor:pointer;
+  font-family:inherit}
+.speclink:hover{text-decoration:underline}
+code.mono{background:#0a1226;border:1px solid var(--line);border-radius:5px;padding:1px 5px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#cbd5e5}
+@media(max-width:560px){.spec-h{padding:13px 13px}.spec-b{padding:2px 13px 15px}}
 .step{display:flex;gap:13px;margin-bottom:20px}
 .step-n{flex:0 0 26px;height:26px;border-radius:50%;display:grid;place-items:center;
   background:var(--gold);color:#000;font-size:12.5px;font-weight:700;margin-top:1px}
@@ -760,7 +781,8 @@ async function q(path){
   return d||[];
 }
 
-let ALL=[], BRIEF=null, DEC=[], EOD=[], MARK=null;
+let ALL=[], BRIEF=null, DEC=[], EOD=[], MARK=null, SPECS=[];
+let SPEC_OPEN=null;
 const WHO='sbd_dev_who';
 const me=()=>localStorage.getItem(WHO)||'';
 const open_=()=>ALL.filter(t=>t.status!=='shipped');
@@ -771,7 +793,7 @@ const unreadAns=()=>decided().filter(d=>!d.seen_at);
 const kidsOf=ref=>DEC.filter(d=>d.parent_ref===ref);
 
 async function load(){
-  const [items,briefs,dec,eod,mark]=await Promise.all([
+  const [items,briefs,dec,eod,mark,specs]=await Promise.all([
     q('tracker_items?select=number,title,status,priority,sprint,rank,origin,note,how_to_check,'+
       'proposed_on,date_state,counter_on,counter_note,answered_by,answered_at,shipped_on,verified_note,updated_at,'+
       'question_note,question_by,question_at,reply_note,reply_by,reply_at'+
@@ -781,9 +803,12 @@ async function load(){
       'answered_on,review_on,seen_at,seen_by,parent_ref,asked_by'+
       '&order=answered_on.desc.nullslast,ref.desc'),
     q('eod_reports?select=report_date,author&order=report_date.desc&limit=1'),
-    q('ops_marks?select=key,at,by&key=eq.tracker_synced')
+    q('ops_marks?select=key,at,by&key=eq.tracker_synced'),
+    q('build_specs?select=slug,item_number,title,summary,body,updated_at'+
+      '&order=item_number.asc.nullsfirst')
   ]);
   ALL=items; BRIEF=briefs[0]||null; DEC=dec; EOD=eod; MARK=(mark&&mark[0])||null;
+  SPECS=specs||[];
 }
 
 const agreed=t=>t.date_state==='countered'?t.counter_on:t.proposed_on;
@@ -890,6 +915,8 @@ function card(t,compact){
     ${t.status!=='shipped'&&t.status!=='backlog'&&!t.proposed_on
       ?'<div class="nodate"><span class="nd-l">No date set</span>Ignacio has not put a date on this yet.</div>':''}
     ${askBlock(t)}
+    ${specFor(t.number)?`<button class="speclink" data-godetail="${esc(specFor(t.number).slug)}">
+      &#9656; Read the detail on this one</button>`:''}
     ${t.status!=='shipped'?`<div class="donerow">
       <input class="inp why" id="dn-${t.number}" placeholder="How you checked it is live">
       <button class="btn btn-o" data-done="${t.number}">Mark it done</button></div>`:''}
@@ -1257,6 +1284,8 @@ const MCP_TOOLS = [
   ['sbd_queue','The open work, in board order. Filter to overdue only.'],
   ['sbd_item','One item in full, with its note and how to check it.'],
   ['sbd_dates_to_answer','Dates proposed to you that still need a yes or a different one.'],
+  ['sbd_specs','The write-ups behind items on the board. What has one.'],
+  ['sbd_spec','One write-up in full. Read it before starting that item.'],
   ['sbd_brief','The morning brief in full.'],
   ['sbd_confirm_date','Take the proposed date.'],
   ['sbd_counter_date','Send back the date you can hit, with the reason.'],
@@ -1274,6 +1303,47 @@ const MCP_TOOLS = [
 /* Everything on this board, reachable from the session you are already working in.
    The point is not another surface to keep up: it is not having to leave the terminal
    to answer a date or file the end of day. */
+const specFor = n => SPECS.find(s=>s.item_number===n) || null;
+const fmtWhen = s => { if(!s) return ''; const d=new Date(s);
+  return isNaN(d)?'':d.toLocaleDateString(undefined,{day:'numeric',month:'short'}); };
+
+/* Every write-up behind an item on the board. Accordion so the page is not a wall,
+   and each one copies out whole so it can be pasted straight into Claude Code. */
+function vDetails(){
+  if(!SPECS.length) return `<div class="card">
+    <div class="card-h"><div class="ic">\u2630</div><div>
+      <div class="card-t">More details</div>
+      <div class="card-s">Nothing here yet. When an item on the board needs more than a
+        line of context, the full write-up lands here.</div></div></div></div>`;
+  return `<div class="card">
+    <div class="card-h"><div class="ic warm">\u2630</div><div>
+      <div class="card-t">More details</div>
+      <div class="card-s">The full write-up behind an item on the board: what it is, why it is
+        dated where it is, what already exists to copy, and how we will know it is done. Each one
+        copies out whole, so you can paste it straight into Claude Code and work from it.</div>
+    </div></div>
+    ${SPECS.map(s=>{
+      const open = SPEC_OPEN===s.slug;
+      return `<div class="spec${open?' on':''}" id="sp-${esc(s.slug)}">
+        <button class="spec-h" data-spec="${esc(s.slug)}">
+          <div class="spec-x">
+            <div class="spec-t">${s.item_number!=null?`<span class="hash">#${s.item_number}</span> `:''}${esc(s.title)}</div>
+            <div class="spec-s">${esc(s.summary)}</div>
+          </div>
+          <span class="spec-c">${open?'\u25B2':'\u25BC'}</span>
+        </button>
+        ${open?`<div class="spec-b">
+          <div class="spec-a">
+            <button class="btn btn-o" data-cpyspec="${esc(s.slug)}">Copy this write-up</button>
+            <span class="spec-u">Updated ${fmtWhen(s.updated_at)}</span>
+          </div>
+          ${md(s.body)}
+        </div>`:''}
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
 function vMcp(){
   return `<div class="card">
   <div class="card-h"><div class="ic warm">\u2318</div>
@@ -1441,6 +1511,7 @@ function md(src){
   if(!src) return '';
   const lines=String(src).split(/\r?\n/);
   const inline=s=>esc(s)
+    .replace(/`([^`]+)`/g,'<code class="mono">$1</code>')
     .replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>')
     .replace(/\b(https?:\/\/[^\s<]+)/g,'<span class="mono">$1</span>');
   let out='',list=[],tbl=[];
@@ -1499,13 +1570,14 @@ const V={
             n:()=>unreadAns().length},
   sheet:   {icon:'\u25A6', label:'Sprint tracker',       h:vSheet},
   mcp:     {icon:'\u2318', label:'MCP server',           h:vMcp},
+  details: {icon:'\u2630', label:'More details',        h:vDetails},
   dates:   {icon:'\u25F7', label:'Dates to answer',    h:vDates,
             n:()=>open_().filter(t=>t.date_state==='pending').length},
   queue:   {icon:'\u25A4', label:'The queue',          h:vQueue,
             n:()=>open_().filter(t=>t.date_state!=='pending'||t.rank!=null).length},
   standing:{icon:'\u25CE', label:'Where things stand', h:vStanding}
 };
-const KEYS=['brief','answers','sheet','today','dates','queue','standing','mcp'];
+const KEYS=['brief','answers','sheet','today','dates','queue','standing','details','mcp'];
 let cur='brief';
 function drawNav(){
   const nav=document.getElementById('nav'); if(!nav) return;
@@ -1563,6 +1635,22 @@ document.addEventListener('click',e=>{
     staleOpen=!staleOpen;
     localStorage.setItem('sbd_stale_open', staleOpen?'1':'0');
     const sb=document.getElementById('stale'); if(sb) sb.innerHTML=staleBar();
+    return; }
+
+  const sp=e.target.closest('[data-spec]');
+  if(sp){ SPEC_OPEN = SPEC_OPEN===sp.dataset.spec ? null : sp.dataset.spec; return draw(); }
+
+  const gd=e.target.closest('[data-godetail]');
+  if(gd){ SPEC_OPEN=gd.dataset.godetail; go('details');
+    setTimeout(()=>{ const n=document.getElementById('sp-'+SPEC_OPEN);
+      if(n) n.scrollIntoView({block:'start'}); },40); return; }
+
+  const cs=e.target.closest('[data-cpyspec]');
+  if(cs){ const s=SPECS.find(x=>x.slug===cs.dataset.cpyspec);
+    if(s){ navigator.clipboard.writeText(s.body).then(()=>{
+        cs.textContent='Copied'; cs.classList.add('done');
+        setTimeout(()=>{ cs.textContent='Copy this write-up'; cs.classList.remove('done'); },1800);
+      }).catch(()=>say('Could not reach the clipboard. Select the text and copy by hand.')); }
     return; }
 
   const cp=e.target.closest('[data-cpy]');
