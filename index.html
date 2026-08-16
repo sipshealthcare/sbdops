@@ -80,6 +80,10 @@ body{background:#070d1f}
 .f{margin-bottom:19px}
 .lbl{display:block;font-size:14px;font-weight:600;margin-bottom:3px}
 .hint{display:block;font-size:12px;margin-bottom:10px}
+.sel{cursor:pointer;appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--dim) 50%),linear-gradient(135deg,var(--dim) 50%,transparent 50%);
+  background-position:calc(100% - 19px) 50%,calc(100% - 14px) 50%;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:38px}
 .inp,.ta{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px 13px;font-size:15px;font-family:inherit;line-height:1.5}
 .ta{min-height:96px;resize:vertical}
 .inp:focus,.ta:focus{outline:2px solid var(--gold);outline-offset:-1px}
@@ -161,20 +165,20 @@ async function rpc(fn,args){
   return d;
 }
 
-const AREAS=['Staff and roster','Assessments','Observations','Schedule','Foundations','Reports','DAVID','Somewhere else'];
+let AREAS=[];
 const IMPACTS=['Blocking me now','Slowing me down','Minor','Just an idea'];
 /* Which part of SIPS the reporter works in. Function is the lens, area is the screen.
    The same list lives in sips_functions in the database, which is what validates it.
    To change it: edit here and update that table. Nothing else needs touching. */
-const FUNCTIONS=[
-  {slug:'hr',        label:'HR and staffing'},
-  {slug:'educator',  label:'Educator'},
-  {slug:'assessor',  label:'Assessor'},
-  {slug:'proctor',   label:'Proctor'},
-  {slug:'leadership',label:'Leadership'},
-  {slug:'operations',label:'Scheduling and operations'},
-  {slug:'other',     label:'Somewhere else'}
-];
+let FUNCTIONS=[];
+
+/* Both lists are read from the database rather than written into this page, so the
+   form, the leaders' Updates tab and the triage queue can never drift apart. */
+async function loadLists(){
+  const [a,f]=await Promise.all([rpc('list_areas',{}),rpc('list_functions',{})]);
+  AREAS=(a||[]).map(x=>x.label||x);
+  FUNCTIONS=(f||[]).map(x=>({slug:x.slug,label:x.label}));
+}
 const S={who:localStorage.getItem('sbd_who')||'',mail:localStorage.getItem('sbd_mail')||'',
          fn:localStorage.getItem('sbd_fn')||'',tab:'new'};
 const okMail=m=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(m||'').trim());
@@ -196,7 +200,7 @@ function gate(msg){
       <span class="hint">This is what your report gets tracked against, and where the answer goes.</span>
       <input class="inp" id="g2" type="email" inputmode="email" autocomplete="email"
         value="${esc(S.mail)}" placeholder="you@sterilebydesign.ai"></div>
-    <div class="f"><label class="lbl">Which part of SIPS you work in</label>
+    <div class="f"><label class="lbl">What you were doing</label>
       <span class="hint">Two people can hit the same screen and be looking at different problems. This is how we tell them apart.</span>
       <div class="row" id="gfunc">${FUNCTIONS.map(f=>
         `<button type="button" class="chip${f.slug===S.fn?' on':''}" data-fn="${f.slug}">${f.label}</button>`
@@ -230,9 +234,12 @@ function formView(){
     <div class="f"><label class="lbl" for="q1">What happened</label>
       <span class="hint">In your own words. No need to be technical.</span>
       <textarea class="ta" id="q1" placeholder="I tried to..."></textarea></div>
-    <div class="f"><label class="lbl">Where in the platform</label>
-      <span class="hint">Tap the closest one.</span>
-      <div class="row" id="area">${chips(AREAS,1)}</div></div>
+    <div class="f"><label class="lbl" for="qarea">What part of the platform</label>
+      <span class="hint">The closest one. If none of them fit, pick Somewhere else and say where above.</span>
+      <select class="inp sel" id="qarea">
+        <option value="" selected disabled>Choose one</option>
+        ${AREAS.map(a=>`<option value="${esc(a)}">${esc(a)}</option>`).join('')}
+      </select></div>
     <div class="f"><label class="lbl" for="q2">What you expected instead</label>
       <span class="hint">Optional, but it usually saves a follow up.</span>
       <input class="inp" id="q2" placeholder="I expected the queue to show the two requests"></div>
@@ -249,6 +256,8 @@ async function submit(){
   const what=document.getElementById('q1').value.trim();
   errb.innerHTML='';
   if(what.length<10){ errb.innerHTML='<div class="err">Say a little more about what happened.</div>'; return; }
+  if(!document.getElementById('qarea').value){
+    errb.innerHTML='<div class="err">Pick the part of the platform it relates to.</div>'; return; }
   btn.disabled=true; btn.textContent='Sending...';
   try{
     const ref=await rpc('submit_intake',{
@@ -257,7 +266,7 @@ async function submit(){
       p_function:S.fn,
       p_expected:document.getElementById('q2').value.trim(),
       p_email:S.mail,
-      p_area:document.querySelector('#area .chip.on').textContent,
+      p_area:document.getElementById('qarea').value,
       p_impact:document.querySelector('#impact .chip.on').textContent
     });
     el.innerHTML=`<div class="card"><div class="ok">
@@ -294,6 +303,8 @@ async function mineView(){
 
 function render(){
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.t===S.tab));
+  if(!AREAS.length||!FUNCTIONS.length){ el.innerHTML='<div class="load">Loading...</div>';
+    return loadLists().then(render).catch(e=>{ el.innerHTML=`<div class="err">${esc(e.message)}</div>`; }); }
   if(!S.who||!okMail(S.mail)||!S.fn) return gate();
   S.tab==='mine'?mineView():formView();
   window.scrollTo(0,0);
