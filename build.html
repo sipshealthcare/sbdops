@@ -692,6 +692,11 @@ body{background:#070d1f}
   border:1px solid rgba(212,154,0,.5);border-radius:8px;padding:6px 12px;white-space:nowrap}
 .speclink:hover .sl-g{background:var(--gold);color:#000;border-color:var(--gold)}
 @media(max-width:560px){.speclink{flex-wrap:wrap;gap:10px}.sl-g{width:100%;text-align:center}}
+pre.cb{background:#070d1f;border:1px solid var(--line);border-radius:11px;
+  padding:14px 15px;margin:11px 0;overflow-x:auto;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;line-height:1.65;
+  color:#cbd5e5;white-space:pre;tab-size:2}
+@media(max-width:560px){pre.cb{font-size:11.5px;padding:12px}}
 code.mono{background:#0a1226;border:1px solid var(--line);border-radius:5px;padding:1px 5px;
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#cbd5e5}
 @media(max-width:560px){.spec-h{padding:13px 13px}.spec-b{padding:2px 13px 15px}}
@@ -1530,7 +1535,14 @@ function md(src){
     .replace(/`([^`]+)`/g,'<code class="mono">$1</code>')
     .replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>')
     .replace(/\b(https?:\/\/[^\s<]+)/g,'<span class="mono">$1</span>');
-  let out='',list=[],tbl=[];
+  let out='',list=[],tbl=[],code=[],fenced=false;
+  const flushCode=()=>{
+    if(!code.length) return;
+    while(code.length && !code[0].trim()) code.shift();
+    while(code.length && !code[code.length-1].trim()) code.pop();
+    if(code.length) out+=`<pre class="cb">${esc(code.join('\n'))}</pre>`;
+    code=[];
+  };
   const flushList=()=>{ if(list.length){ out+='<ul class="bl">'+list.map(x=>`<li>${x}</li>`).join('')+'</ul>'; list=[]; } };
   const flushTbl=()=>{
     if(!tbl.length) return;
@@ -1552,6 +1564,13 @@ function md(src){
   };
   for(const raw of lines){
     const l=raw.trim();
+    /* fenced block: everything between the fences is kept verbatim */
+    if(/^```/.test(l)){ if(fenced){ fenced=false; flushCode(); } else { flushList(); flushTbl(); fenced=true; } continue; }
+    if(fenced){ code.push(raw); continue; }
+    /* four-space indent is a code line; a blank line inside one does not end it */
+    if(/^\s{4,}\S/.test(raw)){ flushList(); flushTbl(); code.push(raw.replace(/^\s{4}/,'')); continue; }
+    if(code.length && !l){ code.push(''); continue; }
+    flushCode();
     if(/^\|.*\|$/.test(l)){ flushList(); tbl.push(l); continue; }
     flushTbl();
     if(/^[-*]\s+/.test(l)){ list.push(inline(l.replace(/^[-*]\s+/,''))); continue; }
@@ -1562,7 +1581,7 @@ function md(src){
     else if(/^#\s+/.test(l))   out+=`<div class="bh1">${inline(l.replace(/^#\s+/,''))}</div>`;
     else out+=`<p class="bp">${inline(l)}</p>`;
   }
-  flushList(); flushTbl();
+  flushList(); flushTbl(); flushCode();
   return out;
 }
 
