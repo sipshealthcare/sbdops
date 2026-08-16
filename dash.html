@@ -532,8 +532,11 @@ body{background:#070d1f}
 .dtwrap .dtico{position:absolute;right:10px;top:50%;transform:translateY(-50%);
   color:var(--dim);font-size:10px;pointer-events:none}
 .dtwrap:hover .inp{border-color:var(--gold)}
-.inp[type=date]::-webkit-calendar-picker-indicator{opacity:0;position:absolute;right:0;
+.dtwrap .inp[type=date]::-webkit-calendar-picker-indicator{opacity:0;position:absolute;right:0;
   width:100%;height:100%;cursor:pointer}
+.inp[type=date]::-webkit-calendar-picker-indicator{opacity:.55;cursor:pointer;
+  filter:invert(.72);padding:0;margin:0}
+.inp[type=date]:hover::-webkit-calendar-picker-indicator{opacity:1}
 .qd{border:1px solid var(--line);background:var(--lift);color:var(--dim);border-radius:7px;
   padding:6px 10px;font-size:11.5px;font-family:inherit;cursor:pointer;font-weight:600}
 .qd:hover,.qd.on{background:var(--gold);color:#000;border-color:var(--gold)}
