@@ -645,6 +645,28 @@ body{background:#070d1f}
 .sheetfall{position:absolute;inset:0;display:grid;place-items:center;padding:26px;
   background:var(--lift);text-align:center;font-size:12.5px;color:var(--dim);line-height:1.6}
 .sheetbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:13px}
+/* the MCP page: things to copy, and what each one does */
+.code{position:relative;background:#070d1f;border:1px solid var(--line);border-radius:11px;
+  padding:14px 52px 14px 15px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:12.5px;line-height:1.7;color:#cbd5e5;white-space:pre-wrap;overflow-wrap:anywhere;
+  margin:9px 0 4px}
+.cpy{position:absolute;top:9px;right:9px;border:1px solid var(--line);background:var(--lift);
+  color:var(--dim);border-radius:8px;padding:5px 11px;font-size:11px;font-weight:600;
+  font-family:inherit;cursor:pointer}
+.cpy:hover{border-color:var(--gold);color:var(--gold)}
+.cpy.done{background:var(--gold);color:#000;border-color:var(--gold)}
+.step{display:flex;gap:13px;margin-bottom:20px}
+.step-n{flex:0 0 26px;height:26px;border-radius:50%;display:grid;place-items:center;
+  background:var(--gold);color:#000;font-size:12.5px;font-weight:700;margin-top:1px}
+.step-b{flex:1;min-width:0}
+.step-t{font-size:14px;font-weight:600;color:#fff;margin-bottom:4px}
+.step-s{font-size:12.5px;color:var(--dim);line-height:1.6;max-width:78ch}
+.tools{display:grid;grid-template-columns:1fr 1fr;gap:0 26px}
+@media(max-width:900px){.tools{grid-template-columns:1fr}}
+.tl{display:flex;gap:11px;padding:9px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.tl code{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;color:var(--gold);
+  flex:0 0 auto;padding-top:1px}
+.tl span{color:var(--dim);line-height:1.5}
 .sheetnote{font-size:11.5px;color:var(--dim);line-height:1.6;margin-bottom:12px;max-width:80ch;
   border-left:2px solid var(--line);padding:3px 0 3px 11px}
 .sheetnote b{color:var(--gold)}
@@ -1208,6 +1230,74 @@ function vSheet(){
 </div>`;
 }
 
+const MCP_ADD = 'claude mcp add sbd-build \\\n  --env SBD_WHO="Your name" \\\n  -- node /absolute/path/to/sbdops/mcp/server.js';
+const MCP_INSTALL = 'cd /path/to/sbdops/mcp && npm install';
+
+const MCP_TOOLS = [
+  ['sbd_status','Everything out of date or waiting on you, in one call. Start here.'],
+  ['sbd_queue','The open work, in board order. Filter to overdue only.'],
+  ['sbd_item','One item in full, with its note and how to check it.'],
+  ['sbd_dates_to_answer','Dates proposed to you that still need a yes or a different one.'],
+  ['sbd_brief','The morning brief in full.'],
+  ['sbd_confirm_date','Take the proposed date.'],
+  ['sbd_counter_date','Send back the date you can hit, with the reason.'],
+  ['sbd_mark_done','Close an item. Evidence required.'],
+  ['sbd_ask_ignacio','Ask a question against an item. It shows as waiting on him.'],
+  ['sbd_answers','Ignacio&rsquo;s decisions, with his reasoning and what is unread.'],
+  ['sbd_got_it','Mark an answer read so he can see it landed.'],
+  ['sbd_not_clear','Say an answer is not enough to build from.'],
+  ['sbd_propose_from_answer','Turn an answer into a dated tracker item.'],
+  ['sbd_post_eod','File the end of day report from the session that did the work.'],
+  ['sbd_post_release','Record what shipped and how it was verified.'],
+  ['sbd_tracker_synced','Say the sprint tracker spreadsheet is up to date.']
+];
+
+/* Everything on this board, reachable from the session you are already working in.
+   The point is not another surface to keep up: it is not having to leave the terminal
+   to answer a date or file the end of day. */
+function vMcp(){
+  return `<div class="card">
+  <div class="card-h"><div class="ic warm">\u2318</div>
+    <div><div class="card-t">Work this board from Claude Code</div>
+    <div class="card-s">An MCP server that puts everything on these tabs inside your terminal. Answer dates, close items, read Ignacio&rsquo;s answers and file the end of day report without opening a browser or writing a status update by hand. Set it up once.</div></div></div>
+
+  <div class="step"><div class="step-n">1</div><div class="step-b">
+    <div class="step-t">Pull the repo and install</div>
+    <div class="step-s">The server lives in the repo at <b>mcp/</b>. Node 18 or newer.</div>
+    <div class="code" id="c1">${esc(MCP_INSTALL)}<button class="cpy" data-cpy="c1">Copy</button></div>
+  </div></div>
+
+  <div class="step"><div class="step-n">2</div><div class="step-b">
+    <div class="step-t">Register it, with your own name in it</div>
+    <div class="step-s">Put your name where it says so, and the real path to the repo. Your name is what goes on a confirmation, a question or an end of day report, so Ignacio knows who answered.</div>
+    <div class="code" id="c2">${esc(MCP_ADD)}<button class="cpy" data-cpy="c2">Copy</button></div>
+    <div class="step-s" style="margin-top:9px">Nothing else needs configuring. No key, no environment file, no login.</div>
+  </div></div>
+
+  <div class="step"><div class="step-n">3</div><div class="step-b">
+    <div class="step-t">Start every session with one call</div>
+    <div class="step-s">It comes back with everything out of date or waiting on you: items past their date, dates needing an answer, whether the sprint tracker is behind, whether an end of day report is missing, and how many answers are unread. If it says all current, there is nothing to clear.</div>
+    <div class="code" id="c3">sbd_status<button class="cpy" data-cpy="c3">Copy</button></div>
+  </div></div>
+</div>
+
+<div class="card">
+  <div class="card-h"><div class="ic">\u25A4</div>
+    <div><div class="card-t">What you can do with it</div>
+    <div class="card-s">Sixteen tools, one for each thing on these tabs</div></div></div>
+  <div class="tools">${MCP_TOOLS.map(([n,d])=>
+    `<div class="tl"><code>${n}</code><span>${d}</span></div>`).join('')}</div>
+</div>
+
+<div class="card">
+  <div class="card-h"><div class="ic warm">\u2713</div>
+    <div><div class="card-t">The one rule worth reading</div></div></div>
+  <div class="ch-s" style="margin:0">Closing an item asks for evidence, and it means it. Say how you checked the thing is live in the running system, not that you believe it is. That line is published to leadership as the proof the item shipped, so write it for them.
+  <br><br><b style="color:var(--grn)">Enough:</b> read the column straight back out of the live database. Signed in as a granted assessor and reached the screen.
+  <br><b style="color:var(--red)">Not enough:</b> done. Tested. Works.</div>
+</div>`;
+}
+
 function vBrief(){
   const nd=needsDate(), S=stats();
   return heroBlock()+`
@@ -1390,13 +1480,14 @@ const V={
   answers: {icon:'\u2713', label:'Answers from Ignacio', h:vAnswers,
             n:()=>unreadAns().length},
   sheet:   {icon:'\u25A6', label:'Sprint tracker',       h:vSheet},
+  mcp:     {icon:'\u2318', label:'MCP server',           h:vMcp},
   dates:   {icon:'\u25F7', label:'Dates to answer',    h:vDates,
             n:()=>open_().filter(t=>t.date_state==='pending').length},
   queue:   {icon:'\u25A4', label:'The queue',          h:vQueue,
             n:()=>open_().filter(t=>t.date_state!=='pending'||t.rank!=null).length},
   standing:{icon:'\u25CE', label:'Where things stand', h:vStanding}
 };
-const KEYS=['brief','answers','sheet','today','dates','queue','standing'];
+const KEYS=['brief','answers','sheet','today','dates','queue','standing','mcp'];
 let cur='brief';
 function drawNav(){
   const nav=document.getElementById('nav'); if(!nav) return;
@@ -1449,6 +1540,15 @@ document.addEventListener('click',e=>{
   const nv=e.target.closest('[data-k]'); if(nv) return go(nv.dataset.k);
   const gt=e.target.closest('[data-go]'); if(gt) return go(gt.dataset.go);
   if(e.target.closest('[data-brief]')){ briefOpen=!briefOpen; return draw(); }
+
+  const cp=e.target.closest('[data-cpy]');
+  if(cp){ const n=document.getElementById(cp.dataset.cpy);
+    if(n){ const t=[...n.childNodes].filter(x=>x.nodeType===3).map(x=>x.textContent).join('');
+      navigator.clipboard.writeText(t.trim()).then(()=>{
+        cp.textContent='Copied'; cp.classList.add('done');
+        setTimeout(()=>{ cp.textContent='Copy'; cp.classList.remove('done'); },1600);
+      }).catch(()=>say('Could not reach the clipboard. Select it and copy by hand.')); }
+    return; }
 
   if(e.target.closest('[data-ansmore]')){ ansOldOpen=!ansOldOpen; return draw(); }
 
