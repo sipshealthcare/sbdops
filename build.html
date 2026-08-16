@@ -606,6 +606,35 @@ body{background:#070d1f}
 .late-l{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
   color:var(--red);font-weight:700;margin-bottom:5px}
 .late-s{font-size:11.5px;color:var(--dim);line-height:1.55;margin-bottom:11px;max-width:72ch}
+
+/* Charts. Thin marks, hairline chrome, and every value appears in text as well as
+   in the mark, so nothing here is readable by colour alone. */
+.ch-s{font-size:11.5px;color:var(--dim);line-height:1.55;margin:-4px 0 14px;max-width:72ch}
+.stack{display:flex;gap:2px;height:32px;width:100%}
+.stack .sg{height:100%;min-width:4px}
+.stack .sg:first-child{border-radius:6px 0 0 6px}
+.stack .sg:last-child{border-radius:0 6px 6px 0}
+.stack .sg:only-child{border-radius:6px}
+.leg{display:flex;flex-wrap:wrap;gap:9px 20px;margin-top:15px}
+.lg{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--dim)}
+.lg .sw{width:9px;height:9px;border-radius:3px;flex:0 0 9px}
+.lg .lv{color:#e6ebf5;font-weight:700;font-variant-numeric:tabular-nums}
+.cols2{display:flex;align-items:flex-end;gap:7px;margin-top:4px}
+.c2{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end}
+.c2-v{font-size:11px;font-weight:700;color:#e6ebf5;text-align:center;height:16px;
+  font-variant-numeric:tabular-nums}
+.c2-b{background:var(--gold);border-radius:4px 4px 0 0;min-height:2px;opacity:.55}
+.c2.on .c2-b{opacity:1}
+.c2-l{font-size:10px;color:var(--mut);text-align:center;margin-top:8px;
+  padding-top:8px;border-top:1px solid var(--line);white-space:nowrap}
+.nd2{border:1px solid rgba(212,154,0,.42);background:rgba(212,154,0,.05);
+  border-radius:13px;padding:13px 14px;margin-bottom:10px}
+.nd2:last-of-type{margin-bottom:0}
+.nd2-q{font-size:13.5px;font-weight:600;color:#fff;line-height:1.45}
+.nd2-m{font-size:11px;color:var(--mut);margin-top:5px}
+.nd2-m .hash{color:var(--gold);font-weight:700}
+.nd2-a{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
+@media(max-width:760px){ .nd2-a{flex-direction:column} .nd2-a .btn{width:100%} }
 .bi-done{margin-top:11px;font-size:12px;line-height:1.55;color:#cbd5e5;
   border-left:2px solid var(--grn);padding:3px 0 3px 11px;max-width:76ch}
 @media(max-width:860px){ .ans-act{flex-direction:column;align-items:stretch}
@@ -853,6 +882,57 @@ function staleness(){
   return out;
 }
 
+/* An answer nobody has scheduled and nobody has cleared is the quiet failure this
+   page exists to prevent. Got it clears it. Proposing a date clears it. */
+function needsDate(){
+  return unreadAns().filter(d=>d.status==='answered' && !ALL.some(t=>t.origin===d.ref));
+}
+
+/* Where the open queue sits against the calendar. Four states, not four series. */
+function queueSplit(){
+  const rows=open_();
+  const seg=(label,color,f)=>({label,color,rows:rows.filter(f)});
+  return [
+    seg('Past their date','#f0616d',   t=>{const d=agreed(t);return d&&days(d)<0;}),
+    seg('Due within a week','#e0a132', t=>{const d=agreed(t);return d&&days(d)>=0&&days(d)<=6;}),
+    seg('Dated, further out','#7896eb',t=>{const d=agreed(t);return d&&days(d)>6;}),
+    seg('No date yet','#64748b',       t=>!agreed(t))
+  ].filter(x=>x.rows.length);
+}
+
+/* Shipped per week, eight weeks back. One series, one colour, no legend needed. */
+function shippedWeeks(){
+  const mon=d=>{const x=new Date(d+'T12:00:00'); x.setDate(x.getDate()-((x.getDay()+6)%7)); return x;};
+  const start=mon(today()), out=[];
+  for(let i=7;i>=0;i--){
+    const a=new Date(start); a.setDate(a.getDate()-i*7);
+    const b=new Date(a); b.setDate(b.getDate()+7);
+    const ai=a.toISOString().slice(0,10), bi=b.toISOString().slice(0,10);
+    out.push({label:short(ai),
+      n:ALL.filter(t=>t.status==='shipped'&&t.shipped_on&&t.shipped_on>=ai&&t.shipped_on<bi).length});
+  }
+  return out;
+}
+
+function chartQueue(){
+  const segs=queueSplit(), total=segs.reduce((a,x)=>a+x.rows.length,0);
+  if(!total) return '<div class="p muted">Nothing open. The queue is empty.</div>';
+  return `<div class="ch-s">Every open item, grouped by where its agreed date sits against today. The counts are in the key, so nothing here depends on telling the colours apart.</div>
+  <div class="stack">${segs.map(x=>
+    `<div class="sg" style="width:${(x.rows.length/total*100).toFixed(2)}%;background:${x.color}" title="${esc(x.label)}: ${x.rows.length}"></div>`).join('')}</div>
+  <div class="leg">${segs.map(x=>
+    `<span class="lg"><i class="sw" style="background:${x.color}"></i>${esc(x.label)} <b class="lv">${x.rows.length}</b></span>`).join('')}</div>`;
+}
+
+function chartShipped(){
+  const w=shippedWeeks(), max=Math.max(1,...w.map(x=>x.n)), total=w.reduce((a,x)=>a+x.n,0);
+  return `<div class="ch-s">Items marked done, by the week they were marked. ${total} in the last eight weeks. This week is still filling.</div>
+  <div class="cols2">${w.map((x,i)=>`<div class="c2${i===w.length-1?' on':''}" title="Week of ${esc(x.label)}: ${x.n}">
+    <div class="c2-v">${x.n||''}</div>
+    <div class="c2-b" style="height:${Math.max(2,Math.round(x.n/max*92))}px"></div>
+    <div class="c2-l">${esc(x.label)}</div></div>`).join('')}</div>`;
+}
+
 function staleBar(){
   const L=staleness();
   if(!L.length) return '';
@@ -970,7 +1050,7 @@ function vToday(){
    The loop: he answers on his board, it lands here, the team confirms they read
    it, and he can see that on his side. If an answer is not enough to build from,
    sending it back raises a new linked question rather than starting a thread. */
-let ansOldOpen=false;
+let ansOldOpen=false, biAuto=null;
 function ansCard(d,fresh){
   const tabled=d.status==='tabled';
   const when=d.answered_on?D(d.answered_on):D(d.raised_on);
@@ -1056,15 +1136,61 @@ function vAnswers(){
 }
 
 function vBrief(){
-  if(!BRIEF) return heroBlock()+`<div class="card"><div class="card-h"><div class="ic warm">\u2726</div>
-    <div><div class="card-t">Morning brief</div></div></div>
-    <div class="p muted">No brief has been sent yet. When Ignacio posts one it appears here, dated, with priorities in order.</div></div>`;
-  return heroBlock()+`<div class="card">
+  const nd=needsDate(), S=stats();
+  return heroBlock()+`
+${nd.length?`<div class="card">
+  <div class="card-h"><div class="ic warm">\u25C7</div>
+    <div><div class="card-t">Answers with nothing scheduled against them</div>
+    <div class="card-s">Ignacio has answered ${nd.length===1?'this':'these'} and nothing is on the tracker for ${nd.length===1?'it':'them'} yet. If it needs building, propose the date you can hit. If it needs nothing built, Got it clears it from here.</div></div></div>
+  ${nd.map(d=>`<div class="nd2">
+    <div class="nd2-q">${esc(d.question)}</div>
+    <div class="nd2-m"><span class="hash">${esc(d.ref)}</span> &middot; answered ${D(d.answered_on||d.raised_on)}</div>
+    <div class="nd2-a">
+      <button class="btn btn-g" data-goans="${esc(d.ref)}">Read it and propose a date</button>
+      <button class="btn" data-ack="${esc(d.ref)}">Got it, nothing to build</button>
+    </div></div>`).join('')}
+</div>`:''}
+<div class="cols">
+  <div class="col">
+    <div class="card">
+      <div class="card-h"><div class="ic">\u25A4</div>
+        <div><div class="card-t">Where the queue stands</div>
+        <div class="card-s">${S.rows.length} open item${S.rows.length===1?'':'s'}</div></div></div>
+      ${chartQueue()}
+    </div>
+    <div class="card">
+      <div class="card-h"><div class="ic">\u25CE</div>
+        <div><div class="card-t">Shipped by week</div>
+        <div class="card-s">Eight weeks back</div></div></div>
+      ${chartShipped()}
+    </div>
+  </div>
+  <div class="col standing">
+    <div class="card">
+      <div class="card-h"><div class="ic">\u25CE</div><div><div class="card-t">Sprint S8</div></div></div>
+      ${(()=>{const done=S.sprint.filter(t=>t.status==='shipped').length;
+        const pct=S.sprint.length?done/S.sprint.length*100:0;
+        return `<div class="goal"><div class="goal-h"><span>Shipped</span><b>${Math.round(pct)}%</b></div>
+        ${bar(pct,'a')}
+        <div class="goal-m">${done} of ${S.sprint.length} items</div></div>`;})()}
+    </div>
+    ${S.overdue.length?`<div class="card">
+      <div class="card-h"><div class="ic warm">\u25B8</div>
+        <div><div class="card-t">Past their date</div>
+        <div class="card-s">${S.overdue.length} to close or re-date</div></div></div>
+      ${S.overdue.slice(0,4).map(t=>`<div class="mini"><span class="mini-t">#${t.number} ${esc(t.title).slice(0,40)}</span>${datePill(t)}</div>`).join('')}
+      <div class="row" style="margin-top:10px"><button class="btn btn-g" data-go="queue">Open the queue</button></div>
+    </div>`:''}
+  </div>
+</div>
+${BRIEF?`<div class="card">
   <div class="card-h"><div class="ic warm">\u2726</div>
     <div><div class="card-t">This morning's brief</div>
     <div class="card-s">From ${esc(BRIEF.author)} &middot; ${D(BRIEF.brief_date)}</div></div></div>
   ${briefBlock(BRIEF.body)}
-</div>`;
+</div>`:`<div class="card"><div class="card-h"><div class="ic warm">\u2726</div>
+    <div><div class="card-t">Morning brief</div></div></div>
+    <div class="p muted">No brief has been sent yet. When Ignacio posts one it appears here, dated, with priorities in order.</div></div>`}`;
 }
 
 function vDates(){
@@ -1187,7 +1313,7 @@ function briefBlock(body){
    render, so a badge can never disagree with what it opens. */
 const V={
   today:   {icon:'\u25C6', label:'Today',              h:vToday},
-  brief:   {icon:'\u2726', label:'Morning brief',      h:vBrief},
+  brief:   {icon:'\u2726', label:'Dashboard',           h:vBrief},
   answers: {icon:'\u2713', label:'Answers from Ignacio', h:vAnswers,
             n:()=>unreadAns().length},
   dates:   {icon:'\u25F7', label:'Dates to answer',    h:vDates,
@@ -1218,6 +1344,10 @@ function draw(){
   views.innerHTML=`<div class="view on">${V[cur].h()}</div>`;
   document.getElementById('ttl').textContent=V[cur].label;
   document.getElementById('sub').textContent=cur==='brief'?'Dev queue':V[cur].label;
+  if(biAuto){ const r=biAuto; biAuto=null;
+    const b=document.getElementById('bi-'+r);
+    if(b){ b.hidden=false; b.scrollIntoView({block:'center'});
+      const i=b.querySelector('input'); if(i) i.focus(); } }
   drawNav();
 }
 async function refresh(quiet){
@@ -1253,6 +1383,9 @@ document.addEventListener('click',e=>{
   if(fo){ const b=document.getElementById('fu-'+fo.dataset.fuopen);
     if(b){ b.hidden=!b.hidden; if(!b.hidden){ const t=b.querySelector('textarea'); if(t) t.focus(); } }
     return; }
+
+  const ga=e.target.closest('[data-goans]');
+  if(ga){ biAuto=ga.dataset.goans; return go('answers'); }
 
   const bo=e.target.closest('[data-biopen]');
   if(bo){ const b=document.getElementById('bi-'+bo.dataset.biopen);
