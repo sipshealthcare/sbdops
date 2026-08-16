@@ -56,6 +56,8 @@ work and there is nothing to clear.
 | `sbd_dates_to_answer` | Dates Ignacio proposed that still need a yes or a different date. |
 | `sbd_answers` | Ignacio's decisions with his reasoning, and whether each is read. |
 | `sbd_brief` | The morning brief in full. |
+| `sbd_specs` | Which items carry a detail write-up. |
+| `sbd_spec` | One write-up in full, as markdown. |
 
 **Dates**
 
@@ -89,6 +91,20 @@ slip gets reported instead of going quiet, and it is never treated as a failure.
 `sbd_post_eod` takes what was completed, what was verified, what is still in flight with
 expected dates, and anything blocked on Ignacio. What goes under `needs_ignacio` becomes
 a decision on his board rather than a line he might skim past.
+
+## Items that carry a write-up
+
+Where an item needs more than a line of context, there is a full write-up behind it: what it is,
+why it is dated where it is, what already exists in the codebase to copy, and the evidence that
+will close it. Those also appear under **More details** on the board.
+
+```
+sbd_specs          # what has one
+sbd_spec 135       # read it in full
+```
+
+Read it before starting the item. It usually names the existing pattern to copy, which is normally
+the difference between a day and a week.
 
 ## The one rule worth reading
 

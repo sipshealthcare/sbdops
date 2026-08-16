@@ -274,6 +274,28 @@ const TOOLS = [
     },
   },
   {
+    name: 'sbd_specs',
+    description:
+      'The write-ups behind items on the board. Where an item needs more than a line of context, ' +
+      'the full detail lives here: what it is, why it is dated where it is, what already exists to ' +
+      'copy, and how it will be judged done. This lists them. Use sbd_spec to read one in full.',
+    inputSchema: { type: 'object', properties: {} },
+  },
+  {
+    name: 'sbd_spec',
+    description:
+      'One write-up in full, as markdown. Read this before starting an item that has one, because ' +
+      'it usually names the existing pattern to copy and the evidence that will close the item. ' +
+      'Give it either the item number or the slug.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        number: { type: 'number', description: 'Board item number, e.g. 135.' },
+        slug: { type: 'string', description: 'Slug from sbd_specs, e.g. curriculum-135-grant.' },
+      },
+    },
+  },
+  {
     name: 'sbd_brief',
     description:
       "The latest morning brief from Ignacio, in full. It carries the day's priorities, what is " +
@@ -502,6 +524,40 @@ async function handle(name, a = {}) {
         p_ref: a.ref, p_what: a.title, p_date: a.date,
         p_who: whoOr(a), p_why: a.reason || null, p_priority: a.priority || 'medium',
       }));
+
+    case 'sbd_specs': {
+      const rows = await query(
+        'build_specs?select=slug,item_number,title,summary,updated_at' +
+        '&order=item_number.asc.nullsfirst',
+      );
+      if (!rows.length) return text('No write-ups have been published yet.');
+      return ok(rows.map((r) => ({
+        slug: r.slug,
+        item: r.item_number,
+        title: r.title,
+        summary: r.summary,
+        updated: r.updated_at,
+        read_it_with: `sbd_spec ${r.item_number != null ? r.item_number : r.slug}`,
+      })));
+    }
+
+    case 'sbd_spec': {
+      if (a.number == null && !a.slug) {
+        return text('Give it an item number or a slug. sbd_specs lists what is available.');
+      }
+      const where = a.slug
+        ? `slug=eq.${encodeURIComponent(a.slug)}`
+        : `item_number=eq.${Number(a.number)}`;
+      const rows = await query(
+        `build_specs?select=slug,item_number,title,summary,body,author,updated_at&${where}&limit=1`,
+      );
+      if (!rows.length) {
+        return text(
+          'Nothing written up under that. Run sbd_specs to see what has a detail page.',
+        );
+      }
+      return ok(rows[0]);
+    }
 
     case 'sbd_brief': {
       const rows = await query(
