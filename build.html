@@ -560,6 +560,12 @@ body{background:#070d1f}
 .fu textarea.inp{width:100%;padding:10px 12px;font-size:12.5px;line-height:1.55;
   min-height:82px;resize:vertical;font-family:inherit}
 .fu[hidden]{display:none!important}
+.bi{margin-top:12px;padding:12px 13px;border-radius:10px;background:rgba(63,185,132,.06);
+  border:1px solid rgba(63,185,132,.28)}
+.bi-h{font-size:11.5px;color:var(--dim);line-height:1.55;margin-bottom:9px;max-width:74ch}
+.bi[hidden]{display:none!important}
+.bi-done{margin-top:11px;font-size:12px;line-height:1.55;color:#cbd5e5;
+  border-left:2px solid var(--grn);padding:3px 0 3px 11px;max-width:76ch}
 @media(max-width:860px){ .ans-act{flex-direction:column;align-items:stretch}
   .ans-act .btn{width:100%} .ans-h{flex-direction:column;gap:7px}
   .ans-p{justify-content:flex-start} }
@@ -637,7 +643,8 @@ async function load(){
       '&order=number.asc'),
     q('briefs?select=brief_date,author,body&order=brief_date.desc&limit=1'),
     q('decisions?select=ref,question,blocks,note,raised_on,status,answer,reasoning,verdict,'+
-      'answered_on,review_on,seen_at,seen_by,parent_ref,asked_by'+
+      'answered_on,review_on,seen_at,seen_by,parent_ref,asked_by,'+
+      'build_ask,build_ask_by'+
       '&order=answered_on.desc.nullslast,ref.desc')
   ]);
   ALL=items; BRIEF=briefs[0]||null; DEC=dec;
@@ -874,6 +881,7 @@ function ansCard(d,fresh){
     <div class="ans-t">${esc(d.answer)}</div></div>
   ${d.reasoning?`<div class="ans-why"><span class="ans-l">Why</span>
     <div class="ans-t">${esc(d.reasoning)}</div></div>`:''}
+  ${d.build_ask?`<div class="bi-done"><b>Build item requested</b> by ${esc(d.build_ask_by||'the team')}: ${esc(d.build_ask)}<br>Ignacio puts the date on it. It arrives on your Dates to answer tab, and you confirm it or send back one that works.</div>`:''}
   ${kids.length?`<div class="ans-ctx fu-sent">Follow-up sent: ${kids.map(k=>esc(k.ref)+(k.status==='open'?' (waiting on him)':' (answered)')).join(', ')}. It sits on his board as its own question and the answer comes back to this tab.</div>`:''}
   <div class="ans-act">
     ${d.seen_at
@@ -883,6 +891,15 @@ function ansCard(d,fresh){
          <button class="btn" data-fuopen="${esc(d.ref)}">Ask a follow-up</button>`
       : `<button class="btn btn-g" data-ack="${esc(d.ref)}">Got it</button>
          <button class="btn" data-fuopen="${esc(d.ref)}">Still not clear</button>`}
+    ${d.build_ask?'':`<button class="btn" data-biopen="${esc(d.ref)}">This needs a build item</button>`}
+  </div>
+  <div class="bi" id="bi-${esc(d.ref)}" hidden>
+    <div class="bi-h">If this answer means something has to get built, say what it is in one line. It goes on the tracker with this decision kept as the reason. You do not set the date here: Ignacio proposes one and it comes back to your Dates to answer tab, where you confirm it or send back the date you can actually hit.</div>
+    <input class="inp" id="bt-${esc(d.ref)}" placeholder="What would get built, in one line" style="width:100%;padding:10px 12px;font-size:12.5px">
+    <div class="row" style="margin-top:9px">
+      <button class="btn btn-g" data-bisend="${esc(d.ref)}">Send it to Ignacio</button>
+      <button class="btn" data-biopen="${esc(d.ref)}">Cancel</button>
+    </div>
   </div>
   <div class="fu" id="fu-${esc(d.ref)}" hidden>
     <div class="fu-h">Say what is missing. It goes back to Ignacio as its own question, linked to this one, and lands on his board straight away. Being specific here saves a round trip.</div>
@@ -1114,6 +1131,17 @@ document.addEventListener('click',e=>{
   if(fo){ const b=document.getElementById('fu-'+fo.dataset.fuopen);
     if(b){ b.hidden=!b.hidden; if(!b.hidden){ const t=b.querySelector('textarea'); if(t) t.focus(); } }
     return; }
+
+  const bo=e.target.closest('[data-biopen]');
+  if(bo){ const b=document.getElementById('bi-'+bo.dataset.biopen);
+    if(b){ b.hidden=!b.hidden; if(!b.hidden){ const i=b.querySelector('input'); if(i) i.focus(); } }
+    return; }
+
+  const bs=e.target.closest('[data-bisend]');
+  if(bs){ const r=bs.dataset.bisend, who=val('who'); if(who) localStorage.setItem(WHO,who);
+    if(!val('bt-'+r)) return say('Say in one line what would get built.');
+    return act(async()=>{ await rpc('ask_for_item',{p_ref:r,p_what:val('bt-'+r),p_who:who||null});
+      say('Sent. Ignacio dates it and it lands on your Dates to answer tab.'); }); }
 
   const fs=e.target.closest('[data-fusend]');
   if(fs){ const r=fs.dataset.fusend, who=val('who'); if(who) localStorage.setItem(WHO,who);

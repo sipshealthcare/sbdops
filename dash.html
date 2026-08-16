@@ -304,6 +304,12 @@ body{background:#070d1f}
 .wk{margin-top:10px;padding:12px 13px;border-radius:10px;background:var(--lift);
   border:1px solid var(--line)}
 .wk-h{font-size:11.5px;color:var(--dim);line-height:1.55;margin-bottom:10px;max-width:74ch}
+.wk-l{display:block;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--mut);font-weight:600;margin:12px 0 5px}
+.wk-ask{margin-top:10px;padding:10px 12px;border-radius:9px;background:rgba(224,161,50,.07);
+  border-left:2px solid var(--amb);font-size:12px;line-height:1.55;color:#cbd5e5}
+.wk-ask b{color:var(--amb)}
+.wk .quick{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
 .wk[hidden]{display:none!important}
 .qi-b{font-size:12.5px;color:#cbd5e5;margin-top:8px;line-height:1.55}
 .check{margin-top:9px;font-size:11.5px;line-height:1.5;color:#94a3b8;
@@ -634,7 +640,8 @@ async function load(){
     q('tracker_items?select=*&order=number.asc'),
     q('intake?select=ref,who,sips_function,area,impact,what,expected,status,severity,verdict,analysis,decision,decided_at,submitted_at,tracker_item_id&order=submitted_at.asc'),
     q('decisions?select=ref,question,blocks,note,raised_on,status,answer,reasoning,answered_on,'+
-      'review_on,verdict,seen_at,seen_by,parent_ref,asked_by&order=raised_on.asc'),
+      'review_on,verdict,seen_at,seen_by,parent_ref,asked_by,'+
+      'build_ask,build_ask_by,build_ask_at&order=raised_on.asc'),
     q('releases?select=released_on,outcome,summary,detail,verification,item_numbers&order=released_on.desc&limit=20'),
     q('reference_docs?select=slug,title,body'),
     q('briefs?select=brief_date,author,body&order=brief_date.desc&limit=5'),
@@ -649,6 +656,16 @@ async function load(){
   await Promise.all(ALL.filter(t=>t.status!=='shipped'&&t.status!=='backlog'&&!t.proposed_on)
     .map(t=>rpc('suggest_date',{p_number:t.number}).then(r=>{SUGG[t.number]=r;}).catch(()=>{})));
   rpc('snapshot_tracker').catch(()=>{});
+}
+
+/* the dates people actually pick, faster than opening a calendar */
+function quickD(){
+  const d0=new Date(today()+'T12:00:00');
+  const mk=n=>{const d=new Date(d0); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10);};
+  const nextDow=w=>{const d=new Date(d0); d.setDate(d.getDate()+(((w-d.getDay())+7)||7)); return d.toISOString().slice(0,10);};
+  return [{label:'Thu',iso:nextDow(4)},{label:'Fri',iso:nextDow(5)},{label:'Next Mon',iso:nextDow(1)},
+          {label:'In 2 weeks',iso:mk(14)},{label:'End of month',iso:(()=>{const d=new Date(d0);
+            d.setMonth(d.getMonth()+1,0); return d.toISOString().slice(0,10);})()}];
 }
 
 const agreed=t=>t.date_state==='countered'?t.counter_on:t.proposed_on;
@@ -1065,16 +1082,27 @@ function vDecisions(){
       : `\u2713 Read by ${esc(d.seen_by)} on ${D(String(d.seen_at).slice(0,10))}`}</div>
     ${kids.length?`<div class="qi-n warm">They sent this back: ${kids.map(k=>esc(k.ref)+(k.status==='open'?' (open, waiting on you)':' (answered)')).join(', ')}</div>`:''}
     ${work.length
-      ? `<div class="rcpt on">On the tracker as ${work.map(t=>'#'+t.number).join(', ')}</div>`
-      : `<div class="row" style="margin-top:10px"><button class="btn btn-o" data-wkopen="${esc(d.ref)}">Turn this into work</button></div>
+      ? work.map(t=>`<div class="rcpt on">On the tracker as #${t.number}. ${
+          t.date_state==='pending'   ? 'Date proposed for '+D(t.proposed_on)+', waiting on them to confirm.'
+        : t.date_state==='countered' ? 'They sent back '+D(t.counter_on)+'.'
+        : t.date_state==='confirmed' ? 'They confirmed '+D(agreed(t))+'.'
+        : 'No date set yet, so it is sitting on your Waiting on dates tab.'}</div>`).join('')
+      : `${d.build_ask?`<div class="wk-ask"><b>${esc(d.build_ask_by||'The dev team')} says this needs a build item:</b><br>${esc(d.build_ask)}</div>`:''}
+        <div class="row" style="margin-top:10px"><button class="btn ${d.build_ask?'btn-g':'btn-o'}" data-wkopen="${esc(d.ref)}">Turn this into work</button></div>
         <div class="wk" id="wk-${esc(d.ref)}" hidden>
-          <div class="wk-h">Some answers create build work. This puts it on the tracker with ${esc(d.ref)} recorded as its origin, so the reason survives the handoff.</div>
-          <input class="inp" id="wt-${esc(d.ref)}" placeholder="What gets built, in one line" style="width:100%;margin-bottom:9px;padding:10px 11px;font-size:12.5px">
-          <div class="row">
-            <select class="inp" id="wp-${esc(d.ref)}" style="width:auto;padding:9px 11px;font-size:12.5px">
-              <option value="critical">Critical</option><option value="high">High</option>
-              <option value="medium" selected>Medium</option><option value="low">Low</option></select>
-            <button class="btn btn-g" data-wksend="${esc(d.ref)}">Add to the queue</button>
+          <div class="wk-h">This puts it on the tracker with ${esc(d.ref)} kept as its origin, so the reason survives the handoff. Give it a date here and it goes straight to the dev team's Dates to answer tab, where they confirm it or send back a different one with their reason. Leave the date blank and it lands undated on your own Waiting on dates tab instead.</div>
+          <span class="wk-l">What gets built</span>
+          <input class="inp" id="wt-${esc(d.ref)}" value="${esc(d.build_ask||'')}" placeholder="One line, in plain words" style="width:100%;padding:10px 11px;font-size:12.5px">
+          <span class="wk-l">Priority</span>
+          <select class="inp" id="wp-${esc(d.ref)}" style="width:auto;padding:9px 11px;font-size:12.5px">
+            <option value="critical">Critical</option><option value="high">High</option>
+            <option value="medium" selected>Medium</option><option value="low">Low</option></select>
+          <span class="wk-l">Date you want it finished by</span>
+          <div class="dtwrap" style="display:block;max-width:220px"><input class="inp dt" id="wd-${esc(d.ref)}" type="date" min="${today()}" style="width:100%;padding:9px 11px;font-size:12.5px">
+            <span class="dtico">&#9662;</span></div>
+          <div class="quick">${quickD().map(x=>`<button class="qd" data-wkd="${esc(d.ref)}" data-d="${x.iso}">${x.label} ${short(x.iso)}</button>`).join('')}</div>
+          <div class="row" style="margin-top:13px">
+            <button class="btn btn-g" data-wksend="${esc(d.ref)}">Add it and propose the date</button>
             <button class="btn" data-wkopen="${esc(d.ref)}">Cancel</button>
           </div>
         </div>`}
@@ -1315,13 +1343,20 @@ document.addEventListener('click',e=>{
   if(wo){ const b=document.getElementById('wk-'+wo.dataset.wkopen);
     if(b){ b.hidden=!b.hidden; if(!b.hidden){ const i=b.querySelector('input'); if(i) i.focus(); } }
     return; }
+  const wq=e.target.closest('[data-wkd]');
+  if(wq){ const f=document.getElementById('wd-'+wq.dataset.wkd);
+    if(f){ f.value=wq.dataset.d;
+      wq.parentElement.querySelectorAll('.qd').forEach(x=>x.classList.remove('on'));
+      wq.classList.add('on'); } return; }
   const ws=e.target.closest('[data-wksend]');
   if(ws){ const r=ws.dataset.wksend, t=val('wt-'+r);
     if(!t) return say('Say what gets built, in one line.');
     const sel=document.getElementById('wp-'+r), pr=sel?sel.value:'medium';
+    const dt=val('wd-'+r)||null;
     return act(async()=>{ const n=await rpc('add_task',{p_title:t,p_priority:pr,
-      p_note:'Came out of decision '+r+'.',p_origin:r});
-      say(`Added as #${n}. It shows on the dev queue with ${r} kept as the reason.`); }); }
+      p_note:'Came out of decision '+r+'.',p_origin:r,p_proposed_on:dt});
+      say(dt?`Added as #${n} and ${short(dt)} proposed. It is on their Dates to answer tab now.`
+            :`Added as #${n} with no date. It is on your Waiting on dates tab.`); }); }
 
   const aw=e.target.closest('[data-answer]');
   if(aw){ const r=aw.dataset.answer;
