@@ -111,6 +111,21 @@ body{background:#070d1f}
 .when.soft{border-left-color:var(--line);color:var(--dim)}
 .when.soft .when-l{color:var(--mut)}
 .when.late{border-left-color:var(--red)} .when.late .when-l{color:var(--red)}
+/* the sentence a leader can repeat without reading the list */
+.lede{font-size:15.5px;line-height:1.6;color:#e6ebf5;margin:-4px 0 18px;max-width:64ch}
+.lede b{color:var(--gold);font-weight:700}
+.stamp{font-size:11px;color:var(--mut);margin-left:auto;text-align:right;line-height:1.45}
+.stamp b{display:block;color:var(--dim);font-weight:600}
+.grp{display:flex;align-items:center;gap:11px;margin:20px 0 11px;
+  font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);font-weight:600}
+.grp:first-of-type{margin-top:4px}
+.grp:after{content:'';flex:1;height:1px;background:var(--line)}
+.it-ref{font-size:11px;color:var(--mut);margin-top:5px}
+.it-ref .hash{font-weight:700;color:var(--dim)}
+.note{border:1px solid var(--line);border-radius:14px;padding:15px 16px;margin-top:18px;
+  background:rgba(63,185,132,.045)}
+.note-t{font-size:12.5px;font-weight:600;color:var(--grn);margin-bottom:6px}
+.note-b{font-size:12.5px;line-height:1.65;color:var(--dim);max-width:74ch}
 .srchwrap{margin:-6px 0 18px}
 .srch{width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;
   color:var(--txt);padding:12px 15px;font-size:13.5px;font-family:inherit}
@@ -156,7 +171,8 @@ body{background:#070d1f}
     <div class="main">
       <div class="top">
         <div class="top-t" id="ttl">Live</div>
-        <button class="btn" id="refresh">Refresh</button>
+        <div class="stamp" id="stamp"></div>
+        <button class="btn" id="refresh" style="margin-left:14px">Refresh</button>
       </div>
       <div class="srchwrap"><input class="srch" id="search"
         placeholder="Search &mdash; a number, or words from a task"></div>
@@ -214,14 +230,42 @@ function whenBlock(t){
   return `<div class="when soft"><span class="when-l">Expected completion</span>Not set yet</div>`;
 }
 
+/* Lead with the plain-English line where one has been written, and keep the build
+   title underneath so the two records can always be tied together. */
 function item(t){
+  const head=t.summary||t.title;
   return `<div class="it">
-    <div class="it-h"><div class="it-t">${esc(t.title)}</div>
+    <div class="it-h"><div class="it-t">${esc(head)}</div>
       <div>${P(tone(t.status),label(t.status))}</div></div>
+    <div class="it-ref"><span class="hash">#${t.number}</span>${t.summary?' &middot; '+esc(t.title):''}</div>
     ${whenBlock(t)}
     ${t.confirmed_by?`<div class="proof"><span class="proof-l">How it was confirmed</span>${esc(t.confirmed_by)}</div>`:''}
   </div>`;
 }
+
+/* Month buckets. A leader thinks in when, not in item number. */
+function monthKey(d){ const x=new Date(d+'T12:00:00'); return x.getFullYear()*12+x.getMonth(); }
+function monthGroups(rows){
+  const n=new Date(today()+'T12:00:00'), cur=n.getFullYear()*12+n.getMonth();
+  const name=k=>new Date(Math.floor(k/12), k%12, 1).toLocaleDateString('en-US',{month:'long'});
+  const out=new Map();
+  rows.forEach(t=>{
+    if(!t.due_on){ push('Date being agreed', t); return; }
+    const k=monthKey(t.due_on);
+    push(k===cur?`This month, ${name(k)}`:k===cur+1?`Next month, ${name(k)}`:`Later, from ${name(k)}`, t);
+  });
+  function push(label,t){ if(!out.has(label)) out.set(label,[]); out.get(label).push(t); }
+  return [...out.entries()];
+}
+
+const HOWNOTE=`<div class="note">
+  <div class="note-t">How to read this record</div>
+  <div class="note-b">Nothing is marked live on the strength of someone saying it is done. Each live item
+  carries the check that was run against the running system, and that check is shown with it. Nothing
+  appears here at all without a completion date both sides have agreed, so a date on this page is a
+  commitment rather than an estimate. If a date is being renegotiated the item comes off the page until
+  it is agreed again.</div>
+</div>`;
 
 let LTAB='live';
 function drawNav(){
@@ -233,34 +277,49 @@ function drawNav(){
 }
 
 function draw(){
-  const live=ROWS.filter(t=>t.status==='shipped');
+  const live=ROWS.filter(t=>t.status==='shipped')
+                 .sort((a,b)=>String(b.shipped_on).localeCompare(String(a.shipped_on)));
   const soon=ROWS.filter(t=>t.status!=='shipped')
                  .sort((a,b)=>String(a.due_on).localeCompare(String(b.due_on)));
+  const recent=live.filter(t=>t.shipped_on&&days(t.shipped_on)>=-30);
+  const older=live.filter(t=>!recent.includes(t));
   const week=soon.filter(t=>t.due_on&&days(t.due_on)<=7).length;
+  const late=soon.filter(t=>t.due_on&&days(t.due_on)<0).length;
   const withProof=live.filter(t=>t.confirmed_by).length;
   drawNav();
   document.getElementById('ttl').textContent = LTAB==='live'?'Live':'Scheduled';
+
+  const changed=ROWS.map(t=>t.updated_at).filter(Boolean).sort().pop();
+  document.getElementById('stamp').innerHTML = changed
+    ? `<b>Read live from the record</b>Last change ${DL(String(changed).slice(0,10))}`
+    : '<b>Read live from the record</b>';
+
+  /* The sentence a leader came for, before any list. */
+  const lede = `<div class="lede"><b>${live.length}</b> of ${ROWS.length} shared items ${live.length===1?'is':'are'} live.
+    <b>${soon.length}</b> ${soon.length===1?'has':'have'} a completion date agreed by both sides${late?`, and <b>${late}</b> ${late===1?'is':'are'} past that date`:''}.
+    ${withProof} of the live items carr${withProof===1?'ies':'y'} a recorded check against the running system.</div>`;
 
   const body = LTAB==='live'
     ? `<div class="card">
         <div class="card-h"><div class="ic warm">&#10003;</div>
           <div><div class="card-t">Live</div>
           <div class="card-s">${live.length?`${withProof} of ${live.length} carry a recorded check against the running system`:'What ships appears here with how it was confirmed'}</div></div></div>
-        ${live.length?live.map(item).join(''):'<div class="empty">Nothing recorded as live yet.</div>'}
+        ${live.length?`
+          ${recent.length?`<div class="grp">Live in the last 30 days</div>${recent.map(item).join('')}`:''}
+          ${older.length?`<div class="grp">Live before that</div>${older.map(item).join('')}`:''}`
+        :'<div class="empty">Nothing recorded as live yet.</div>'}
       </div>`
     : `<div class="card">
         <div class="card-h"><div class="ic">&#9673;</div>
           <div><div class="card-t">Scheduled</div>
           <div class="card-s">Completion dates agreed by both sides &middot; ${week} due within a week</div></div></div>
-        ${soon.length?soon.map(item).join(''):'<div class="empty">Nothing scheduled to show yet. Work appears here once its completion date is agreed.</div>'}
+        ${soon.length?monthGroups(soon).map(([g,rows])=>
+            `<div class="grp">${esc(g)}</div>${rows.map(item).join('')}`).join('')
+          :'<div class="empty">Nothing scheduled to show yet. Work appears here once its completion date is agreed.</div>'}
       </div>`;
 
-  document.getElementById('view').innerHTML = body + `
-<div class="foot">
-  Showing ${ROWS.length} item${ROWS.length===1?'':'s'} selected for this view.<br>
-  Nothing appears here without an agreed completion date. A date being renegotiated
-  comes off the page until it is agreed again.
-</div>`;
+  document.getElementById('view').innerHTML = lede + body + HOWNOTE + `
+<div class="foot">Showing ${ROWS.length} item${ROWS.length===1?'':'s'} selected for this view.</div>`;
   const q=document.getElementById('search').value.trim().toLowerCase();
   if(q) document.querySelectorAll('#view .it').forEach(c=>{
     c.style.display = c.textContent.toLowerCase().includes(q)?'':'none';});
