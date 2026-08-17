@@ -1131,7 +1131,7 @@ function vToday(){
   const S=stats();
   const blocked=S.rows.filter(waitingOnHim);
   const focus=S.rest.filter(t=>!waitingOnHim(t)).slice(0,4);
-  return heroBlock()+`
+  return heroBlock()+briefCard()+`
 <div class="cols">
   <div class="col">
     <div class="card">
@@ -1407,6 +1407,20 @@ function vMcp(){
 </div>`;
 }
 
+/* The morning brief. One builder, rendered at the top of Today. */
+function briefCard(){
+  if(!BRIEF) return `<div class="card"><div class="card-h"><div class="ic warm">\u2726</div>
+    <div><div class="card-t">Morning brief</div></div></div>
+    <div class="p muted">No brief has been sent yet. When Ignacio posts one it appears here,
+      dated, with priorities in order.</div></div>`;
+  return `<div class="card">
+  <div class="card-h"><div class="ic warm">\u2726</div>
+    <div><div class="card-t">This morning's brief</div>
+    <div class="card-s">From ${esc(BRIEF.author)} &middot; ${D(BRIEF.brief_date)}</div></div></div>
+  ${briefBlock(BRIEF.body)}
+</div>`;
+}
+
 function vBrief(){
   const nd=needsDate(), S=stats();
   return heroBlock()+`
@@ -1455,14 +1469,7 @@ ${nd.length?`<div class="card">
     </div>`:''}
   </div>
 </div>
-${BRIEF?`<div class="card">
-  <div class="card-h"><div class="ic warm">\u2726</div>
-    <div><div class="card-t">This morning's brief</div>
-    <div class="card-s">From ${esc(BRIEF.author)} &middot; ${D(BRIEF.brief_date)}</div></div></div>
-  ${briefBlock(BRIEF.body)}
-</div>`:`<div class="card"><div class="card-h"><div class="ic warm">\u2726</div>
-    <div><div class="card-t">Morning brief</div></div></div>
-    <div class="p muted">No brief has been sent yet. When Ignacio posts one it appears here, dated, with priorities in order.</div></div>`}`;
+`;
 }
 
 function vDates(){
@@ -1599,7 +1606,8 @@ function briefBlock(body){
 /* Views. One nav item, one screen. Counts come from the same data the screens
    render, so a badge can never disagree with what it opens. */
 const V={
-  today:   {icon:'\u25C6', label:'Today',              h:vToday},
+  today:   {icon:'\u25C6', label:'Today',              h:vToday,
+            sub:'The brief, and what to pick up'},
   brief:   {icon:'\u2726', label:'Dashboard',           h:vBrief},
   answers: {icon:'\u2713', label:'Answers from Ignacio', h:vAnswers,
             n:()=>unreadAns().length},
@@ -1613,8 +1621,8 @@ const V={
             n:()=>open_().filter(t=>t.date_state!=='pending'||t.rank!=null).length},
   standing:{icon:'\u25CE', label:'Where things stand', h:vStanding}
 };
-const KEYS=['brief','answers','sheet','today','dates','queue','standing','details','mcp'];
-let cur='brief';
+const KEYS=['today','brief','answers','sheet','dates','queue','standing','details','mcp'];
+let cur='today';
 function drawNav(){
   const nav=document.getElementById('nav'); if(!nav) return;
   nav.innerHTML='<div class="nav-l">Queue</div>'+KEYS.map(k=>{
@@ -1634,7 +1642,7 @@ function draw(){
   const sb=document.getElementById('stale'); if(sb) sb.innerHTML=staleBar();
   views.innerHTML=`<div class="view on">${V[cur].h()}</div>`;
   document.getElementById('ttl').textContent=V[cur].label;
-  document.getElementById('sub').textContent=V[cur].sub||(cur==='brief'?'Dev queue':V[cur].label);
+  document.getElementById('sub').textContent=V[cur].sub||(cur==='today'?'Dev queue':V[cur].label);
   if(biAuto){ const r=biAuto; biAuto=null;
     const b=document.getElementById('bi-'+r);
     if(b){ b.hidden=false; b.scrollIntoView({block:'center'});
