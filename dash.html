@@ -207,11 +207,12 @@ body{background:#070d1f}
 .tbl td{padding:10px 11px;border-top:1px solid var(--line);vertical-align:top;word-break:break-word}
 .tbl th:first-child,.tbl td:first-child{width:66px;white-space:nowrap}
 .btn{border:0;border-radius:8px;padding:9px 16px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit}
-/* Program switch: Belt or PSOP. One record, two build programs. */
+/* Program switch: Belt, PSOP, OTIS, Blue Ops or David. One record, five build programs. */
 .prog{display:inline-flex;border:1px solid var(--line,#d9dee7);border-radius:999px;padding:2px;margin-left:auto;background:rgba(255,255,255,.6)}
 .prog button{border:0;background:transparent;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;color:#64748b;white-space:nowrap}
 .prog button.on{background:#001B3D;color:#fff}
-@media (max-width:560px){.top{flex-wrap:wrap}.top>div:not(.prog):not(.stamp){flex:1;min-width:0}.prog{order:9;margin-left:0;width:100%;justify-content:stretch;margin-top:2px}.prog button{flex:1;padding:8px 9px;font-size:12px}}
+@media (max-width:560px){.top{flex-wrap:wrap}.top>div:not(.prog):not(.stamp){flex:1;min-width:0}.prog{order:9;margin-left:0;width:100%;justify-content:stretch;margin-top:2px}.prog button{flex:1;padding:8px 4px;font-size:12px;min-width:0}}
+@media (max-width:380px){.prog button{font-size:11px;padding:8px 2px}}
 
 .lbl{display:block;font-size:13.5px;font-weight:600;margin-bottom:3px}
 .hint{display:block;font-size:12px;margin-bottom:9px}
@@ -619,7 +620,7 @@ a.nav-i{text-decoration:none;color:inherit;box-sizing:border-box}
       <button class="burger" id="burger" aria-label="Sections"><span></span><span></span><span></span></button>
       <div><div class="top-t" id="ttl">SBD Ops</div><div class="top-s" id="sub">Master admin</div></div>
       <div class="prog" id="prog" role="tablist" aria-label="Program">
-        <button data-prog="belt" role="tab">Belt</button><button data-prog="psop" role="tab">PSOP</button></div>
+        <button data-prog="belt" role="tab">Belt</button><button data-prog="psop" role="tab">PSOP</button><button data-prog="otis" role="tab">OTIS</button><button data-prog="blueops" role="tab">Blue Ops</button><button data-prog="david" role="tab">David</button></div>
       <button class="btn" id="refresh" hidden>Refresh</button>
     </div>
     <div id="views"></div>
@@ -658,11 +659,14 @@ async function q(path){
 let SUGG={}, TPUT=null;
 let ALL=[], INTAKE=[], DEC=[], REL=[], REF=[], BRIEFS=[], ADD=[], SNAP=[], TIERS=[], FEATS=[];
 
-/* Which build program this page is showing. Belt is the default; PSOP sits in the
-   same record under its own number series (1001 and up). Remembered per browser. */
-const PROGS={belt:{label:'Belt',name:'SBD Belt'},psop:{label:'PSOP',name:'PSOP'}};
+/* Which build program this page is showing. Belt is the default; the others sit in the
+   same record under their own number series: PSOP 1001 and up, OTIS 2001 and up,
+   Blue Ops 3001 and up, David 4001 and up (rows moved off Belt on 19 Nov 2026 keep
+   their old numbers). Remembered per browser. */
+const PROGS={belt:{label:'Belt',name:'SBD Belt'},psop:{label:'PSOP',name:'PSOP'},
+  otis:{label:'OTIS',name:'OTIS'},blueops:{label:'Blue Ops',name:'Blue Ops'},david:{label:'David',name:'David OG'}};
 const PKEY='sbd_program';
-let PROG='belt'; try{ if(localStorage.getItem(PKEY)==='psop') PROG='psop'; }catch(_){}
+let PROG='belt'; try{ const _s=localStorage.getItem(PKEY); if(_s&&PROGS[_s]) PROG=_s; }catch(_){}
 const pf=()=>'&program=eq.'+PROG;
 function drawProg(){ document.querySelectorAll('#prog button').forEach(b=>b.classList.toggle('on',b.dataset.prog===PROG)); }
 function setProg(p){ if(!PROGS[p]||p===PROG) return; PROG=p; try{ localStorage.setItem(PKEY,p); }catch(_){}
@@ -680,13 +684,13 @@ function progURL(p){ try{ const u=new URL(location.href);
 }
 function progHref(p){ try{ const u=new URL(location.href);
   if(p==='belt') u.searchParams.delete('p'); else u.searchParams.set('p',p);
-  u.searchParams.delete('program'); return u.pathname+(u.search||''); }catch(_){ return p==='belt'?'?':'?p=psop'; } }
+  u.searchParams.delete('program'); return u.pathname+(u.search||''); }catch(_){ return p==='belt'?'?':'?p='+p; } }
 /* The menu item is a real link, so it can be copied, shared or opened in a new tab.
    A plain tap switches the program in place; the address still changes either way. */
-function navProgHTML(){ const other=PROG==='belt'?'psop':'belt';
-  return '<div class="nav-l">Program</div>'+
+function navProgHTML(){ const others=Object.keys(PROGS).filter(k=>k!==PROG);
+  return '<div class="nav-l">Program</div>'+others.map(other=>
     `<a class="nav-i nav-prog" href="${progHref(other)}" data-prog="${other}">
-       <span class="ni">&#9635;</span><span class="lbl">${PROGS[other].label} board</span></a>`;
+       <span class="ni">&#9635;</span><span class="lbl">${PROGS[other].label} board</span></a>`).join('');
 }
 document.addEventListener('click',e=>{ const a=e.target.closest('.nav-prog'); if(!a) return;
   if(e.metaKey||e.ctrlKey||e.shiftKey||e.button) return;   // let the browser open it its own way
