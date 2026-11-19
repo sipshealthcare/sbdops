@@ -207,6 +207,13 @@ body{background:#070d1f}
 .tbl td{padding:10px 11px;border-top:1px solid var(--line);vertical-align:top;word-break:break-word}
 .tbl th:first-child,.tbl td:first-child{width:66px;white-space:nowrap}
 .btn{border:0;border-radius:8px;padding:9px 16px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit}
+/* Program switch: Belt, PSOP, OTIS, Blue Ops or David. One record, five build programs. */
+.prog{display:inline-flex;border:1px solid var(--line,#d9dee7);border-radius:999px;padding:2px;margin-left:auto;background:rgba(255,255,255,.6)}
+.prog button{border:0;background:transparent;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;color:#64748b;white-space:nowrap}
+.prog button.on{background:#001B3D;color:#fff}
+@media (max-width:560px){.top{flex-wrap:wrap}.top>div:not(.prog):not(.stamp){flex:1;min-width:0}.prog{order:9;margin-left:0;width:100%;justify-content:stretch;margin-top:2px}.prog button{flex:1;padding:8px 4px;font-size:12px;min-width:0}}
+@media (max-width:380px){.prog button{font-size:11px;padding:8px 2px}}
+
 .lbl{display:block;font-size:13.5px;font-weight:600;margin-bottom:3px}
 .hint{display:block;font-size:12px;margin-bottom:9px}
 .ta{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px 13px;font-size:14px;font-family:inherit;line-height:1.5;min-height:90px;resize:vertical}
@@ -470,6 +477,7 @@ body{background:#070d1f}
   font-family:inherit;background:none;transition:background .15s,color .15s}
 .nav-i .ni{width:17px;flex:0 0 17px;text-align:center;font-size:13px;opacity:.85}
 .nav-i span.lbl{flex:1;min-width:0}
+a.nav-i{text-decoration:none;color:inherit;box-sizing:border-box}
 .nav-n{font-size:11px;font-weight:700;border-radius:20px;padding:2px 8px;min-width:22px;text-align:center}
 .nav-i.on{background:linear-gradient(120deg,rgba(212,154,0,.92),rgba(212,154,0,.55));color:#000;font-weight:600}
 .nav-i.on .nav-n{background:rgba(0,0,0,.22);color:#000}
@@ -611,7 +619,9 @@ body{background:#070d1f}
     <div class="top">
       <button class="burger" id="burger" aria-label="Sections"><span></span><span></span><span></span></button>
       <div><div class="top-t" id="ttl">SBD Ops</div><div class="top-s" id="sub">Master admin</div></div>
-      <button class="btn" id="refresh" style="margin-left:auto" hidden>Refresh</button>
+      <div class="prog" id="prog" role="tablist" aria-label="Program">
+        <button data-prog="belt" role="tab">Belt</button><button data-prog="psop" role="tab">PSOP</button><button data-prog="otis" role="tab">OTIS</button><button data-prog="blueops" role="tab">Blue Ops</button><button data-prog="david" role="tab">David</button></div>
+      <button class="btn" id="refresh" hidden>Refresh</button>
     </div>
     <div id="views"></div>
   </main>
@@ -647,26 +657,66 @@ async function q(path){
 }
 
 let SUGG={}, TPUT=null;
-let ALL=[], INTAKE=[], DEC=[], REL=[], REF=[], BRIEFS=[], ADD=[], SNAP=[], TIERS=[];
+let ALL=[], INTAKE=[], DEC=[], REL=[], REF=[], BRIEFS=[], ADD=[], SNAP=[], TIERS=[], FEATS=[];
+
+/* Which build program this page is showing. Belt is the default; the others sit in the
+   same record under their own number series: PSOP 1001 and up, OTIS 2001 and up,
+   Blue Ops 3001 and up, David 4001 and up (rows moved off Belt on 19 Nov 2026 keep
+   their old numbers). Remembered per browser. */
+const PROGS={belt:{label:'Belt',name:'SBD Belt'},psop:{label:'PSOP',name:'PSOP'},
+  otis:{label:'OTIS',name:'OTIS'},blueops:{label:'Blue Ops',name:'Blue Ops'},david:{label:'David',name:'David OG'}};
+const PKEY='sbd_program';
+let PROG='belt'; try{ const _s=localStorage.getItem(PKEY); if(_s&&PROGS[_s]) PROG=_s; }catch(_){}
+const pf=()=>'&program=eq.'+PROG;
+function drawProg(){ document.querySelectorAll('#prog button').forEach(b=>b.classList.toggle('on',b.dataset.prog===PROG)); }
+function setProg(p){ if(!PROGS[p]||p===PROG) return; PROG=p; try{ localStorage.setItem(PKEY,p); }catch(_){}
+  progURL(p); drawProg(); if(typeof refresh==='function') refresh(true); }
+document.addEventListener('click',e=>{ const b=e.target.closest('#prog button'); if(b) setProg(b.dataset.prog); });
+
+/* A link can open a page straight on a program: /dash?p=psop, /build?p=psop, /tracker?p=psop.
+   The link wins over what this browser last looked at, and switching updates the address
+   so the page you are on is always the page you can send to someone. */
+try{ const _p=(new URLSearchParams(location.search).get('p')||new URLSearchParams(location.search).get('program')||'').toLowerCase();
+     if(_p&&PROGS[_p]) PROG=_p; }catch(_){}
+function progURL(p){ try{ const u=new URL(location.href);
+  if(p==='belt') u.searchParams.delete('p'); else u.searchParams.set('p',p);
+  u.searchParams.delete('program'); history.replaceState(null,'',u.pathname+(u.search||'')+u.hash); }catch(_){}
+}
+function progHref(p){ try{ const u=new URL(location.href);
+  if(p==='belt') u.searchParams.delete('p'); else u.searchParams.set('p',p);
+  u.searchParams.delete('program'); return u.pathname+(u.search||''); }catch(_){ return p==='belt'?'?':'?p='+p; } }
+/* The menu item is a real link, so it can be copied, shared or opened in a new tab.
+   A plain tap switches the program in place; the address still changes either way. */
+function navProgHTML(){ const others=Object.keys(PROGS).filter(k=>k!==PROG);
+  return '<div class="nav-l">Program</div>'+others.map(other=>
+    `<a class="nav-i nav-prog" href="${progHref(other)}" data-prog="${other}">
+       <span class="ni">&#9635;</span><span class="lbl">${PROGS[other].label} board</span></a>`).join('');
+}
+document.addEventListener('click',e=>{ const a=e.target.closest('.nav-prog'); if(!a) return;
+  if(e.metaKey||e.ctrlKey||e.shiftKey||e.button) return;   // let the browser open it its own way
+  e.preventDefault(); setProg(a.dataset.prog); });
+
 const WHO='sbd_master_who';
 const me=()=>localStorage.getItem(WHO)||'Ignacio';
 const open_=()=>ALL.filter(t=>t.status!=='shipped');
 const BRIEF=()=>BRIEFS[0]||null;
 
 async function load(){
-  const [items,intake,dec,rel,ref,briefs,add,snap,tiers]=await Promise.all([
-    q('tracker_items?select=*&order=number.asc'),
+  const [items,intake,dec,rel,ref,briefs,add,snap,tiers,feats]=await Promise.all([
+    q('tracker_items?select=*&order=number.asc'+pf()),
     q('intake?select=ref,who,sips_function,area,impact,what,expected,status,severity,verdict,analysis,decision,decided_at,submitted_at,tracker_item_id&order=submitted_at.asc'),
     q('decisions?select=ref,question,blocks,note,raised_on,status,answer,reasoning,answered_on,'+
-      'review_on,verdict,seen_at,seen_by,parent_ref,asked_by&order=raised_on.asc'),
-    q('releases?select=released_on,outcome,summary,detail,verification,item_numbers&order=released_on.desc&limit=20'),
+      'review_on,verdict,seen_at,seen_by,parent_ref,asked_by&order=raised_on.asc'+pf()),
+    q('releases?select=released_on,outcome,summary,detail,verification,item_numbers&order=released_on.desc&limit=20'+pf()),
     q('reference_docs?select=slug,title,body'),
-    q('briefs?select=brief_date,author,body&order=brief_date.desc&limit=5'),
-    q('eod_addenda?select=addendum_date,author,author_role,body,created_at&order=created_at.desc&limit=30'),
-    q('tracker_snapshots?select=snap_date,number,title,status&order=snap_date.desc'),
-    q('severity_tiers?select=tier,name&order=tier.asc')
+    q('briefs?select=brief_date,author,body&order=brief_date.desc&limit=5'+pf()),
+    q('eod_addenda?select=addendum_date,author,author_role,body,created_at&order=created_at.desc&limit=30'+pf()),
+    q('tracker_snapshots?select=snap_date,number,title,status&order=snap_date.desc'+pf()),
+    q('severity_tiers?select=tier,name&order=tier.asc'),
+    q('feature_briefs?select=id,feature,feature_label,brief_date,title,body,author,updated_at'+
+      '&order=brief_date.desc,updated_at.desc'+pf()).catch(()=>[])
   ]);
-  ALL=items; INTAKE=intake; DEC=dec; REL=rel; REF=ref; BRIEFS=briefs; ADD=add; SNAP=snap; TIERS=tiers;
+  ALL=items; INTAKE=intake; DEC=dec; REL=rel; REF=ref; BRIEFS=briefs; ADD=add; SNAP=snap; TIERS=tiers; FEATS=feats||[];
   // a recommendation for anything in hand without a date, from measured throughput
   SUGG={};
   TPUT=await rpc('throughput_stats').catch(()=>null);
@@ -1130,6 +1180,22 @@ function vDecisions(){
 </div>`;
 }
 
+/* Feature briefs, as the dev team sees them on /build. Posted from the SIPS side only. */
+function vFeatures(){
+  if(!FEATS.length) return `<div class="card"><div class="card-h"><div class="ic">\u25A3</div><div>
+    <div class="card-t">Feature briefs</div><div class="card-s">None yet on this program.</div></div></div></div>`;
+  const groups=[]; FEATS.forEach(f=>{ let g=groups.find(x=>x.k===f.feature);
+    if(!g){ g={k:f.feature,label:f.feature_label,rows:[]}; groups.push(g); } g.rows.push(f); });
+  return groups.map(g=>`<div class="card">
+    <div class="card-h"><div class="ic warm">\u25A3</div><div>
+      <div class="card-t">${esc(g.label)}</div>
+      <div class="card-s">${g.rows.length} brief${g.rows.length===1?'':'s'}, shown to the dev team on /build under Feature briefs</div></div></div>
+    ${g.rows.map((f,i)=>`<details ${i===0?'open':''} style="border-top:1px solid var(--line);padding:10px 0">
+      <summary style="cursor:pointer;font-weight:600">${esc(f.title)} <span style="opacity:.6;font-weight:400">&middot; ${D(f.brief_date)}</span></summary>
+      <div style="margin-top:10px">${md(f.body)}</div></details>`).join('')}
+  </div>`).join('');
+}
+
 function vBrief(){
   const b=BRIEF();
   return `<div class="card">
@@ -1140,7 +1206,7 @@ function vBrief(){
 </div>
 <div class="card">
   <div class="card-h"><div class="ic warm">\u25CB</div><div><div class="card-t">Forgot to mention</div>
-  <div class="card-s">Dated, and visible on both boards</div></div></div>
+  <div class="card-s">Dated, and shown on /build under this morning's brief</div></div></div>
   <div class="f"><input class="inp" id="addBody" placeholder="One thing, in plain words" style="width:100%"></div>
   <div class="row" style="margin-bottom:13px"><button class="btn btn-g" data-act="addendum">Push it through</button></div>
   ${ADD.length?ADD.slice(0,8).map(a=>`<div class="mini"><span class="mini-t">${esc(a.body)}</span>
@@ -1234,12 +1300,13 @@ const V={
             n:()=>ALL.filter(t=>t.status!=='shipped'&&t.date_state!=='confirmed').length},
   decisions:{icon:'\u25C7', label:'Decisions',  h:vDecisions, n:()=>DEC.filter(d=>d.status==='open').length},
   brief:    {icon:'\u2726', label:'Brief',      h:vBrief},
+  features: {icon:'\u25A3', label:'Feature briefs', h:vFeatures},
   record:   {icon:'\u21BB', label:'The record', h:vRecord}
 };
 const NAVGROUPS=[
   {label:'Review',  keys:['needs','intake']},
   {label:'Tracker', keys:['trklive','trksched','trkwait']},
-  {label:'Board',   keys:['decisions','brief','record']}];
+  {label:'Board',   keys:['decisions','brief','features','record']}];
 const KEYS=NAVGROUPS.flatMap(g=>g.keys);
 let cur='needs';
 function drawNav(){
@@ -1248,7 +1315,7 @@ function drawNav(){
     const n=V[k].n?V[k].n():0;
     return `<button class="nav-i${k===cur?' on':''}" data-k="${k}">
       <span class="ni">${V[k].icon}</span><span class="lbl">${V[k].label}</span>
-      ${n?`<span class="nav-n">${n}</span>`:''}</button>`;}).join('')).join('');
+      ${n?`<span class="nav-n">${n}</span>`:''}</button>`;}).join('')).join('')+navProgHTML();
 }
 function shut(){ document.getElementById('side').classList.remove('open');
                  document.getElementById('scrim').classList.remove('on'); }
@@ -1260,8 +1327,8 @@ function say(m){ toast.textContent=m; toast.classList.add('on'); setTimeout(()=>
 function draw(){
   views.innerHTML=`<div class="view on">${V[cur].h()}</div>`;
   document.getElementById('ttl').textContent=V[cur].label;
-  document.getElementById('sub').textContent='Master admin';
-  drawNav();
+  document.getElementById('sub').textContent=PROGS[PROG].name+' \u00b7 Master admin';
+  drawProg(); drawNav();
 }
 async function refresh(quiet){ try{ await load(); draw(); if(!quiet) say('Refreshed.'); }catch(e){ say(e.message); } }
 async function act(fn){ try{ await fn(); await refresh(true); }catch(e){ say(e.message); } }
@@ -1373,7 +1440,7 @@ document.addEventListener('click',e=>{
     if(!t) return say('Say what gets built, in one line.');
     const sel=document.getElementById('wp-'+r), pr=sel?sel.value:'medium';
     const dt=val('wd-'+r)||null;
-    return act(async()=>{ const n=await rpc('add_task',{p_title:t,p_priority:pr,
+    return act(async()=>{ const n=await rpc('add_task',{p_program:PROG,p_title:t,p_priority:pr,
       p_note:'Came out of decision '+r+'.',p_origin:r,p_proposed_on:dt});
       say(dt?`Added as #${n} and ${short(dt)} proposed. It is on their Dates to answer tab now.`
             :`Added as #${n} with no date. It is on your Waiting on dates tab.`); }); }
@@ -1390,10 +1457,10 @@ document.addEventListener('click',e=>{
 
   const a=e.target.closest('[data-act]');
   if(!a) return;
-  if(a.dataset.act==='sendBrief') return act(async()=>{ await rpc('send_brief',{p_date:today(),p_body:val('briefBody')}); say('Brief sent.'); });
-  if(a.dataset.act==='addendum')  return act(async()=>{ await rpc('post_addendum',{p_body:val('addBody'),p_author:me()}); say('Pushed through.'); });
+  if(a.dataset.act==='sendBrief') return act(async()=>{ await rpc('send_brief',{p_date:today(),p_body:val('briefBody'),p_program:PROG}); say('Brief sent.'); });
+  if(a.dataset.act==='addendum')  return act(async()=>{ await rpc('post_addendum',{p_body:val('addBody'),p_author:me(),p_program:PROG}); say('Pushed through.'); });
   if(a.dataset.act==='rankPick')  return act(async()=>{ await rpc('set_rank',{p_number:Number(val('rkPick')),p_rank:Number(val('rkNew'))||1}); say('Added to the order.'); });
-  if(a.dataset.act==='pushTask')  return act(async()=>{ const n=await rpc('add_task',{p_title:val('ptTitle'),p_priority:'high',
+  if(a.dataset.act==='pushTask')  return act(async()=>{ const n=await rpc('add_task',{p_program:PROG,p_title:val('ptTitle'),p_priority:'high',
       p_rank:null,p_sprint:'S8',p_note:'Pushed in from the master board',p_origin:'Pushed in',p_proposed_on:val('ptDate')||null});
       say(`On the tracker as #${n}${val('ptDate')?', date proposed':''}.`); });
 });

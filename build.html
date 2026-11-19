@@ -189,6 +189,13 @@ body{background:#070d1f}
 .tbl td{padding:10px 11px;border-top:1px solid var(--line);vertical-align:top;word-break:break-word}
 .tbl th:first-child,.tbl td:first-child{width:66px;white-space:nowrap}
 .btn{border:0;border-radius:8px;padding:9px 16px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit}
+/* Program switch: Belt, PSOP, OTIS, Blue Ops or David. One record, five build programs. */
+.prog{display:inline-flex;border:1px solid var(--line,#d9dee7);border-radius:999px;padding:2px;margin-left:auto;background:rgba(255,255,255,.6)}
+.prog button{border:0;background:transparent;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;color:#64748b;white-space:nowrap}
+.prog button.on{background:#001B3D;color:#fff}
+@media (max-width:560px){.top{flex-wrap:wrap}.top>div:not(.prog):not(.stamp){flex:1;min-width:0}.prog{order:9;margin-left:0;width:100%;justify-content:stretch;margin-top:2px}.prog button{flex:1;padding:8px 4px;font-size:12px;min-width:0}}
+@media (max-width:380px){.prog button{font-size:11px;padding:8px 2px}}
+
 .lbl{display:block;font-size:13.5px;font-weight:600;margin-bottom:3px}
 .hint{display:block;font-size:12px;margin-bottom:9px}
 .ta{width:100%;border:1px solid var(--line);border-radius:10px;padding:12px 13px;font-size:14px;font-family:inherit;line-height:1.5;min-height:90px;resize:vertical}
@@ -433,6 +440,7 @@ body{background:#070d1f}
   font-family:inherit;background:none;transition:background .15s,color .15s}
 .nav-i .ni{width:17px;flex:0 0 17px;text-align:center;font-size:13px;opacity:.85}
 .nav-i span.lbl{flex:1;min-width:0}
+a.nav-i{text-decoration:none;color:inherit;box-sizing:border-box}
 .nav-n{font-size:11px;font-weight:700;border-radius:20px;padding:2px 8px;min-width:22px;text-align:center}
 .nav-i.on{background:linear-gradient(120deg,rgba(212,154,0,.92),rgba(212,154,0,.55));color:#000;font-weight:600}
 .nav-i.on .nav-n{background:rgba(0,0,0,.22);color:#000}
@@ -671,7 +679,7 @@ body{background:#070d1f}
   background:none;border:0;color:inherit;font-family:inherit;padding:15px 16px}
 .spec-h:hover .spec-t{color:var(--gold)}
 .spec-x{min-width:0;flex:1}
-.spec-t{font-size:14.5px;font-weight:650;color:var(--ink);line-height:1.45}
+.spec-t{font-size:14.5px;font-weight:650;color:#ffffff;line-height:1.45}
 .spec-s{font-size:12.5px;color:var(--dim);margin-top:4px;line-height:1.6}
 .spec-c{flex:0 0 auto;color:var(--dim);font-size:11px;margin-top:3px}
 .spec-b{padding:2px 16px 18px;border-top:1px solid var(--line)}
@@ -759,7 +767,9 @@ code.mono{background:#0a1226;border:1px solid var(--line);border-radius:5px;padd
     <div class="top">
       <button class="burger" id="burger" aria-label="Sections"><span></span><span></span><span></span></button>
       <div><div class="top-t" id="ttl">SBD Build</div><div class="top-s" id="sub">Dev queue</div></div>
-      <button class="btn" id="refresh" style="margin-left:auto" hidden>Refresh</button>
+      <div class="prog" id="prog" role="tablist" aria-label="Program">
+        <button data-prog="belt" role="tab">Belt</button><button data-prog="psop" role="tab">PSOP</button><button data-prog="otis" role="tab">OTIS</button><button data-prog="blueops" role="tab">Blue Ops</button><button data-prog="david" role="tab">David</button></div>
+      <button class="btn" id="refresh" hidden>Refresh</button>
     </div>
     <div id="stale"></div>
     <div id="views"></div>
@@ -797,8 +807,46 @@ async function q(path){
   return d||[];
 }
 
-let ALL=[], BRIEF=null, DEC=[], EOD=[], MARK=null, SPECS=[];
-let SPEC_OPEN=null;
+let ALL=[], BRIEF=null, DEC=[], EOD=[], MARK=null, SPECS=[], FEATS=[], ADDS=[];
+let SPEC_OPEN=null, FEAT_OPEN=null;
+
+/* Which build program this page is showing. Belt is the default; the others sit in the
+   same record under their own number series: PSOP 1001 and up, OTIS 2001 and up,
+   Blue Ops 3001 and up, David 4001 and up (rows moved off Belt on 19 Nov 2026 keep
+   their old numbers). Remembered per browser. */
+const PROGS={belt:{label:'Belt',name:'SBD Belt'},psop:{label:'PSOP',name:'PSOP'},
+  otis:{label:'OTIS',name:'OTIS'},blueops:{label:'Blue Ops',name:'Blue Ops'},david:{label:'David',name:'David OG'}};
+const PKEY='sbd_program';
+let PROG='belt'; try{ const _s=localStorage.getItem(PKEY); if(_s&&PROGS[_s]) PROG=_s; }catch(_){}
+const pf=()=>'&program=eq.'+PROG;
+function drawProg(){ document.querySelectorAll('#prog button').forEach(b=>b.classList.toggle('on',b.dataset.prog===PROG)); }
+function setProg(p){ if(!PROGS[p]||p===PROG) return; PROG=p; try{ localStorage.setItem(PKEY,p); }catch(_){}
+  progURL(p); drawProg(); if(typeof refresh==='function') refresh(true); }
+document.addEventListener('click',e=>{ const b=e.target.closest('#prog button'); if(b) setProg(b.dataset.prog); });
+
+/* A link can open a page straight on a program: /dash?p=psop, /build?p=psop, /tracker?p=psop.
+   The link wins over what this browser last looked at, and switching updates the address
+   so the page you are on is always the page you can send to someone. */
+try{ const _p=(new URLSearchParams(location.search).get('p')||new URLSearchParams(location.search).get('program')||'').toLowerCase();
+     if(_p&&PROGS[_p]) PROG=_p; }catch(_){}
+function progURL(p){ try{ const u=new URL(location.href);
+  if(p==='belt') u.searchParams.delete('p'); else u.searchParams.set('p',p);
+  u.searchParams.delete('program'); history.replaceState(null,'',u.pathname+(u.search||'')+u.hash); }catch(_){}
+}
+function progHref(p){ try{ const u=new URL(location.href);
+  if(p==='belt') u.searchParams.delete('p'); else u.searchParams.set('p',p);
+  u.searchParams.delete('program'); return u.pathname+(u.search||''); }catch(_){ return p==='belt'?'?':'?p='+p; } }
+/* The menu item is a real link, so it can be copied, shared or opened in a new tab.
+   A plain tap switches the program in place; the address still changes either way. */
+function navProgHTML(){ const others=Object.keys(PROGS).filter(k=>k!==PROG);
+  return '<div class="nav-l">Program</div>'+others.map(other=>
+    `<a class="nav-i nav-prog" href="${progHref(other)}" data-prog="${other}">
+       <span class="ni">&#9635;</span><span class="lbl">${PROGS[other].label} board</span></a>`).join('');
+}
+document.addEventListener('click',e=>{ const a=e.target.closest('.nav-prog'); if(!a) return;
+  if(e.metaKey||e.ctrlKey||e.shiftKey||e.button) return;   // let the browser open it its own way
+  e.preventDefault(); setProg(a.dataset.prog); });
+
 const WHO='sbd_dev_who';
 const me=()=>localStorage.getItem(WHO)||'';
 const open_=()=>ALL.filter(t=>t.status!=='shipped');
@@ -809,22 +857,31 @@ const unreadAns=()=>decided().filter(d=>!d.seen_at);
 const kidsOf=ref=>DEC.filter(d=>d.parent_ref===ref);
 
 async function load(){
-  const [items,briefs,dec,eod,mark,specs]=await Promise.all([
+  const [items,briefs,dec,eod,mark,specs,feats,adds]=await Promise.all([
     q('tracker_items?select=number,title,status,priority,sprint,rank,origin,note,how_to_check,'+
       'proposed_on,date_state,counter_on,counter_note,answered_by,answered_at,shipped_on,verified_note,updated_at,'+
       'question_note,question_by,question_at,reply_note,reply_by,reply_at'+
-      '&order=number.asc'),
-    q('briefs?select=brief_date,author,body&order=brief_date.desc&limit=1'),
+      '&order=number.asc'+pf()),
+    q('briefs?select=brief_date,author,body&order=brief_date.desc&limit=1'+pf()),
     q('decisions?select=ref,question,blocks,note,raised_on,status,answer,reasoning,verdict,'+
       'answered_on,review_on,seen_at,seen_by,parent_ref,asked_by'+
-      '&order=answered_on.desc.nullslast,ref.desc'),
-    q('eod_reports?select=report_date,author&order=report_date.desc&limit=1'),
+      '&order=answered_on.desc.nullslast,ref.desc'+pf()),
+    q('eod_reports?select=report_date,author&order=report_date.desc&limit=1'+pf()),
     q('ops_marks?select=key,at,by&key=eq.tracker_synced'),
     q('build_specs?select=slug,item_number,title,summary,body,updated_at'+
-      '&order=item_number.asc.nullsfirst')
+      '&order=item_number.asc.nullsfirst'+pf()),
+    /* A feature brief is the long read for one feature, kept apart from the daily brief.
+       If the table cannot load, the rest of the page still does. */
+    q('feature_briefs?select=id,feature,feature_label,brief_date,title,body,author,updated_at'+
+      '&order=brief_date.desc,updated_at.desc'+pf()).catch(()=>[]),
+    /* What Ignacio adds after the brief goes out. The dash has always said these reach
+       both boards; until now this page never loaded them. */
+    q('eod_addenda?select=addendum_date,author,body,created_at'+
+      '&order=created_at.desc&limit=10'+pf()).catch(()=>[])
   ]);
   ALL=items; BRIEF=briefs[0]||null; DEC=dec; EOD=eod; MARK=(mark&&mark[0])||null;
-  SPECS=specs||[];
+  SPECS=specs||[]; FEATS=feats||[]; ADDS=adds||[];
+  if(FEAT_OPEN==null&&FEATS.length) FEAT_OPEN=FEATS[0].id;
 }
 
 const agreed=t=>t.date_state==='countered'?t.counter_on:t.proposed_on;
@@ -1131,7 +1188,12 @@ function vToday(){
   const S=stats();
   const blocked=S.rows.filter(waitingOnHim);
   const focus=S.rest.filter(t=>!waitingOnHim(t)).slice(0,4);
-  return heroBlock()+briefCard()+`
+  const nf=FEATS.filter(f=>f.brief_date===todayISO());
+  return heroBlock()+briefCard()+(nf.length?`<div class="card" style="margin-top:14px;margin-bottom:14px">
+    <div class="card-h"><div class="ic warm">\u25A3</div><div>
+      <div class="card-t">A feature brief landed today</div>
+      <div class="card-s">${nf.map(f=>esc(f.feature_label)+': '+esc(f.title)).join('<br>')}</div></div></div>
+    <div class="row"><button class="btn btn-g" data-go="features">Read it</button></div></div>`:'')+`
 <div class="cols">
   <div class="col">
     <div class="card">
@@ -1272,6 +1334,7 @@ const SHEET_URL='https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/edit?usp=sh
    site, so this is the preview view: every tab, every row, read only. Editing is one
    click away and opens in Sheets proper. Marking it updated works from here either way. */
 function vSheet(){
+  if(PROG!=='belt') return `<div class="card"><p>The sprint tracker sheet is the Belt program's ledger. ${PROGS[PROG].label} has no sheet; the board here is its record.</p></div>`;
   const synced=MARK?String(MARK.at).slice(0,10):null;
   const moved=MARK?ALL.filter(t=>t.updated_at&&t.updated_at>MARK.at).length:ALL.length;
   return `<div class="card wide">
@@ -1365,7 +1428,44 @@ function vDetails(){
   </div>`;
 }
 
+/* Feature briefs: grouped by feature, newest first. Each opens whole and copies out
+   whole, the same way a write-up does, so it can go straight into Claude Code. */
+function todayISO(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function vFeatures(){
+  if(!FEATS.length) return `<div class="card">
+    <div class="card-h"><div class="ic">\u25A3</div><div>
+      <div class="card-t">Feature briefs</div>
+      <div class="card-s">Nothing here yet. When a feature needs more than the daily brief can carry,
+        its brief lands here and stays here.</div></div></div></div>`;
+  const groups=[]; FEATS.forEach(f=>{ let g=groups.find(x=>x.k===f.feature);
+    if(!g){ g={k:f.feature,label:f.feature_label,rows:[]}; groups.push(g); } g.rows.push(f); });
+  return groups.map(g=>`<div class="card">
+    <div class="card-h"><div class="ic warm">\u25A3</div><div>
+      <div class="card-t">${esc(g.label)}</div>
+      <div class="card-s">${g.rows.length} brief${g.rows.length===1?'':'s'}, newest first. The items it covers
+        are on the board, and their write-ups are on More details.</div></div></div>
+    ${g.rows.map(f=>{ const open=FEAT_OPEN===f.id;
+      return `<div class="spec${open?' on':''}" id="fb-${esc(f.id)}">
+        <button class="spec-h" data-feat="${esc(f.id)}">
+          <div class="spec-x">
+            <div class="spec-t">${esc(f.title)}</div>
+            <div class="spec-s">${D(f.brief_date)}${f.author?' &middot; '+esc(f.author):''}${f.brief_date===todayISO()?' &middot; <b>New today</b>':''}</div>
+          </div>
+          <span class="spec-c">${open?'\u25B2':'\u25BC'}</span>
+        </button>
+        ${open?`<div class="spec-b">
+          <div class="spec-a">
+            <button class="btn btn-o" data-cpyfeat="${esc(f.id)}">Copy this brief</button>
+            <span class="spec-u">Updated ${fmtWhen(f.updated_at)}</span>
+          </div>
+          ${md(f.body)}
+        </div>`:''}
+      </div>`; }).join('')}
+  </div>`).join('');
+}
+
 function vMcp(){
+  if(PROG!=='belt') return `<div class="card"><p>Same server, one more setting. Start it with <code>SBD_PROGRAM=${PROG}</code> and every tool reads and writes the ${PROGS[PROG].label} side of the board. Without it, the server works Belt.</p></div>`;
   return `<div class="card">
   <div class="card-h"><div class="ic warm">\u2318</div>
     <div><div class="card-t">Work this board from Claude Code</div>
@@ -1418,6 +1518,19 @@ function briefCard(){
     <div><div class="card-t">This morning's brief</div>
     <div class="card-s">From ${esc(BRIEF.author)} &middot; ${D(BRIEF.brief_date)}</div></div></div>
   ${briefBlock(BRIEF.body)}
+</div>`+addsCard();
+}
+/* Everything added since the latest brief, newest first, in full. */
+function addsCard(){
+  const since=BRIEF?BRIEF.brief_date:'';
+  const rows=ADDS.filter(a=>!since||a.addendum_date>=since);
+  if(!rows.length) return '';
+  return `<div class="card" style="margin-top:14px">
+  <div class="card-h"><div class="ic warm">\u25CB</div>
+    <div><div class="card-t">Added since the brief</div>
+    <div class="card-s">${rows.length} note${rows.length===1?'':'s'} from Ignacio, newest first</div></div></div>
+  ${rows.map(a=>`<div class="p" style="margin:0 0 6px;font-size:12px;opacity:.75">${esc(a.author)} &middot; ${D(a.addendum_date)}</div>
+    <div style="margin-bottom:16px">${md(a.body)}</div>`).join('')}
 </div>`;
 }
 
@@ -1615,13 +1728,16 @@ const V={
   mcp:     {icon:'\u2318', label:'MCP server',           h:vMcp},
   details: {icon:'\u2630', label:'More details',        h:vDetails,
             sub:'The write-up behind an item'},
+  features:{icon:'\u25A3', label:'Feature briefs',      h:vFeatures,
+            sub:'The long read for one feature, apart from the daily brief',
+            n:()=>FEATS.filter(f=>f.brief_date===todayISO()).length},
   dates:   {icon:'\u25F7', label:'Dates to answer',    h:vDates,
             n:()=>open_().filter(t=>t.date_state==='pending').length},
   queue:   {icon:'\u25A4', label:'The queue',          h:vQueue,
             n:()=>open_().filter(t=>t.date_state!=='pending'||t.rank!=null).length},
   standing:{icon:'\u25CE', label:'Where things stand', h:vStanding}
 };
-const KEYS=['today','brief','answers','sheet','dates','queue','standing','details','mcp'];
+const KEYS=['today','brief','answers','sheet','dates','queue','standing','features','details','mcp'];
 let cur='today';
 function drawNav(){
   const nav=document.getElementById('nav'); if(!nav) return;
@@ -1629,7 +1745,7 @@ function drawNav(){
     const n=V[k].n?V[k].n():0;
     return `<button class="nav-i${k===cur?' on':''}" data-k="${k}">
       <span class="ni">${V[k].icon}</span><span class="lbl">${V[k].label}</span>
-      ${n?`<span class="nav-n">${n}</span>`:''}</button>`;}).join('');
+      ${n?`<span class="nav-n">${n}</span>`:''}</button>`;}).join('')+navProgHTML();
 }
 function shut(){ document.getElementById('side').classList.remove('open');
                  document.getElementById('scrim').classList.remove('on'); }
@@ -1642,7 +1758,8 @@ function draw(){
   const sb=document.getElementById('stale'); if(sb) sb.innerHTML=staleBar();
   views.innerHTML=`<div class="view on">${V[cur].h()}</div>`;
   document.getElementById('ttl').textContent=V[cur].label;
-  document.getElementById('sub').textContent=V[cur].sub||(cur==='today'?'Dev queue':V[cur].label);
+  document.getElementById('sub').textContent=(PROGS[PROG].name+' \u00b7 ')+(V[cur].sub||(cur==='today'?'Dev queue':V[cur].label));
+  drawProg();
   if(biAuto){ const r=biAuto; biAuto=null;
     const b=document.getElementById('bi-'+r);
     if(b){ b.hidden=false; b.scrollIntoView({block:'center'});
@@ -1679,6 +1796,16 @@ document.addEventListener('click',e=>{
     staleOpen=!staleOpen;
     localStorage.setItem('sbd_stale_open', staleOpen?'1':'0');
     const sb=document.getElementById('stale'); if(sb) sb.innerHTML=staleBar();
+    return; }
+
+  const fb=e.target.closest('[data-feat]');
+  if(fb){ FEAT_OPEN = FEAT_OPEN===fb.dataset.feat ? null : fb.dataset.feat; return draw(); }
+  const cf=e.target.closest('[data-cpyfeat]');
+  if(cf){ const f=FEATS.find(x=>x.id===cf.dataset.cpyfeat);
+    if(f){ navigator.clipboard.writeText(f.body).then(()=>{
+        cf.textContent='Copied'; cf.classList.add('done');
+        setTimeout(()=>{ cf.textContent='Copy this brief'; cf.classList.remove('done'); },1800);
+      }).catch(()=>say('Could not reach the clipboard. Select the text and copy by hand.')); }
     return; }
 
   const sp=e.target.closest('[data-spec]');

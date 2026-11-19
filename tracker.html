@@ -65,6 +65,12 @@ body{background:#070d1f}
   font-weight:700;font-size:11.5px;flex:0 0 34px}
 .bname{font-weight:600;font-size:15px}
 .bsub{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+
+.prog{display:inline-flex;border:1px solid rgba(0,0,0,.12);border-radius:999px;padding:2px;margin-left:auto;background:rgba(255,255,255,.7)}
+.prog button{border:0;background:transparent;border-radius:999px;padding:6px 12px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;color:#64748b;white-space:nowrap}
+.prog button.on{background:#001B3D;color:#fff}
+@media (max-width:560px){.top{flex-wrap:wrap}.top>div:not(.prog):not(.stamp){flex:1;min-width:0}.prog{order:9;margin-left:0;width:100%;justify-content:stretch;margin-top:2px}.prog button{flex:1;padding:8px 4px;font-size:12px;min-width:0}}
+@media (max-width:380px){.prog button{font-size:11px;padding:8px 2px}}
 .btn{border:0;border-radius:10px;padding:10px 17px;font-size:13px;font-weight:600;
   cursor:pointer;font-family:inherit;margin-left:auto;min-height:40px}
 .btn:hover{background:#243056!important}
@@ -238,6 +244,7 @@ body{background:#070d1f}
   position:sticky;top:0;height:100vh;padding:20px 12px}
 .lbrand{display:flex;align-items:center;gap:10px;padding:0 4px 18px}
 .lnav{display:flex;flex-direction:column;gap:4px}
+.lnav a.ni{text-decoration:none;color:inherit;box-sizing:border-box}
 .lnav .ni{display:flex;align-items:center;gap:10px;width:100%;padding:11px 12px;border:0;
   border-radius:11px;font-size:13.5px;cursor:pointer;text-align:left;font-family:inherit;
   background:none;color:var(--dim);font-weight:500}
@@ -305,6 +312,8 @@ body{background:#070d1f}
           <span></span><span></span><span></span></button>
         <div class="top-t" id="ttl">Live</div>
         <div class="stamp" id="stamp"></div>
+        <div class="prog" id="prog" role="tablist" aria-label="Program">
+          <button data-prog="belt" role="tab">Belt</button><button data-prog="psop" role="tab">PSOP</button><button data-prog="otis" role="tab">OTIS</button><button data-prog="blueops" role="tab">Blue Ops</button><button data-prog="david" role="tab">David</button></div>
         <button class="btn" id="refresh" style="margin-left:14px">Refresh</button>
       </div>
       <div class="srchwrap"><input class="srch" id="search"
@@ -331,9 +340,36 @@ const DL=d=>d?new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'long'
 const today=()=>new Date().toISOString().slice(0,10);
 const days=d=>Math.round((new Date(d+'T12:00:00')-new Date(today()+'T12:00:00'))/86400000);
 
+const PROGS={belt:{label:'Belt',name:'SBD Belt'},psop:{label:'PSOP',name:'PSOP'},
+  otis:{label:'OTIS',name:'OTIS'},blueops:{label:'Blue Ops',name:'Blue Ops'},david:{label:'David',name:'David OG'}};
+const PKEY='sbd_program';
+let PROG='belt'; try{ const _s=localStorage.getItem(PKEY); if(_s&&PROGS[_s]) PROG=_s; }catch(_){}
+function drawProg(){ document.querySelectorAll('#prog button').forEach(b=>b.classList.toggle('on',b.dataset.prog===PROG)); }
+function setProg(p){ if(!PROGS[p]||p===PROG) return; PROG=p; try{ localStorage.setItem(PKEY,p); }catch(_){}
+  progURL(p); drawProg(); drawNav(); go(true); }
+document.addEventListener('click',e=>{ const b=e.target.closest('#prog button'); if(b) setProg(b.dataset.prog); });
+document.addEventListener('click',e=>{ const a=e.target.closest('.ni-prog'); if(!a) return;
+  if(e.metaKey||e.ctrlKey||e.shiftKey||e.button) return;   // let the browser open it its own way
+  e.preventDefault(); setProg(a.dataset.prog); });
+/* The menu item is a real link, so it can be copied, shared or opened in a new tab. */
+function progHref(p){ try{ const u=new URL(location.href);
+  if(p==='belt') u.searchParams.delete('p'); else u.searchParams.set('p',p);
+  u.searchParams.delete('program'); return u.pathname+(u.search||''); }catch(_){ return p==='belt'?'?':'?p='+p; } }
+
+/* A link can open this page straight on a program: /tracker?p=psop. The link wins over
+   what this browser last looked at, and switching updates the address so the page you
+   are on is always the page you can send to someone. */
+try{ const _p=(new URLSearchParams(location.search).get('p')||new URLSearchParams(location.search).get('program')||'').toLowerCase();
+     if(_p&&PROGS[_p]) PROG=_p; }catch(_){}
+function progURL(p){ try{ const u=new URL(location.href);
+  if(p==='belt') u.searchParams.delete('p'); else u.searchParams.set('p',p);
+  u.searchParams.delete('program'); history.replaceState(null,'',u.pathname+(u.search||'')+u.hash); }catch(_){}
+}
+
 let ROWS=[];
 async function load(){
-  const r=await fetch(`${SB_URL}/rest/v1/v_public_tracker?select=*`,
+  drawProg();
+  const r=await fetch(`${SB_URL}/rest/v1/v_public_tracker?select=*&program=eq.${PROG}`,
     {cache:'no-store',headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`}});
   if(!r.ok) throw new Error('Could not reach the record just now.');
   ROWS=await r.json();
@@ -553,7 +589,8 @@ function drawNav(){
   document.getElementById('lnav').innerHTML=
     `<button class="ni${LTAB==='dash'?' on':''}" data-t="dash">&#9678;&nbsp; Dashboard</button>
      <button class="ni${LTAB==='work'?' on':''}" data-t="work">&#9673;&nbsp; Scheduled and live<span class="nn">${sched+live}</span></button>
-     <button class="ni${LTAB==='upd'?' on':''}" data-t="upd">&#9998;&nbsp; Updates${MINE.length?`<span class="nn">${MINE.length}</span>`:''}</button>`;
+     <button class="ni${LTAB==='upd'?' on':''}" data-t="upd">&#9998;&nbsp; Updates${MINE.length?`<span class="nn">${MINE.length}</span>`:''}</button>
+     ${Object.keys(PROGS).filter(k=>k!==PROG).map(o=>`<a class="ni ni-prog" href="${progHref(o)}" data-prog="${o}">&#9635;&nbsp; ${PROGS[o].label}</a>`).join('')}`;
 }
 
 function draw(){
